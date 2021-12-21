@@ -1,0 +1,37 @@
+{
+	"$schema": "http://json-schema.org/draft-04/schema#",
+	"type": "object",
+	"properties": {
+		"webhook": {
+			"type": "string"
+		},
+		"thumbnail": {
+			"type": "string"
+		},
+		"userid": {
+			"type": "string"
+		},
+		"mention_on_fail": {
+			"type": "boolean"
+		},
+		"mention_on_warning": {
+			"type": "boolean"
+		},
+		"debug_log": {
+			"type": "boolean"
+		},
+		"notify_update": {
+			"type": "boolean"
+		},
+		"self_update": {
+			"type": "boolean"
+		},
+		"comment": {
+			"type": "string"
+		}
+	},
+	"required": [
+		"webhook",
+		"thumbnail"
+	]
+}

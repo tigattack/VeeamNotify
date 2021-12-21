@@ -1,0 +1,16 @@
+---
+name: CI
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  lint:
+    name: Run PSScriptAnalyzer
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Lint with PSScriptAnalyzer
+      shell: pwsh
+      run: ./.github/scripts/pssa.ps1

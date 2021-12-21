@@ -1,0 +1,11 @@
+{
+	"webhook": "DiscordWebook",
+	"thumbnail": "https://raw.githubusercontent.com/tigattack/VeeamDiscordNotifications/master/asset/thumb01.png",
+	"userId": "123456789",
+	"mention_on_fail": false,
+	"mention_on_warning": false,
+	"debug_log": false,
+	"notify_update": true,
+	"self_update": false,
+	"comment": "Self-updater is still experimental. Use at your own risk."
+}
