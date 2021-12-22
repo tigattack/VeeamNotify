@@ -153,35 +153,16 @@ if ($jobType -in 'Backup','Replica') {
 # If agent backup, gather and include session info.
 If ($jobType -eq 'EpAgentBackup') {
 	# Gather session data sizes and timings.
-	[Float]$jobProcessedSize	= $session.Info.Progress.ProcessedSize
-	[Float]$jobTransferredSize	= $session.Info.Progress.TransferedSize
+	[Float]$processedSize	= $session.Info.Progress.ProcessedSize
+	[Float]$transferSize	= $session.Info.Progress.TransferedSize
 	[Float]$speed				= $session.Info.Progress.AvgSpeed
 	$endTime 				= $session.EndTime
 	$startTime 				= $session.CreationTime
 
 	# Convert bytes to closest unit.
-	$jobProcessedSizeRound		= ConvertTo-ByteUnit -Data $jobProcessedSize
-	$jobTransferredSizeRound	= ConvertTo-ByteUnit -Data $jobTransferredSize
+	$processedSizeRound		= ConvertTo-ByteUnit -Data $processedSize
+	$transferSizeRound	= ConvertTo-ByteUnit -Data $transferSize
 	$speedRound					= (ConvertTo-ByteUnit -Data $speed).ToString() + '/s'
-
-	# Add session information to fieldArray.
-	$fieldArray = @(
-		[PSCustomObject]@{
-			name	= 'Processed Size'
-			value	= [String]$jobProcessedSizeRound
-			inline	= 'true'
-		},
-		[PSCustomObject]@{
-			name	= 'Transferred Data'
-			value	= [String]$jobTransferredSizeRound
-			inline	= 'true'
-		},
-		[PSCustomObject]@{
-			name	= 'Processing Rate'
-			value	= $speedRound
-			inline	= 'true'
-		}
-	)
 }
 
 
@@ -261,23 +242,43 @@ Switch ($updateStatus.Status) {
 
 
 # Build embed parameters
-$payloadParams = @{
-	JobName			= $jobName
-	JobType			= $jobTypeNice
-	Status			= $status
-	DataSize		= $dataSizeRound
-	TransferSize	= $transferSizeRound
-	DedupRatio		= $dedupRatio
-	CompressRatio	= $compressRatio
-	Speed			= $speedRound
-	Bottleneck		= $bottleneck
-	Duration		= $durationFormatted
-	StartTime		= $startTime
-	EndTime			= $endTime
-	Mention			= $mention
-	UserId			= $Config.userId
-	ThumbnailUrl 	= $Config.thumbnail
-	FooterMessage 	= $footerMessage
+If ($jobType -ne 'EpAgentBackup') {
+	$payloadParams = @{
+		JobName			= $jobName
+		JobType			= $jobTypeNice
+		Status			= $status
+		DataSize		= $dataSizeRound
+		TransferSize	= $transferSizeRound
+		DedupRatio		= $dedupRatio
+		CompressRatio	= $compressRatio
+		Speed			= $speedRound
+		Bottleneck		= $bottleneck
+		Duration		= $durationFormatted
+		StartTime		= $startTime
+		EndTime			= $endTime
+		Mention			= $mention
+		UserId			= $Config.userId
+		ThumbnailUrl 	= $Config.thumbnail
+		FooterMessage 	= $footerMessage
+	}
+}
+
+elseif ($jobType -eq 'EpAgentBackup') {
+	$payloadParams = @{
+		JobName			= $jobName
+		JobType			= $jobTypeNice
+		Status			= $status
+		ProcessedSize	= $processedSizeRound
+		TransferSize	= $transferSizeRound
+		Speed  			= $speedRound
+		Duration		= $durationFormatted
+		StartTime		= $startTime
+		EndTime			= $endTime
+		Mention			= $mention
+		UserId			= $Config.userId
+		ThumbnailUrl 	= $Config.thumbnail
+		FooterMessage 	= $footerMessage
+	}
 }
 
 # Build embed

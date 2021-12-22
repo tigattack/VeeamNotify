@@ -10,6 +10,7 @@ function New-DiscordPayload {
 		[string]$Status,
 		[string]$DataSize,
 		[string]$TransferSize,
+		[string]$ProcessedSize,
 		[int]$DedupRatio,
 		[int]$CompressRatio,
 		[string]$Speed,
@@ -50,57 +51,73 @@ function New-DiscordPayload {
 		}
 
 		# Build field object.
-		$fieldArray = @(
-			[PSCustomObject]@{
-				name   = 'Backup Size'
-				value  = [String]$DataSize
-				inline = 'true'
-			},
-			[PSCustomObject]@{
-				name   = 'Transferred Data'
-				value  = [String]$TransferSize
-				inline = 'true'
-			}
-			[PSCustomObject]@{
-				name   = 'Dedup Ratio'
-				value  = [String]$DedupRatio
-				inline = 'true'
-			}
-			[PSCustomObject]@{
-				name   = 'Compression Ratio'
-				value  = [String]$CompressRatio
-				inline = 'true'
-			}
-			[PSCustomObject]@{
-				name   = 'Processing Rate'
-				value  = $Speed
-				inline = 'true'
-			}
-			[PSCustomObject]@{
-				name   = 'Bottleneck'
-				value  = [String]$Bottleneck
-				inline = 'true'
-			}
-			[PSCustomObject]@{
-				name   = 'Time Started'
-				value  = $timestampStart
-				inline = 'true'
-			}
-			[PSCustomObject]@{
-				name   = 'Time Ended'
-				value  = $timestampEnd
-				inline = 'true'
-			}
-			[PSCustomObject]@{
-				name   = 'Job Duration'
-				value  = $Duration
-				inline = 'true'
-			}
-		)
+		if ($JobType -ne 'Agent Backup') {
+			$fieldArray = @(
+				[PSCustomObject]@{
+					name   = 'Backup Size'
+					value  = [String]$DataSize
+					inline = 'true'
+				},
+				[PSCustomObject]@{
+					name   = 'Transferred Data'
+					value  = [String]$TransferSize
+					inline = 'true'
+				}
+				[PSCustomObject]@{
+					name   = 'Dedup Ratio'
+					value  = [String]$DedupRatio
+					inline = 'true'
+				}
+				[PSCustomObject]@{
+					name   = 'Compression Ratio'
+					value  = [String]$CompressRatio
+					inline = 'true'
+				}
+				[PSCustomObject]@{
+					name   = 'Processing Rate'
+					value  = $Speed
+					inline = 'true'
+				}
+				[PSCustomObject]@{
+					name   = 'Bottleneck'
+					value  = [String]$Bottleneck
+					inline = 'true'
+				}
+				[PSCustomObject]@{
+					name   = 'Start Time'
+					value  = $timestampStart
+					inline = 'true'
+				}
+				[PSCustomObject]@{
+					name   = 'End Time'
+					value  = $timestampEnd
+					inline = 'true'
+				}
+				[PSCustomObject]@{
+					name   = 'Duration'
+					value  = $Duration
+					inline = 'true'
+				}
+			)
+		}
 
-		# If agent backup, add notice to fieldArray.
-		If ($JobType -eq 'Agent Backup') {
-			$fieldArray += @(
+		elseif ($JobType -eq 'Agent Backup') {
+			$fieldArray = @(
+				[PSCustomObject]@{
+					name   = 'Processed Size'
+					value  = [String]$ProcessedSize
+					inline	= 'true'
+				}
+				[PSCustomObject]@{
+					name   = 'Transferred Data'
+					value  = [String]$TransferSize
+					inline	= 'true'
+				}
+				[PSCustomObject]@{
+					name   = 'Processing Rate'
+					value  = $Speed
+					inline	= 'true'
+				}
 				[PSCustomObject]@{
 					name   = 'Notice'
 					value  = "Further details are missing due to limitations in Veeam's PowerShell module."
@@ -219,15 +236,15 @@ function New-TeamsPayload {
 				value = $Bottleneck
 			}
 			@{
-				name  = 'Time started'
+				name  = 'Start Time'
 				value = $timestampStart
 			}
 			@{
-				name  = 'Time ended'
+				name  = 'End Time'
 				value = $timestampEnd
 			}
 			@{
-				name  = 'Job Duration'
+				name  = 'Duration'
 				value = $Duration
 			}
 		)
@@ -266,6 +283,7 @@ function New-SlackPayload {
 		[string]$Status,
 		[string]$DataSize,
 		[string]$TransferSize,
+		[string]$ProcessedSize,
 		[int]$DedupRatio,
 		[int]$CompressRatio,
 		[string]$Speed,
@@ -287,48 +305,61 @@ function New-SlackPayload {
 		$timestampEnd = $(Get-Date $EndTime -UFormat '%d %B %Y %R').ToString()
 
 		# Build blocks object.
-		$fieldArray = @(
-			[PSCustomObject]@{
-				type = 'mrkdwn'
-				text = "*Backup Size*`n$DataSize"
-			},
-			[PSCustomObject]@{
-				type = 'mrkdwn'
-				text = "*Transferred Data*`n$TransferSize"
-			}
-			[PSCustomObject]@{
-				type = 'mrkdwn'
-				text = "*Dedup Ratio*`n$DedupRatio"
-			}
-			[PSCustomObject]@{
-				type = 'mrkdwn'
-				text = "*Compression Ratio*`n$CompressRatio"
-			}
-			[PSCustomObject]@{
-				type = 'mrkdwn'
-				text = "*Processing Rate*`n$Speed"
-			}
-			[PSCustomObject]@{
-				type = 'mrkdwn'
-				text = "*Bottleneck*`n$Bottleneck"
-			}
-			[PSCustomObject]@{
-				type = 'mrkdwn'
-				text = "*Time Started*`n$timestampStart"
-			}
-			[PSCustomObject]@{
-				type = 'mrkdwn'
-				text = "*Time Ended*`n$timestampEnd"
-			}
-			[PSCustomObject]@{
-				type = 'mrkdwn'
-				text = "*Job Duration*`n$Duration"
-			}
-		)
+		if ($JobType -ne 'Agent Backup') {
+			$fieldArray = @(
+				[PSCustomObject]@{
+					type = 'mrkdwn'
+					text = "*Backup Size*`n$DataSize"
+				},
+				[PSCustomObject]@{
+					type = 'mrkdwn'
+					text = "*Transferred Data*`n$TransferSize"
+				}
+				[PSCustomObject]@{
+					type = 'mrkdwn'
+					text = "*Dedup Ratio*`n$DedupRatio"
+				}
+				[PSCustomObject]@{
+					type = 'mrkdwn'
+					text = "*Compression Ratio*`n$CompressRatio"
+				}
+				[PSCustomObject]@{
+					type = 'mrkdwn'
+					text = "*Processing Rate*`n$Speed"
+				}
+				[PSCustomObject]@{
+					type = 'mrkdwn'
+					text = "*Bottleneck*`n$Bottleneck"
+				}
+				[PSCustomObject]@{
+					type = 'mrkdwn'
+					text = "*Start Time*`n$timestampStart"
+				}
+				[PSCustomObject]@{
+					type = 'mrkdwn'
+					text = "*End Time*`n$timestampEnd"
+				}
+				[PSCustomObject]@{
+					type = 'mrkdwn'
+					text = "*Duration*`n$Duration"
+				}
+			)
+		}
 
-		# If agent backup, add notice to fieldArray.
-		If ($JobType -eq 'Agent Backup') {
+		elseif ($JobType -eq 'Agent Backup') {
 			$fieldArray += @(
+				[PSCustomObject]@{
+					type = 'mrkdwn'
+					name = "Processed Size`n$ProcessedSize"
+				}
+				[PSCustomObject]@{
+					type = 'mrkdwn'
+					name = "Transferred Data`n$TransferSize"
+				}
+				[PSCustomObject]@{
+					type = 'mrkdwn'
+					name = "Processing Rate`n$Speed"
+				}
 				[PSCustomObject]@{
 					type = 'mrkdwn'
 					text = "Notice`nFurther details are missing due to limitations in Veeam's PowerShell module."
