@@ -82,11 +82,6 @@ function New-DiscordPayload {
 				inline = 'true'
 			}
 			[PSCustomObject]@{
-				name   = 'Job Duration'
-				value  = $Duration
-				inline = 'true'
-			}
-			[PSCustomObject]@{
 				name   = 'Time Started'
 				value  = $timestampStart
 				inline = 'true'
@@ -94,6 +89,11 @@ function New-DiscordPayload {
 			[PSCustomObject]@{
 				name   = 'Time Ended'
 				value  = $timestampEnd
+				inline = 'true'
+			}
+			[PSCustomObject]@{
+				name   = 'Job Duration'
+				value  = $Duration
 				inline = 'true'
 			}
 		)
@@ -290,15 +290,15 @@ function New-SlackPayload {
 			}
 			[PSCustomObject]@{
 				type = 'mrkdwn'
-				text = "*Job Duration*`n$Duration"
-			}
-			[PSCustomObject]@{
-				type = 'mrkdwn'
 				text = "*Time Started*`n$timestampStart"
 			}
 			[PSCustomObject]@{
 				type = 'mrkdwn'
 				text = "*Time Ended*`n$timestampEnd"
+			}
+			[PSCustomObject]@{
+				type = 'mrkdwn'
+				text = "*Job Duration*`n$Duration"
 			}
 		)
 
