@@ -26,8 +26,8 @@ function New-DiscordPayload {
 	if ($PSCmdlet.ShouldProcess('Output stream', 'Create payload')) {
 
 		# Set Discord timestamps
-		$timestampStart = "<t:$(([System.DateTimeOffset]$(Get-Date $JobStartTime)).ToUnixTimeSeconds())>"
-		$timestampEnd = "<t:$(([System.DateTimeOffset]$(Get-Date $JobEndTime)).ToUnixTimeSeconds())>"
+		$timestampStart = "<t:$(([System.DateTimeOffset]$(Get-Date $StartTime)).ToUnixTimeSeconds())>"
+		$timestampEnd = "<t:$(([System.DateTimeOffset]$(Get-Date $EndTime)).ToUnixTimeSeconds())>"
 
 		# Switch for the session status to decide the embed colour.
 		Switch ($status) {
@@ -144,6 +144,7 @@ function New-TeamsPayload {
 	[OutputType([System.Collections.Hashtable])]
 	param (
 		[string]$JobName,
+		[string]$JobType,
 		[string]$Status,
 		[string]$DataSize,
 		[string]$TransferSize,
@@ -237,6 +238,7 @@ function New-SlackPayload {
 	[OutputType([System.Collections.Hashtable])]
 	param (
 		[string]$JobName,
+		[string]$JobType,
 		[string]$Status,
 		[string]$DataSize,
 		[string]$TransferSize,
@@ -255,11 +257,16 @@ function New-SlackPayload {
 
 	if ($PSCmdlet.ShouldProcess('Output stream', 'Create payload')) {
 
+
+		# Set timestamps
+		$timestampStart = $(Get-Date $StartTime -UFormat '%d %B %Y %R').ToString()
+		$timestampEnd = $(Get-Date $EndTime -UFormat '%d %B %Y %R').ToString()
+
 		# Build blocks object.
 		$fieldArray = @(
 			[PSCustomObject]@{
 				type = 'mrkdwn'
-				text = "*Backup Size*`n$JobSize"
+				text = "*Backup Size*`n$DataSize"
 			},
 			[PSCustomObject]@{
 				type = 'mrkdwn'
@@ -267,11 +274,11 @@ function New-SlackPayload {
 			}
 			[PSCustomObject]@{
 				type = 'mrkdwn'
-				text = "*Dedup Ratio*`n$($DedupRatio)"
+				text = "*Dedup Ratio*`n$DedupRatio"
 			}
 			[PSCustomObject]@{
 				type = 'mrkdwn'
-				text = "*Compression Ratio*`n$($CompressRatio)"
+				text = "*Compression Ratio*`n$CompressRatio"
 			}
 			[PSCustomObject]@{
 				type = 'mrkdwn'
@@ -283,20 +290,20 @@ function New-SlackPayload {
 			}
 			[PSCustomObject]@{
 				type = 'mrkdwn'
-				text = "*Job Duration*`n$DurationFormatted"
+				text = "*Job Duration*`n$Duration"
 			}
 			[PSCustomObject]@{
 				type = 'mrkdwn'
-				text = "*Time Started*`n$(Get-Date $JobStartTime -UFormat '%d %B %Y %R')"
+				text = "*Time Started*`n$timestampStart"
 			}
 			[PSCustomObject]@{
 				type = 'mrkdwn'
-				text = "*Time Ended*`n$(Get-Date $JobEndTime -UFormat '%d %B %Y %R')"
+				text = "*Time Ended*`n$timestampEnd"
 			}
 		)
 
 		# If agent backup, add notice to fieldArray.
-		If ($JobType -eq 'EpAgentBackup') {
+		If ($JobType -eq 'Agent Backup') {
 			$fieldArray += @(
 				[PSCustomObject]@{
 					type = 'mrkdwn'
@@ -312,11 +319,11 @@ function New-SlackPayload {
 					type      = 'section'
 					text      = @{
 						type = 'mrkdwn'
-						text = "*Example VM Backup Job (Incremental)*`nSession result: Success`nJob type: VM Backup"
+						text = "*$JobName*`nSession result: $Status`nJob type: $JobType"
 					}
 					accessory = @{
 						type      = 'image'
-						image_url = 'https://raw.githubusercontent.com/tigattack/VeeamDiscordNotifications/master/asset/thumb01.png'
+						image_url = "$ThumbnailUrl"
 						alt_text  = 'Veeam Backup & Replication logo'
 					}
 				}
@@ -334,11 +341,7 @@ function New-SlackPayload {
 						}
 						@{
 							type = 'plain_text'
-							text = "tigattack's VeeamDiscordNotifications someVersion - Pre-release."
-						}
-						@{
-							type = 'plain_text'
-							text = "someTime"
+							text = $FooterMessage
 						}
 					)
 				}
