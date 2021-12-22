@@ -162,71 +162,95 @@ function New-TeamsPayload {
 	)
 
 	if ($PSCmdlet.ShouldProcess('Output stream', 'Create payload')) {
-		$TeamsJSON = @{
-			'@type'         = 'MessageCard'
-			'@context'      = 'http=//schema.org/extensions'
-			'correlationId' = $Session.Id
-			'themeColor'    = $Color
-			'title'         = $Title
-			'summary'       = $Title
-			'sections'      = @(
-				@{
-					'facts' = @(
-						@{ 'name' = 'Duration'; 'value' = $Duration }
-						@{ 'name' = 'Processing rate';	'value' = $Rate }
-						@{ 'name' = 'Bottleneck'; 'value' = $Bottleneck }
-						@{ 'name' = 'Data Processed';	'value' = $Processed }
-						@{ 'name' = 'Data Read'; 'value' = $Read }
-						@{ 'name' = 'Data Transferred';	'value' = $Transferred }
-						@{ 'name' = 'Success'; 'value' = $SuccessFormat -f $SuccessCount, $SuccessIcon }
-						@{ 'name' = 'Warning'; 'value' = $WarningFormat -f $WarningCount, $WarningIcon }
-						@{ 'name' = 'Error'; 'value' = $FailureFormat -f $FailureCount, $FailureIcon }
-					)
-				}
-			)
+
+		# Set timestamps
+		$timestampStart = $(Get-Date $StartTime -UFormat '%d %B %Y %R').ToString()
+		$timestampEnd = $(Get-Date $EndTime -UFormat '%d %B %Y %R').ToString()
+
+		# Add embedded URL to footer message
+		$FooterMessage = $FooterMessage.Replace(
+			'VeeamDiscordNotifications',
+			'[VeeamDiscordNotifications](https://github.com/tigattack/VeeamDiscordNotifications)'
+		)
+
+		# Switch for the session status to decide the embed colour.
+		Switch ($status) {
+			None    {$colour = '16777215'}
+			Warning {$colour = '16776960'}
+			Success {$colour = '65280'}
+			Failed  {$colour = '16711680'}
+			Default {$colour = '16777215'}
 		}
 
+		# Build facts object.
+		$factsArray = @(
+			@{
+				name  = 'Session result'
+				value = $Status
+				startGroup = $true
+			}
+			@{
+				name  = 'Job type'
+				value = $JobType
+			}
+			@{
+				name  = 'Backup size'
+				value = $DataSize
+				startGroup = $true
+			}
+			@{
+				name  = 'Transferred data'
+				value = $TransferSize
+			}
+			@{
+				name  = 'Dedup ratio'
+				value = $DedupRatio.ToString()
+			}
+			@{
+				name  = 'Compress ratio'
+				value =	$CompressRatio.ToString()
+			}
+			@{
+				name  = 'Processing rate'
+				value = $Speed
+			}
+			@{
+				name  = 'Bottleneck'
+				value = $Bottleneck
+			}
+			@{
+				name  = 'Time started'
+				value = $timestampStart
+			}
+			@{
+				name  = 'Time ended'
+				value = $timestampEnd
+			}
+			@{
+				name  = 'Job Duration'
+				value = $Duration
+			}
+		)
+
 		[PSCustomObject]$payload = @{
-			Summary    = 'Veeam B&R Report - ' + ($JobName)
-			themeColor = $Colour
+			'@type' = 'MessageCard'
+			'@context' = 'https: //schema.org/extensions'
+			Summary    = "**$JobName**"
+			themeColor = $colour
 			sections   = @(
 				@{
-					title            = '**Veeam Backup & Replication**'
-					activityImage    = $StatusImg
-					activityTitle    = $JobName
+					activityImage    = $ThumbnailUrl
+					activityTitle    = "**$JobName**"
 					activitySubtitle = (Get-Date -Format U)
-					facts            = @(
-						@{
-							name  = 'Job status:'
-							value = [String]$Status
-						},
-						@{
-							name  = 'Backup size:'
-							value = $JobSize
-						},
-						@{
-							name  = 'Transferred data:'
-							value = $TransfSize
-						},
-						@{
-							name  = 'Dedupe ratio:'
-							value = $DedupRatio
-						},
-						@{
-							name  = 'Compress ratio:'
-							value =	$CompressRatio
-						},
-						@{
-							name  = 'Duration:'
-							value = $Duration
-						}
-					)
+					facts            = $factsArray
+				},
+				@{
+					text = $FooterMessage
 				}
 			)
 		}
 	}
 
-	return $TeamsJSON
 	return $payload
 }
 
