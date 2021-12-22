@@ -83,7 +83,7 @@ if ($jobType -in 'Backup','Replica') {
 	$endTime 			= $session.Info.EndTime
 	$startTime 			= $session.Info.CreationTime
 	[string]$dedupRatio		= $session.BackupStats.DedupRatio
-	[string]$compressRation	= $session.BackupStats.CompressRatio
+	[string]$compressRatio	= $session.BackupStats.CompressRatio
 
 	# Convert bytes to closest unit.
 	$dataSizeRound		= ConvertTo-ByteUnit -Data $dataSize
