@@ -31,11 +31,11 @@ function New-DiscordPayload {
 
 		# Switch for the session status to decide the embed colour.
 		Switch ($status) {
-			None    {$colour = '16777215'}
-			Warning {$colour = '16776960'}
-			Success {$colour = '65280'}
-			Failed  {$colour = '16711680'}
-			Default {$colour = '16777215'}
+			None { $colour = '16777215' }
+			Warning { $colour = '16776960' }
+			Success { $colour = '65280' }
+			Failed { $colour = '16711680' }
+			Default { $colour = '16777215' }
 		}
 
 		# Build footer object.
@@ -175,18 +175,18 @@ function New-TeamsPayload {
 
 		# Switch for the session status to decide the embed colour.
 		Switch ($status) {
-			None    {$colour = '16777215'}
-			Warning {$colour = '16776960'}
-			Success {$colour = '65280'}
-			Failed  {$colour = '16711680'}
-			Default {$colour = '16777215'}
+			None { $colour = '16777215' }
+			Warning { $colour = '16776960' }
+			Success { $colour = '65280' }
+			Failed { $colour = '16711680' }
+			Default { $colour = '16777215' }
 		}
 
 		# Build facts object.
 		$factsArray = @(
 			@{
-				name  = 'Session result'
-				value = $Status
+				name       = 'Session result'
+				value      = $Status
 				startGroup = $true
 			}
 			@{
@@ -194,8 +194,8 @@ function New-TeamsPayload {
 				value = $JobType
 			}
 			@{
-				name  = 'Backup size'
-				value = $DataSize
+				name       = 'Backup size'
+				value      = $DataSize
 				startGroup = $true
 			}
 			@{
@@ -233,7 +233,7 @@ function New-TeamsPayload {
 		)
 
 		[PSCustomObject]$payload = @{
-			'@type' = 'MessageCard'
+			'@type'    = 'MessageCard'
 			'@context' = 'https: //schema.org/extensions'
 			Summary    = "**$JobName**"
 			themeColor = $colour
@@ -359,7 +359,7 @@ function New-SlackPayload {
 					type     = 'context'
 					elements = @(
 						@{
-							type = 'image'
+							type      = 'image'
 							image_url = 'https://avatars0.githubusercontent.com/u/10629864'
 							alt_text  = "tigattack's avatar"
 						}
