@@ -39,35 +39,13 @@ If ($Config.debug_log) {
 }
 
 
-# Initialise some variables.
-$mention = $false
-
-
 # Determine if an update is required
 $updateStatus = Get-UpdateStatus
 
 
-# Define static output objects.
-
-## Footer message.
-Switch ($updateStatus.Status) {
-	Current {
-		$footerMessage = "tigattack's VeeamDiscordNotifications $($updateStatus.CurrentVersion) - Up to date."
-	}
-	Behind {
-		$footerMessage = "tigattack's VeeamDiscordNotifications $($updateStatus.CurrentVersion) - Update to $($updateStatus.LatestStable) is available!"
-	}
-	Ahead {
-		$footerMessage = "tigattack's VeeamDiscordNotifications $($updateStatus.CurrentVersion) - Pre-release."
-	}
-	Default {
-		$footerMessage = "tigattack's VeeamDiscordNotifications $($updateStatus.CurrentVersion)."
-	}
-}
-
 # Job info preparation
 
-## Get the backup session information.
+## Get the backup session.
 $session = (Get-VBRSessionInfo -SessionId $id -JobType $jobType).Session
 
 ## Wait for the backup session to finish.
@@ -96,17 +74,19 @@ If ($session.State -ne 'Stopped') {
 
 # Define session statistics for the report.
 
-## If VM backup, gather and include session info.
+## If VM backup/replica, gather and include session info.
 if ($jobType -in 'Backup','Replica') {
 	# Gather session data sizes and timing.
-	[Float]$jobSize			= $session.BackupStats.DataSize
+	[Float]$dataSize			= $session.BackupStats.DataSize
 	[Float]$transferSize	= $session.BackupStats.BackupSize
 	[Float]$speed			= $session.Info.Progress.AvgSpeed
-	$jobEndTime 			= $session.Info.EndTime
-	$jobStartTime 			= $session.Info.CreationTime
+	$endTime 			= $session.Info.EndTime
+	$startTime 			= $session.Info.CreationTime
+	[string]$dedupRatio		= $session.BackupStats.DedupRatio
+	[string]$compressRation	= $session.BackupStats.CompressRatio
 
 	# Convert bytes to closest unit.
-	$jobSizeRound		= ConvertTo-ByteUnit -Data $jobSize
+	$dataSizeRound		= ConvertTo-ByteUnit -Data $dataSize
 	$transferSizeRound	= ConvertTo-ByteUnit -Data $transferSize
 	$speedRound			= (ConvertTo-ByteUnit -Data $speed).ToString() + '/s'
 
@@ -147,40 +127,6 @@ if ($jobType -in 'Backup','Replica') {
 	}
 	#>
 
-	# Add session information to fieldArray.
-	$fieldArray = @(
-		[PSCustomObject]@{
-			name	= 'Backup Size'
-			value	= [String]$jobSizeRound
-			inline	= 'true'
-		},
-		[PSCustomObject]@{
-			name	= 'Transferred Data'
-			value	= [String]$transferSizeRound
-			inline	= 'true'
-		}
-		[PSCustomObject]@{
-			name	= 'Dedup Ratio'
-			value	= [String]$session.BackupStats.DedupRatio
-			inline	= 'true'
-		}
-		[PSCustomObject]@{
-			name	= 'Compression Ratio'
-			value	= [String]$session.BackupStats.CompressRatio
-			inline	= 'true'
-		}
-		[PSCustomObject]@{
-			name	= 'Processing Rate'
-			value	= $speedRound
-			inline	= 'true'
-		}
-		[PSCustomObject]@{
-			name	= 'Bottleneck'
-			value	= [String]$bottleneck
-			inline	= 'true'
-		}
-	)
-
 	<# TODO: utilise this.
 	# Add object warns/fails to fieldArray if any.
 	If ($sessionObjectWarns -gt 0) {
@@ -210,8 +156,8 @@ If ($jobType -eq 'EpAgentBackup') {
 	[Float]$jobProcessedSize	= $session.Info.Progress.ProcessedSize
 	[Float]$jobTransferredSize	= $session.Info.Progress.TransferedSize
 	[Float]$speed				= $session.Info.Progress.AvgSpeed
-	$jobEndTime 				= $session.EndTime
-	$jobStartTime 				= $session.CreationTime
+	$endTime 				= $session.EndTime
+	$startTime 				= $session.CreationTime
 
 	# Convert bytes to closest unit.
 	$jobProcessedSizeRound		= ConvertTo-ByteUnit -Data $jobProcessedSize
@@ -242,7 +188,7 @@ If ($jobType -eq 'EpAgentBackup') {
 # Job timings
 
 ## Calculate difference between job start and end time.
-$duration = $jobEndTime - $jobStartTime
+$duration = $endTime - $startTime
 
 ## Switch for job duration; define pretty output.
 Switch ($duration) {
@@ -274,16 +220,8 @@ Switch ($jobType) {
 	EpAgentBackup	{$jobTypeNice = 'Agent Backup'}
 }
 
-# Switch for the session status to decide the embed colour.
-Switch ($status) {
-	None    {$colour = '16777215'}
-	Warning {$colour = '16776960'}
-	Success {$colour = '65280'}
-	Failed  {$colour = '16711680'}
-	Default {$colour = '16777215'}
-}
-
 # Decide whether to mention user
+$mention = $false
 ## On fail
 Try {
 	If ($Config.mention_on_fail -and $status -eq 'Failed') {
@@ -302,6 +240,51 @@ Try {
 }
 Catch {
 	Write-LogMessage -Tag 'WARN' -Message "Unable to determine 'mention on warning' configuration. User will not be mentioned."
+}
+
+
+# Define footer message.
+Switch ($updateStatus.Status) {
+	Current {
+		$footerMessage = "tigattack's VeeamDiscordNotifications $($updateStatus.CurrentVersion) - Up to date."
+	}
+	Behind {
+		$footerMessage = "tigattack's VeeamDiscordNotifications $($updateStatus.CurrentVersion) - Update to $($updateStatus.LatestStable) is available!"
+	}
+	Ahead {
+		$footerMessage = "tigattack's VeeamDiscordNotifications $($updateStatus.CurrentVersion) - Pre-release."
+	}
+	Default {
+		$footerMessage = "tigattack's VeeamDiscordNotifications $($updateStatus.CurrentVersion)."
+	}
+}
+
+
+# Build embed parameters
+$payloadParams = @{
+	JobName			= $jobName
+	JobType			= $jobTypeNice
+	Status			= $status
+	DataSize		= $dataSizeRound
+	TransferSize	= $transferSizeRound
+	DedupRatio		= $dedupRatio
+	CompressRatio	= $compressRatio
+	Speed			= $speedRound
+	Bottleneck		= $bottleneck
+	Duration		= $durationFormatted
+	StartTime		= $startTime
+	EndTime			= $endTime
+	Mention			= $mention
+	UserId			= $Config.userId
+	ThumbnailUrl 	= $Config.thumbnail
+	FooterMessage 	= $footerMessage
+}
+
+# Build embed
+Switch ($Config.service) {
+	'Discord' { $payload = New-DiscordPayload @payloadParams }
+	'Slack'   { $payload = New-SlackPayload @payloadParams }
+	'Teams'   { $payload = New-TeamsPayload @payloadParams }
 }
 
 

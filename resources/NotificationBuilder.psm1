@@ -5,10 +5,39 @@ function New-DiscordPayload {
 	)]
 	[OutputType([System.Collections.Hashtable])]
 	param (
-		$JobName
+		[string]$JobName,
+		[string]$JobType,
+		[string]$Status,
+		[string]$DataSize,
+		[string]$TransferSize,
+		[int]$DedupRatio,
+		[int]$CompressRatio,
+		[string]$Speed,
+		[string]$Bottleneck,
+		[string]$Duration,
+		[DateTime]$StartTime,
+		[DateTime]$EndTime,
+		[switch]$Mention,
+		[string]$UserId,
+		[string]$ThumbnailUrl,
+		[string]$FooterMessage
 	)
 
 	if ($PSCmdlet.ShouldProcess('Output stream', 'Create payload')) {
+
+		# Set Discord timestamps
+		$timestampStart = "<t:$(([System.DateTimeOffset]$(Get-Date $JobStartTime)).ToUnixTimeSeconds())>"
+		$timestampEnd = "<t:$(([System.DateTimeOffset]$(Get-Date $JobEndTime)).ToUnixTimeSeconds())>"
+
+		# Switch for the session status to decide the embed colour.
+		Switch ($status) {
+			None    {$colour = '16777215'}
+			Warning {$colour = '16776960'}
+			Success {$colour = '65280'}
+			Failed  {$colour = '16711680'}
+			Default {$colour = '16777215'}
+		}
+
 		# Build footer object.
 		$footerObject = [PSCustomObject]@{
 			text     = $FooterMessage
@@ -16,42 +45,35 @@ function New-DiscordPayload {
 		}
 
 		## Build thumbnail object.
-		If ($Thumbnail) {
-			$thumbObject = [PSCustomObject]@{
-				url = $Thumbnail
-			}
-		}
-		Else {
-			$thumbObject = [PSCustomObject]@{
-				url = 'https://raw.githubusercontent.com/tigattack/VeeamDiscordNotifications/master/asset/thumb01.png'
-			}
+		$thumbObject = [PSCustomObject]@{
+			url = $ThumbnailUrl
 		}
 
 		# Build field object.
 		$fieldArray = @(
 			[PSCustomObject]@{
 				name   = 'Backup Size'
-				value  = [String]$JobSizeRound
+				value  = [String]$DataSize
 				inline = 'true'
 			},
 			[PSCustomObject]@{
 				name   = 'Transferred Data'
-				value  = [String]$TransferSizeRound
+				value  = [String]$TransferSize
 				inline = 'true'
 			}
 			[PSCustomObject]@{
 				name   = 'Dedup Ratio'
-				value  = [String]$Session.BackupStats.DedupRatio
+				value  = [String]$DedupRatio
 				inline = 'true'
 			}
 			[PSCustomObject]@{
 				name   = 'Compression Ratio'
-				value  = [String]$Session.BackupStats.CompressRatio
+				value  = [String]$CompressRatio
 				inline = 'true'
 			}
 			[PSCustomObject]@{
 				name   = 'Processing Rate'
-				value  = $SpeedRound
+				value  = $Speed
 				inline = 'true'
 			}
 			[PSCustomObject]@{
@@ -61,23 +83,23 @@ function New-DiscordPayload {
 			}
 			[PSCustomObject]@{
 				name   = 'Job Duration'
-				value  = $DurationFormatted
+				value  = $Duration
 				inline = 'true'
 			}
 			[PSCustomObject]@{
 				name   = 'Time Started'
-				value  = "<t:$(([System.DateTimeOffset]$(Get-Date $JobStartTime)).ToUnixTimeSeconds())>"
+				value  = $timestampStart
 				inline = 'true'
 			}
 			[PSCustomObject]@{
 				name   = 'Time Ended'
-				value  = "<t:$(([System.DateTimeOffset]$(Get-Date $JobEndTime)).ToUnixTimeSeconds())>"
+				value  = $timestampEnd
 				inline = 'true'
 			}
 		)
 
 		# If agent backup, add notice to fieldArray.
-		If ($JobType -eq 'EpAgentBackup') {
+		If ($JobType -eq 'Agent Backup') {
 			$fieldArray += @(
 				[PSCustomObject]@{
 					name   = 'Notice'
@@ -92,7 +114,7 @@ function New-DiscordPayload {
 			embeds = @(
 				[PSCustomObject]@{
 					title       = $JobName
-					description	= "Session result: $status`nJob type: $JobTypeNice"
+					description	= "Session result: $status`nJob type: $JobType"
 					color       = $Colour
 					thumbnail   = $thumbObject
 					fields      = $fieldArray
@@ -102,10 +124,10 @@ function New-DiscordPayload {
 			)
 		}
 
-		# Mention user on job failure if configured to do so.
+		# Mention user if configured to do so.
 		If ($mention) {
 			$payload += @{
-				content = "<@!$($UserID)> Job $status!"
+				content = "<@!$($UserId)> Job $status!"
 			}
 		}
 
@@ -121,7 +143,21 @@ function New-TeamsPayload {
 	)]
 	[OutputType([System.Collections.Hashtable])]
 	param (
-		$JobName
+		[string]$JobName,
+		[string]$Status,
+		[string]$DataSize,
+		[string]$TransferSize,
+		[int]$DedupRatio,
+		[int]$CompressRatio,
+		[string]$Speed,
+		[string]$Bottleneck,
+		[string]$Duration,
+		[DateTime]$StartTime,
+		[DateTime]$EndTime,
+		[switch]$Mention,
+		[string]$UserId,
+		[string]$ThumbnailUrl,
+		[string]$FooterMessage
 	)
 
 	if ($PSCmdlet.ShouldProcess('Output stream', 'Create payload')) {
@@ -165,19 +201,19 @@ function New-TeamsPayload {
 						},
 						@{
 							name  = 'Backup size:'
-							value = $JobSizeRound
+							value = $JobSize
 						},
 						@{
 							name  = 'Transferred data:'
-							value = $TransfSizeRound
+							value = $TransfSize
 						},
 						@{
 							name  = 'Dedupe ratio:'
-							value = $session.BackupStats.DedupRatio
+							value = $DedupRatio
 						},
 						@{
 							name  = 'Compress ratio:'
-							value =	$session.BackupStats.CompressRatio
+							value =	$CompressRatio
 						},
 						@{
 							name  = 'Duration:'
@@ -190,6 +226,7 @@ function New-TeamsPayload {
 	}
 
 	return $TeamsJSON
+	return $payload
 }
 
 function New-SlackPayload {
@@ -199,29 +236,115 @@ function New-SlackPayload {
 	)]
 	[OutputType([System.Collections.Hashtable])]
 	param (
-		$JobName
+		[string]$JobName,
+		[string]$Status,
+		[string]$DataSize,
+		[string]$TransferSize,
+		[int]$DedupRatio,
+		[int]$CompressRatio,
+		[string]$Speed,
+		[string]$Bottleneck,
+		[string]$Duration,
+		[DateTime]$StartTime,
+		[DateTime]$EndTime,
+		[switch]$Mention,
+		[string]$UserId,
+		[string]$ThumbnailUrl,
+		[string]$FooterMessage
 	)
 
 	if ($PSCmdlet.ShouldProcess('Output stream', 'Create payload')) {
-		# Switch on the session status
-		switch ($Status) {
-			None { $emoji = ':thought _ balloon: ' }
-			Warning { $emoji = ':warning: ' }
-			Success { $emoji = ':white_check_mark:  ' }
-			Failed { $emoji = ':x: ' }
-			Default { $emoji = '' }
+
+		# Build blocks object.
+		$fieldArray = @(
+			[PSCustomObject]@{
+				type = 'mrkdwn'
+				text = "*Backup Size*`n$JobSize"
+			},
+			[PSCustomObject]@{
+				type = 'mrkdwn'
+				text = "*Transferred Data*`n$TransferSize"
+			}
+			[PSCustomObject]@{
+				type = 'mrkdwn'
+				text = "*Dedup Ratio*`n$($DedupRatio)"
+			}
+			[PSCustomObject]@{
+				type = 'mrkdwn'
+				text = "*Compression Ratio*`n$($CompressRatio)"
+			}
+			[PSCustomObject]@{
+				type = 'mrkdwn'
+				text = "*Processing Rate*`n$Speed"
+			}
+			[PSCustomObject]@{
+				type = 'mrkdwn'
+				text = "*Bottleneck*`n$Bottleneck"
+			}
+			[PSCustomObject]@{
+				type = 'mrkdwn'
+				text = "*Job Duration*`n$DurationFormatted"
+			}
+			[PSCustomObject]@{
+				type = 'mrkdwn'
+				text = "*Time Started*`n$(Get-Date $JobStartTime -UFormat '%d %B %Y %R')"
+			}
+			[PSCustomObject]@{
+				type = 'mrkdwn'
+				text = "*Time Ended*`n$(Get-Date $JobEndTime -UFormat '%d %B %Y %R')"
+			}
+		)
+
+		# If agent backup, add notice to fieldArray.
+		If ($JobType -eq 'EpAgentBackup') {
+			$fieldArray += @(
+				[PSCustomObject]@{
+					type = 'mrkdwn'
+					text = "Notice`nFurther details are missing due to limitations in Veeam's PowerShell module."
+				}
+			)
 		}
 
-		# Build the details string
-		$details = 'Backup Size - ' + [String]$JobSizeRound + ' / Transferred Data - ' + [String]$TransfSizeRound + ' / Dedup Ratio - ' + [String]$session.BackupStats.DedupRatio + ' / Compress Ratio - ' + [String]$session.BackupStats.CompressRatio + ' / Duration - ' + $Duration
+		# Build payload object.
+		[PSCustomObject]$payload = @{
+			blocks = @(
+				@{
+					type      = 'section'
+					text      = @{
+						type = 'mrkdwn'
+						text = "*Example VM Backup Job (Incremental)*`nSession result: Success`nJob type: VM Backup"
+					}
+					accessory = @{
+						type      = 'image'
+						image_url = 'https://raw.githubusercontent.com/tigattack/VeeamDiscordNotifications/master/asset/thumb01.png'
+						alt_text  = 'Veeam Backup & Replication logo'
+					}
+				}
+				@{
+					type   = 'section'
+					fields = $fieldArray
+				}
+				@{
+					type     = 'context'
+					elements = @(
+						@{
+							type = 'image'
+							image_url = 'https://avatars0.githubusercontent.com/u/10629864'
+							alt_text  = "tigattack's avatar"
+						}
+						@{
+							type = 'plain_text'
+							text = "tigattack's VeeamDiscordNotifications someVersion - Pre-release."
+						}
+						@{
+							type = 'plain_text'
+							text = "someTime"
+						}
+					)
+				}
+			)
+		}
 
-		# Build the payload
-		$slackJSON = @{}
-		$slackJSON.channel = $config.channel
-		$slackJSON.username = $config.service_name
-		$slackJSON.icon_url = $config.icon_url
-		$slackJSON.text = $emoji + '**Job:** ' + $JobName + "`n" + $emoji + '**Status:** ' + $Status + "`n" + $emoji + '**Details:** ' + $details
+		return $payload
 	}
-
-	return $SlackJSON
 }
