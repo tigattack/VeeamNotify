@@ -17,6 +17,9 @@
 		"teams_user_id": {
 			"type": "string"
 		},
+		"teams_user_name": {
+			"type": "string"
+		},
 		"mention_on_fail": {
 			"type": "boolean"
 		},

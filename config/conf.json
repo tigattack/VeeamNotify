@@ -4,6 +4,7 @@
 	"discord_user_id": "123456789",
 	"slack_user_id": "A1B2C3D4E5",
 	"teams_user_id": "user@domain.tld",
+	"teams_user_name": "Your Name",
 	"mention_on_fail": false,
 	"mention_on_warning": false,
 	"debug_log": false,

@@ -281,6 +281,12 @@ elseif ($jobType -eq 'EpAgentBackup') {
 	}
 }
 
+If ($mention -and $Config.teams_user_name -and $Config.Service -eq 'Teams') {
+	$payloadParams += @{
+		UserName = $Config.teams_user_name
+	}
+}
+
 # Build embed
 Switch ($Config.service) {
 	'Discord' { $payload = New-DiscordPayload @payloadParams }

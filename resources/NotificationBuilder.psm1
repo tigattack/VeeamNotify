@@ -31,7 +31,7 @@ function New-DiscordPayload {
 		$timestampEnd = "<t:$(([System.DateTimeOffset]$(Get-Date $EndTime)).ToUnixTimeSeconds())>"
 
 		# Switch for the session status to decide the embed colour.
-		Switch ($status) {
+		Switch ($Status) {
 			None { $colour = '16777215' }
 			Warning { $colour = '16776960' }
 			Success { $colour = '65280' }
@@ -131,7 +131,7 @@ function New-DiscordPayload {
 			embeds = @(
 				[PSCustomObject]@{
 					title       = $JobName
-					description	= "Session result: $status`nJob type: $JobType"
+					description	= "Session result: $Status`nJob type: $JobType"
 					color       = $Colour
 					thumbnail   = $thumbObject
 					fields      = $fieldArray
@@ -144,7 +144,7 @@ function New-DiscordPayload {
 		# Mention user if configured to do so.
 		If ($mention) {
 			$payload += @{
-				content = "<@!$($UserId)> Job $status!"
+				content = "<@!$($UserId)> Job $Status!"
 			}
 		}
 
@@ -174,11 +174,32 @@ function New-TeamsPayload {
 		[DateTime]$EndTime,
 		[boolean]$Mention,
 		[string]$UserId,
+		[string]$UserName,
 		[string]$ThumbnailUrl,
 		[string]$FooterMessage
 	)
 
 	if ($PSCmdlet.ShouldProcess('Output stream', 'Create payload')) {
+
+		# Define username
+		If (-not $UserName) {
+			$UserName = $($UserId.Split('@')[0])
+		}
+
+		# Mention user if configured to do so.
+		# Must be done at early stage to ensure this section is at the top of the embed object.
+		If ($mention) {
+			$bodyArray = @(
+				@{
+					type = 'TextBlock'
+					text = "<at>$UserName</at> Job $Status!"
+					wrap = $true
+				}
+			)
+		}
+		else {
+			$bodyArray = @()
+		}
 
 		# Set timestamps
 		$timestampStart = $(Get-Date $StartTime -UFormat '%d %B %Y %R').ToString()
@@ -191,7 +212,7 @@ function New-TeamsPayload {
 		)
 
 		# Build body array.
-		$bodyArray = @(
+		$bodyArray += @(
 			@{ type = 'ColumnSet'; columns = @(
 					@{ type = 'Column'; width = 'stretch'; items = @(
 							@{
@@ -295,9 +316,9 @@ function New-TeamsPayload {
 					}
 					@{ type = 'Column'; width = 'stretch'; items = @(
 							@{
-								type  = 'TextBlock'
-								text  = "$FooterMessage"
-								wrap  = $true
+								type     = 'TextBlock'
+								text     = "$FooterMessage"
+								wrap     = $true
 								isSubtle = $true
 							}
 						)
@@ -320,6 +341,25 @@ function New-TeamsPayload {
 					}
 				}
 			)
+		}
+
+		# Mention user if configured to do so.
+		# Must be done at early stage to ensure this section is at the top of the embed object.
+		If ($mention) {
+			$payload.attachments[0].content += @{
+				msteams = @{
+					entities = @(
+						@{
+							type      = 'mention'
+							text      = "<at>$UserName</at>"
+							mentioned = @{
+								id   = "$UserId"
+								name = "$UserName"
+							}
+						}
+					)
+				}
+			}
 		}
 	}
 
