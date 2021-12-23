@@ -5,10 +5,16 @@
 		"webhook": {
 			"type": "string"
 		},
-		"thumbnail": {
+		"service": {
 			"type": "string"
 		},
-		"userid": {
+		"discord_user_id": {
+			"type": "string"
+		},
+		"slack_user_id": {
+			"type": "string"
+		},
+		"teams_user_id": {
 			"type": "string"
 		},
 		"mention_on_fail": {
@@ -19,6 +25,9 @@
 		},
 		"debug_log": {
 			"type": "boolean"
+		},
+		"thumbnail": {
+			"type": "string"
 		},
 		"notify_update": {
 			"type": "boolean"
