@@ -18,7 +18,7 @@ function New-DiscordPayload {
 		[string]$Duration,
 		[DateTime]$StartTime,
 		[DateTime]$EndTime,
-		[switch]$Mention,
+		[boolean]$Mention,
 		[string]$UserId,
 		[string]$ThumbnailUrl,
 		[string]$FooterMessage
@@ -172,7 +172,7 @@ function New-TeamsPayload {
 		[string]$Duration,
 		[DateTime]$StartTime,
 		[DateTime]$EndTime,
-		[switch]$Mention,
+		[boolean]$Mention,
 		[string]$UserId,
 		[string]$ThumbnailUrl,
 		[string]$FooterMessage
@@ -190,79 +190,136 @@ function New-TeamsPayload {
 			'[VeeamDiscordNotifications](https://github.com/tigattack/VeeamDiscordNotifications)'
 		)
 
-		# Switch for the session status to decide the embed colour.
-		Switch ($status) {
-			None { $colour = '16777215' }
-			Warning { $colour = '16776960' }
-			Success { $colour = '65280' }
-			Failed { $colour = '16711680' }
-			Default { $colour = '16777215' }
-		}
-
-		# Build facts object.
-		$factsArray = @(
-			@{
-				name       = 'Session result'
-				value      = $Status
-				startGroup = $true
+		# Build body array.
+		$bodyArray = @(
+			@{ type = 'ColumnSet'; columns = @(
+					@{ type = 'Column'; width = 'stretch'; items = @(
+							@{
+								type    = 'TextBlock'
+								text    = "**$jobName**"
+								wrap    = $true
+								spacing = 'None'
+							}
+							@{
+								type     = 'TextBlock'
+								text     = "$((Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ss.fffK'))"
+								wrap     = $true
+								isSubtle = $true
+								spacing  = 'None'
+							}
+							@{ type = 'FactSet'; facts = @(
+									@{
+										title = 'Session Result'
+										value = "$Status"
+									}
+									@{
+										title = 'Job Type'
+										value = "$jobType"
+									}
+								)
+								spacing = 'Small'
+							}
+						)
+					}
+					@{ type = 'Column'; width = 'auto'; items = @(
+							@{
+								type   = 'Image'
+								url    = "$thumbnailUrl"
+								height = '80px'
+							}
+						)
+					}
+				)
 			}
-			@{
-				name  = 'Job type'
-				value = $JobType
+			@{ type = 'ColumnSet'; columns = @(
+					@{ type = 'Column'; width = 'stretch'; items = @(
+							@{
+								type  = 'FactSet'
+								facts = @(
+									@{
+										title = 'Backup size'
+										value = "$DataSize"
+									}
+									@{
+										title = 'Transferred data'
+										value = "$transferSize"
+									}
+									@{
+										title = 'Dedup ratio'
+										value = "$DedupRatio"
+									}
+									@{
+										title = 'Compress ratio'
+										value = "$CompressRatio"
+									}
+									@{
+										title = 'Processing rate'
+										value = "$Speed"
+									}
+								)
+							}
+						)
+					}
+					@{ type = 'Column'; width = 'stretch'; items = @(
+							@{ type = 'FactSet'; facts = @(
+									@{
+										title = 'Bottleneck'
+										value = "$Bottleneck"
+									}
+									@{
+										title = 'Start Time'
+										value = "$timestampStart"
+									}
+									@{
+										title = 'End Time'
+										value = "$timestampEnd"
+									}
+									@{
+										title = 'Duration'
+										value = "$Duration"
+									}
+								)
+							}
+						)
+					}
+				)
 			}
-			@{
-				name       = 'Backup size'
-				value      = $DataSize
-				startGroup = $true
-			}
-			@{
-				name  = 'Transferred data'
-				value = $TransferSize
-			}
-			@{
-				name  = 'Dedup ratio'
-				value = $DedupRatio.ToString()
-			}
-			@{
-				name  = 'Compress ratio'
-				value =	$CompressRatio.ToString()
-			}
-			@{
-				name  = 'Processing rate'
-				value = $Speed
-			}
-			@{
-				name  = 'Bottleneck'
-				value = $Bottleneck
-			}
-			@{
-				name  = 'Start Time'
-				value = $timestampStart
-			}
-			@{
-				name  = 'End Time'
-				value = $timestampEnd
-			}
-			@{
-				name  = 'Duration'
-				value = $Duration
+			@{ type = 'ColumnSet'; separator = $true ; columns = @(
+					@{ type = 'Column'; width = 'auto'; items = @(
+							@{
+								type   = 'Image'
+								url    = 'https://avatars0.githubusercontent.com/u/10629864'
+								height = '24px'
+							}
+						)
+					}
+					@{ type = 'Column'; width = 'stretch'; items = @(
+							@{
+								type  = 'TextBlock'
+								text  = "$FooterMessage"
+								wrap  = $true
+								isSubtle = $true
+							}
+						)
+					}
+				)
 			}
 		)
 
 		[PSCustomObject]$payload = @{
-			'@type'    = 'MessageCard'
-			'@context' = 'https: //schema.org/extensions'
-			Summary    = "**$JobName**"
-			themeColor = $colour
-			sections   = @(
+			type        = 'message'
+			'$schema'   = 'http://adaptivecards.io/schemas/adaptive-card.json'
+			version     = '1.4'
+			attachments = @(
 				@{
-					activityImage    = $ThumbnailUrl
-					activityTitle    = "**$JobName**"
-					activitySubtitle = (Get-Date -Format U)
-					facts            = $factsArray
-				},
-				@{
-					text = $FooterMessage
+					contentType = 'application/vnd.microsoft.card.adaptive'
+					contentUrl  = $null
+					content     = @{
+						'$schema' = 'http://adaptivecards.io/schemas/adaptive-card.json'
+						type      = 'AdaptiveCard'
+						version   = '1.4'
+						body      = $bodyArray
+					}
 				}
 			)
 		}

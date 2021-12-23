@@ -291,7 +291,7 @@ Switch ($Config.service) {
 
 # Send iiiit.
 Try {
-	Invoke-RestMethod -Uri $Config.webhook -Body ($payload | ConvertTo-Json -Depth 4) -Method Post -ContentType 'application/json' -ErrorAction Stop
+	Invoke-RestMethod -Uri $Config.webhook -Body ($payload | ConvertTo-Json -Depth 11) -Method Post -ContentType 'application/json' -ErrorAction Stop
 }
 Catch [System.Net.WebException] {
 	Write-LogMessage -Tag 'ERROR' -Message 'Unable to send webhook. Check your webhook URL or network connection.'
