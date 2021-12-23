@@ -291,7 +291,7 @@ function New-SlackPayload {
 		[string]$Duration,
 		[DateTime]$StartTime,
 		[DateTime]$EndTime,
-		[switch]$Mention,
+		[boolean]$Mention,
 		[string]$UserId,
 		[string]$ThumbnailUrl,
 		[string]$FooterMessage
@@ -299,6 +299,26 @@ function New-SlackPayload {
 
 	if ($PSCmdlet.ShouldProcess('Output stream', 'Create payload')) {
 
+		# Mention user if configured to do so.
+		# Must be done at early stage to ensure this section is at the top of the embed object.
+		If ($mention) {
+			$payload = @{
+				blocks = @(
+					@{
+						type = 'section'
+						text = @{
+							type = 'mrkdwn'
+							text = "<@$UserId> Job $Status!"
+						}
+					}
+				)
+			}
+		}
+		else {
+			$payload = @{
+				blocks = @()
+			}
+		}
 
 		# Set timestamps
 		$timestampStart = $(Get-Date $StartTime -UFormat '%d %B %Y %R').ToString()
@@ -368,40 +388,42 @@ function New-SlackPayload {
 		}
 
 		# Build payload object.
-		[PSCustomObject]$payload = @{
-			blocks = @(
-				@{
-					type      = 'section'
-					text      = @{
-						type = 'mrkdwn'
-						text = "*$JobName*`nSession result: $Status`nJob type: $JobType"
-					}
-					accessory = @{
+		[PSCustomObject]$payload.blocks += @(
+			@{
+				type      = 'section'
+				text      = @{
+					type = 'mrkdwn'
+					text = "*$JobName*`nSession result: $Status`nJob type: $JobType"
+				}
+				accessory = @{
+					type      = 'image'
+					image_url = "$ThumbnailUrl"
+					alt_text  = 'Veeam Backup & Replication logo'
+				}
+			}
+			@{
+				type   = 'section'
+				fields = $fieldArray
+			}
+			@{
+				type     = 'context'
+				elements = @(
+					@{
 						type      = 'image'
-						image_url = "$ThumbnailUrl"
-						alt_text  = 'Veeam Backup & Replication logo'
+						image_url = 'https://avatars0.githubusercontent.com/u/10629864'
+						alt_text  = "tigattack's avatar"
 					}
-				}
-				@{
-					type   = 'section'
-					fields = $fieldArray
-				}
-				@{
-					type     = 'context'
-					elements = @(
-						@{
-							type      = 'image'
-							image_url = 'https://avatars0.githubusercontent.com/u/10629864'
-							alt_text  = "tigattack's avatar"
-						}
-						@{
-							type = 'plain_text'
-							text = $FooterMessage
-						}
-					)
-				}
-			)
-		}
+					@{
+						type = 'plain_text'
+						text = $FooterMessage
+					}
+				)
+			}
+		)
+
+		# Remove obsolete extended-type system properties added by Add-Member ($payload.blocks +=)
+		# https://stackoverflow.com/a/57599481
+		Remove-TypeData System.Array -ErrorAction Ignore
 
 		return $payload
 	}
