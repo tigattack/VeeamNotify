@@ -257,7 +257,7 @@ If ($jobType -ne 'EpAgentBackup') {
 		StartTime		= $startTime
 		EndTime			= $endTime
 		Mention			= $mention
-		UserId			= $Config."$($service)_user_id"
+		UserId			= $Config."$($Config.service)_user_id"
 		ThumbnailUrl 	= $Config.thumbnail
 		FooterMessage 	= $footerMessage
 	}
@@ -275,7 +275,7 @@ elseif ($jobType -eq 'EpAgentBackup') {
 		StartTime		= $startTime
 		EndTime			= $endTime
 		Mention			= $mention
-		UserId			= $Config."$($service)_user_id"
+		UserId			= $Config."$($Config.service)_user_id"
 		ThumbnailUrl 	= $Config.thumbnail
 		FooterMessage 	= $footerMessage
 	}
