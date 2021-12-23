@@ -50,7 +50,7 @@ $session = (Get-VBRSessionInfo -SessionId $id -JobType $jobType).Session
 
 ## Wait for the backup session to finish.
 If ($session.State -ne 'Stopped') {
-	$nonStoppedStates = 'Idle','Pausing','Postprocessing','Resuming','Starting','Stopping','WaitingRepository','WaitingTape ','Working'
+	$nonStoppedStates = 'Idle', 'Pausing', 'Postprocessing', 'Resuming', 'Starting', 'Stopping', 'WaitingRepository', 'WaitingTape ', 'Working'
 	$timeout = New-TimeSpan -Minutes 5
 	$stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 	Do {
@@ -75,20 +75,20 @@ If ($session.State -ne 'Stopped') {
 # Define session statistics for the report.
 
 ## If VM backup/replica, gather and include session info.
-if ($jobType -in 'Backup','Replica') {
+if ($jobType -in 'Backup', 'Replica') {
 	# Gather session data sizes and timing.
-	[Float]$dataSize			= $session.BackupStats.DataSize
+	[Float]$dataSize = $session.BackupStats.DataSize
 	[Float]$transferSize	= $session.BackupStats.BackupSize
-	[Float]$speed			= $session.Info.Progress.AvgSpeed
-	$endTime 			= $session.Info.EndTime
-	$startTime 			= $session.Info.CreationTime
-	[string]$dedupRatio		= $session.BackupStats.DedupRatio
+	[Float]$speed = $session.Info.Progress.AvgSpeed
+	$endTime = $session.Info.EndTime
+	$startTime = $session.Info.CreationTime
+	[string]$dedupRatio = $session.BackupStats.DedupRatio
 	[string]$compressRatio	= $session.BackupStats.CompressRatio
 
 	# Convert bytes to closest unit.
-	$dataSizeRound		= ConvertTo-ByteUnit -Data $dataSize
+	$dataSizeRound = ConvertTo-ByteUnit -Data $dataSize
 	$transferSizeRound	= ConvertTo-ByteUnit -Data $transferSize
-	$speedRound			= (ConvertTo-ByteUnit -Data $speed).ToString() + '/s'
+	$speedRound = (ConvertTo-ByteUnit -Data $speed).ToString() + '/s'
 
 	# Set processing speed "Unknown" if 0B/s to avoid confusion.
 	If ($speedRound -eq '0 B/s') {
@@ -153,16 +153,16 @@ if ($jobType -in 'Backup','Replica') {
 # If agent backup, gather and include session info.
 If ($jobType -eq 'EpAgentBackup') {
 	# Gather session data sizes and timings.
-	[Float]$processedSize	= $session.Info.Progress.ProcessedSize
-	[Float]$transferSize	= $session.Info.Progress.TransferedSize
-	[Float]$speed				= $session.Info.Progress.AvgSpeed
-	$endTime 				= $session.EndTime
-	$startTime 				= $session.CreationTime
+	[Float]$processedSize = $session.Info.Progress.ProcessedSize
+	[Float]$transferSize = $session.Info.Progress.TransferedSize
+	[Float]$speed = $session.Info.Progress.AvgSpeed
+	$endTime = $session.EndTime
+	$startTime = $session.CreationTime
 
 	# Convert bytes to closest unit.
-	$processedSizeRound		= ConvertTo-ByteUnit -Data $processedSize
+	$processedSizeRound = ConvertTo-ByteUnit -Data $processedSize
 	$transferSizeRound	= ConvertTo-ByteUnit -Data $transferSize
-	$speedRound					= (ConvertTo-ByteUnit -Data $speed).ToString() + '/s'
+	$speedRound = (ConvertTo-ByteUnit -Data $speed).ToString() + '/s'
 }
 
 
@@ -173,19 +173,19 @@ $duration = $endTime - $startTime
 
 ## Switch for job duration; define pretty output.
 Switch ($duration) {
-	{$_.Days -ge '1'} {
+	{ $_.Days -ge '1' } {
 		$durationFormatted	= '{0}d {1}h {2}m {3}s' -f $_.Days, $_.Hours, $_.Minutes, $_.Seconds
 		break
 	}
-	{$_.Hours -ge '1'} {
+	{ $_.Hours -ge '1' } {
 		$durationFormatted	= '{0}h {1}m {2}s' -f $_.Hours, $_.Minutes, $_.Seconds
 		break
 	}
-	{$_.Minutes -ge '1'} {
+	{ $_.Minutes -ge '1' } {
 		$durationFormatted	= '{0}m {1}s' -f $_.Minutes, $_.Seconds
 		break
 	}
-	{$_.Seconds -ge '1'} {
+	{ $_.Seconds -ge '1' } {
 		$durationFormatted	= '{0}s' -f $_.Seconds
 		break
 	}
@@ -196,9 +196,9 @@ Switch ($duration) {
 
 # Define nice job type name
 Switch ($jobType) {
-	Backup 			{$jobTypeNice = 'VM Backup'}
-	Replica			{$jobTypeNice = 'VM Replication'}
-	EpAgentBackup	{$jobTypeNice = 'Agent Backup'}
+	Backup { $jobTypeNice = 'VM Backup' }
+	Replica { $jobTypeNice = 'VM Replication' }
+	EpAgentBackup	{ $jobTypeNice = 'Agent Backup' }
 }
 
 # Decide whether to mention user
@@ -244,44 +244,44 @@ Switch ($updateStatus.Status) {
 # Build embed parameters
 If ($jobType -ne 'EpAgentBackup') {
 	$payloadParams = @{
-		JobName			= $jobName
-		JobType			= $jobTypeNice
-		Status			= $status
-		DataSize		= $dataSizeRound
-		TransferSize	= $transferSizeRound
-		DedupRatio		= $dedupRatio
-		CompressRatio	= $compressRatio
-		Speed			= $speedRound
-		Bottleneck		= $bottleneck
-		Duration		= $durationFormatted
-		StartTime		= $startTime
-		EndTime			= $endTime
-		Mention			= $mention
-		UserId			= $Config."$($Config.service)_user_id"
-		ThumbnailUrl 	= $Config.thumbnail
-		FooterMessage 	= $footerMessage
+		JobName       = $jobName
+		JobType       = $jobTypeNice
+		Status        = $status
+		DataSize      = $dataSizeRound
+		TransferSize  = $transferSizeRound
+		DedupRatio    = $dedupRatio
+		CompressRatio = $compressRatio
+		Speed         = $speedRound
+		Bottleneck    = $bottleneck
+		Duration      = $durationFormatted
+		StartTime     = $startTime
+		EndTime       = $endTime
+		Mention       = $mention
+		UserId        = $Config."$($Config.service)_user_id"
+		ThumbnailUrl  = $Config.thumbnail
+		FooterMessage = $footerMessage
 	}
 }
 
 elseif ($jobType -eq 'EpAgentBackup') {
 	$payloadParams = @{
-		JobName			= $jobName
-		JobType			= $jobTypeNice
-		Status			= $status
-		ProcessedSize	= $processedSizeRound
-		TransferSize	= $transferSizeRound
-		Speed  			= $speedRound
-		Duration		= $durationFormatted
-		StartTime		= $startTime
-		EndTime			= $endTime
-		Mention			= $mention
-		UserId			= $Config."$($Config.service)_user_id"
-		ThumbnailUrl 	= $Config.thumbnail
-		FooterMessage 	= $footerMessage
+		JobName       = $jobName
+		JobType       = $jobTypeNice
+		Status        = $status
+		ProcessedSize = $processedSizeRound
+		TransferSize  = $transferSizeRound
+		Speed         = $speedRound
+		Duration      = $durationFormatted
+		StartTime     = $startTime
+		EndTime       = $endTime
+		Mention       = $mention
+		UserId        = $Config."$($Config.service)_user_id"
+		ThumbnailUrl  = $Config.thumbnail
+		FooterMessage = $footerMessage
 	}
 }
 
-If ($mention -and $Config.teams_user_name -and $Config.Service -eq 'Teams') {
+If ($Config.Service -eq 'Teams' -and $mention -and $Config.teams_user_name) {
 	$payloadParams += @{
 		UserName = $Config.teams_user_name
 	}
@@ -290,8 +290,8 @@ If ($mention -and $Config.teams_user_name -and $Config.Service -eq 'Teams') {
 # Build embed
 Switch ($Config.service) {
 	'Discord' { $payload = New-DiscordPayload @payloadParams }
-	'Slack'   { $payload = New-SlackPayload @payloadParams }
-	'Teams'   { $payload = New-TeamsPayload @payloadParams }
+	'Slack' { $payload = New-SlackPayload @payloadParams }
+	'Teams' { $payload = New-TeamsPayload @payloadParams }
 }
 
 
