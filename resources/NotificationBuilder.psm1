@@ -308,8 +308,6 @@ function New-TeamsPayload {
 
 		[PSCustomObject]$payload = @{
 			type        = 'message'
-			'$schema'   = 'http://adaptivecards.io/schemas/adaptive-card.json'
-			version     = '1.4'
 			attachments = @(
 				@{
 					contentType = 'application/vnd.microsoft.card.adaptive'
