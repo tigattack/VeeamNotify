@@ -289,7 +289,7 @@ function New-TeamsPayload {
 							@{
 								type   = 'Image'
 								url    = 'https://avatars0.githubusercontent.com/u/10629864'
-								height = '24px'
+								height = '20px'
 							}
 						)
 					}
