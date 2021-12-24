@@ -7,7 +7,7 @@ function Get-UpdateStatus {
 		# Get all releases from GitHub.
 		[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 		try {
-			$releases = Invoke-RestMethod -Uri "https://api.github.com/repos/tigattack/VeeamDiscordNotifications/releases" -Method Get
+			$releases = Invoke-RestMethod -Uri 'https://api.github.com/repos/tigattack/VeeamNotify/releases' -Method Get
 		}
 		catch {
 			$versionStatusCode = $_.Exception.Response.StatusCode.value__

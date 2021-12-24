@@ -10,7 +10,7 @@ Sort by name L46
 
 # Function to be used when an error is encountered
 function DeploymentError {
-	$issues = 'https://github.com/tigattack/VeeamDiscordNotifications/issues'
+	$issues = 'https://github.com/tigattack/VeeamNotify/issues'
 
 	Write-Output "An error occured: $($_.ScriptStackTrace)"
 	Write-Output "Please raise an issue at $issues"
@@ -25,7 +25,7 @@ function DeploymentError {
 }
 
 # Post-job script for Discord notifications
-$newPostScriptCmd = 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -ExecutionPolicy Bypass -File C:\VeeamScripts\VeeamDiscordNotifications\Bootstrap.ps1'
+$newPostScriptCmd = 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -ExecutionPolicy Bypass -File C:\VeeamScripts\VeeamNotify\Bootstrap.ps1'
 
 # Import Veeam module
 Import-Module Veeam.Backup.PowerShell -DisableNameChecking

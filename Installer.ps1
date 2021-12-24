@@ -2,7 +2,7 @@
 
 # Prepare variables
 $rootPath = 'C:\VeeamScripts'
-$project = 'VeeamDiscordNotifications'
+$project = 'VeeamNotify'
 $webhookRegex = 'https:\/\/(.*\.)?discord(app)?\.com\/api\/webhooks\/([^\/]+)\/([^\/]+)'
 $mentionOnWarnExist = $mentionOnFailExist = $true
 
@@ -52,12 +52,12 @@ else {
 if (Test-Path $rootPath\$project) {
 	$installedVersion = Get-Content -Raw "$rootPath\$project\resources\version.txt"
 	If ($installedVersion -ge $release) {
-		Write-Output "`nVeeamDiscordNotifications is already installed and up to date.`nExiting."
+		Write-Output "`n$project is already installed and up to date.`nExiting."
 		Start-Sleep -Seconds 5
 		exit
 	}
 	else {
-		Write-Output "VeeamDiscordNotifications is already installed but it's out of date!"
+		Write-Output "$project is already installed but it's out of date!"
 		Write-Output "Please try the updater script in `"$rootPath\$project`" or download from https://github.com/tigattack/$project/releases."
 	}
 }

@@ -3,8 +3,11 @@ Param (
 	[string]$LatestVersion
 )
 
+# Set variables
+$projectPath = "$PSScriptRoot\VeeamNotify"
+
 # Import functions
-Import-Module "$PSScriptRoot\VeeamDiscordNotifications\resources\Logger.psm1"
+Import-Module "$projectPath\resources\Logger.psm1"
 
 # Logging
 ## Set log file name
@@ -105,11 +108,11 @@ function Update-Success {
 
 		# Copy logs directory from copy of previously installed version to new install
 		Write-LogMessage -Tag 'INFO' -Message 'Copying logs from old version to new version.'
-		Copy-Item -Path $PSScriptRoot\VeeamDiscordNotifications-old\log -Destination $PSScriptRoot\VeeamDiscordNotifications\ -Recurse -Force
+		Copy-Item -Path $projectPath-old\log -Destination $projectPath\ -Recurse -Force
 
 		# Remove copy of previously installed version
 		Write-LogMessage -Tag 'INFO' -Message 'Removing old version.'
-		Remove-Item -Path $PSScriptRoot\VeeamDiscordNotifications-old -Recurse -Force
+		Remove-Item -Path $projectPath-old -Recurse -Force
 
 		# Trigger the Update-Notification function and then End-Script function.
 		Update-Notification
@@ -139,24 +142,24 @@ function Update-Fail {
 			}
 			unzip {
 				Write-Warning 'Failed to unzip update. Cleaning up and reverting.'
-				Remove-Item -Path $PSScriptRoot\VeeamDiscordNotifications-$LatestVersion.zip -Force
+				Remove-Item -Path $projectPath-$LatestVersion.zip -Force
 			}
 			rename_old {
 				Write-Warning 'Failed to rename old version. Cleaning up and reverting.'
-				Remove-Item -Path $PSScriptRoot\VeeamDiscordNotifications-$LatestVersion.zip -Force
-				Remove-Item -Path $PSScriptRoot\VeeamDiscordNotifications-$LatestVersion -Recurse -Force
+				Remove-Item -Path $projectPath-$LatestVersion.zip -Force
+				Remove-Item -Path $projectPath-$LatestVersion -Recurse -Force
 			}
 			rename_new {
 				Write-Warning 'Failed to rename new version. Cleaning up and reverting.'
-				Remove-Item -Path $PSScriptRoot\VeeamDiscordNotifications-$LatestVersion.zip -Force
-				Remove-Item -Path $PSScriptRoot\VeeamDiscordNotifications-$LatestVersion -Recurse -Force
-				Rename-Item $PSScriptRoot\VeeamDiscordNotifications-old $PSScriptRoot\VeeamDiscordNotifications
+				Remove-Item -Path $projectPath-$LatestVersion.zip -Force
+				Remove-Item -Path $projectPath-$LatestVersion -Recurse -Force
+				Rename-Item $projectPath-old $projectPath
 			}
 			after_rename_new {
 				Write-Warning 'Failed after renaming new version. Cleaning up and reverting.'
-				Remove-Item -Path $PSScriptRoot\VeeamDiscordNotifications-$LatestVersion.zip -Force
-				Remove-Item -Path $PSScriptRoot\VeeamDiscordNotifications -Recurse -Force
-				Rename-Item $PSScriptRoot\VeeamDiscordNotifications-old $PSScriptRoot\VeeamDiscordNotifications
+				Remove-Item -Path $projectPath-$LatestVersion.zip -Force
+				Remove-Item -Path $projectPath -Recurse -Force
+				Rename-Item $projectPath-old $projectPath
 			}
 		}
 
@@ -176,8 +179,8 @@ function Stop-Script {
 	If ($PSCmdlet.ShouldProcess('Updater', 'Cleanup & stop')) {
 		# Clean up.
 		Write-LogMessage -Tag 'INFO' -Message 'Remove downloaded ZIP.'
-		If (Test-Path "$PSScriptRoot\VeeamDiscordNotifications-$LatestVersion.zip") {
-			Remove-Item "$PSScriptRoot\VeeamDiscordNotifications-$LatestVersion.zip"
+		If (Test-Path "$projectPath-$LatestVersion.zip") {
+			Remove-Item "$projectPath-$LatestVersion.zip"
 		}
 		Write-LogMessage -Tag 'INFO' -Message 'Remove Updater.ps1.'
 		Remove-Item -LiteralPath $PSCommandPath -Force
@@ -190,8 +193,8 @@ function Stop-Script {
 		Stop-Logging $logFile
 
 		# Move log file
-		Write-Output 'Move log file to log directory in VeeamDiscordNotifications.'
-		Move-Item $logFile "$PSScriptRoot\VeeamDiscordNotifications\log\"
+		Write-Output 'Move log file to log directory in VeeamNotify.'
+		Move-Item $logFile "$projectPath\log\"
 
 		# Exit script
 		Write-Output 'Exiting.'
@@ -202,7 +205,7 @@ function Stop-Script {
 # Pull current config to variable
 Try {
 	Write-LogMessage -Tag 'INFO' -Message 'Pull current config to variable.'
-	$currentConfig = (Get-Content "$PSScriptRoot\VeeamDiscordNotifications\config\conf.json") -Join "`n" | ConvertFrom-Json
+	$currentConfig = (Get-Content "$projectPath\config\conf.json") -Join "`n" | ConvertFrom-Json
 }
 Catch {
 	$errorVar = $_.CategoryInfo.Activity + ' : ' + $_.ToString()
@@ -213,7 +216,7 @@ Catch {
 # Get currently downloaded version
 Try {
 	Write-LogMessage -Tag 'INFO' -Message 'Getting currently downloaded version of the script.'
-	[String]$oldVersion = Get-Content "$PSScriptRoot\VeeamDiscordNotifications\resources\version.txt" -Raw
+	[String]$oldVersion = Get-Content "$projectPath\resources\version.txt" -Raw
 }
 Catch {
 	$errorVar = $_.CategoryInfo.Activity + ' : ' + $_.ToString()
@@ -236,8 +239,8 @@ Try {
 	Write-LogMessage -Tag 'INFO' -Message 'Pull latest version of script from GitHub.'
 	[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 	Invoke-WebRequest -Uri `
-		https://github.com/tigattack/VeeamDiscordNotifications/releases/download/$LatestVersion/VeeamDiscordNotifications-$LatestVersion.zip `
-		-OutFile $PSScriptRoot\VeeamDiscordNotifications-$LatestVersion.zip
+		https://github.com/tigattack/VeeamNotify/releases/download/$LatestVersion/VeeamNotify-$LatestVersion.zip `
+		-OutFile $projectPath-$LatestVersion.zip
 }
 Catch {
 	$errorVar = $_.CategoryInfo.Activity + ' : ' + $_.ToString()
@@ -249,7 +252,7 @@ Catch {
 # Expand downloaded ZIP
 Try {
 	Write-LogMessage -Tag 'INFO' -Message 'Expand downloaded ZIP.'
-	Expand-Archive $PSScriptRoot\VeeamDiscordNotifications-$LatestVersion.zip -DestinationPath $PSScriptRoot
+	Expand-Archive $projectPath-$LatestVersion.zip -DestinationPath $PSScriptRoot
 }
 Catch {
 	$errorVar = $_.CategoryInfo.Activity + ' : ' + $_.ToString()
@@ -261,7 +264,7 @@ Catch {
 # Rename old version to keep as a backup while the update is in progress.
 Try {
 	Write-LogMessage -Tag 'INFO' -Message 'Rename current to avoid conflict with new version.'
-	Rename-Item $PSScriptRoot\VeeamDiscordNotifications $PSScriptRoot\VeeamDiscordNotifications-old
+	Rename-Item $projectPath $projectPath-old
 }
 Catch {
 	$errorVar = $_.CategoryInfo.Activity + ' : ' + $_.ToString()
@@ -273,7 +276,7 @@ Catch {
 # Rename extracted update
 Try {
 	Write-LogMessage -Tag 'INFO' -Message 'Rename extracted download.'
-	Rename-Item $PSScriptRoot\VeeamDiscordNotifications-$LatestVersion $PSScriptRoot\VeeamDiscordNotifications
+	Rename-Item $projectPath-$LatestVersion $projectPath
 }
 Catch {
 	$errorVar = $_.CategoryInfo.Activity + ' : ' + $_.ToString()
@@ -285,7 +288,7 @@ Catch {
 # Pull configuration from new conf file
 Try {
 	Write-LogMessage -Tag 'INFO' -Message 'Pull configuration from new conf file.'
-	$newConfig = (Get-Content "$PSScriptRoot\VeeamDiscordNotifications\config\conf.json") -Join "`n" | ConvertFrom-Json
+	$newConfig = (Get-Content "$projectPath\config\conf.json") -Join "`n" | ConvertFrom-Json
 }
 Catch {
 	$errorVar = $_.CategoryInfo.Activity + ' : ' + $_.ToString()
@@ -298,7 +301,7 @@ Catch {
 Write-LogMessage -Tag 'INFO' -Message 'Unblock script files.'
 
 ## Get script files
-$pwshFiles = Get-ChildItem $PSScriptRoot\VeeamDiscordNotifications\* -Recurse | Where-Object { $_.Name -match '^.*\.ps(m)?1$' }
+$pwshFiles = Get-ChildItem $projectPath\* -Recurse | Where-Object { $_.Name -match '^.*\.ps(m)?1$' }
 
 ## Unblock them
 Try {
@@ -327,7 +330,7 @@ Try {
 	if ($currentConfig.self_update -ne $newConfig.self_update) {
 		$newConfig.self_update = $currentConfig.self_update
 	}
-	ConvertTo-Json $newConfig | Set-Content "$PSScriptRoot\VeeamDiscordNotifications\config\conf.json"
+	ConvertTo-Json $newConfig | Set-Content "$projectPath\config\conf.json"
 }
 Catch {
 	$errorVar = $_.CategoryInfo.Activity + ' : ' + $_.ToString()
@@ -339,7 +342,7 @@ Catch {
 # Get newly downloaded version
 Try {
 	Write-LogMessage -Tag 'INFO' -Message 'Get newly downloaded version.'
-	[String]$newVersion = Get-Content "$PSScriptRoot\VeeamDiscordNotifications\resources\version.txt" -Raw
+	[String]$newVersion = Get-Content "$projectPath\resources\version.txt" -Raw
 }
 Catch {
 	$errorVar = $_.CategoryInfo.Activity + ' : ' + $_.ToString()

@@ -227,16 +227,16 @@ Catch {
 # Define footer message.
 Switch ($updateStatus.Status) {
 	Current {
-		$footerMessage = "tigattack's VeeamDiscordNotifications $($updateStatus.CurrentVersion) - Up to date."
+		$footerMessage = "tigattack's VeeamNotify $($updateStatus.CurrentVersion) - Up to date."
 	}
 	Behind {
-		$footerMessage = "tigattack's VeeamDiscordNotifications $($updateStatus.CurrentVersion) - Update to $($updateStatus.LatestStable) is available!"
+		$footerMessage = "tigattack's VeeamNotify $($updateStatus.CurrentVersion) - Update to $($updateStatus.LatestStable) is available!"
 	}
 	Ahead {
-		$footerMessage = "tigattack's VeeamDiscordNotifications $($updateStatus.CurrentVersion) - Pre-release."
+		$footerMessage = "tigattack's VeeamNotify $($updateStatus.CurrentVersion) - Pre-release."
 	}
 	Default {
-		$footerMessage = "tigattack's VeeamDiscordNotifications $($updateStatus.CurrentVersion)."
+		$footerMessage = "tigattack's VeeamNotify $($updateStatus.CurrentVersion)."
 	}
 }
 
@@ -326,21 +326,21 @@ If ($updateStatus.CurrentVersion -lt $updateStatus.latestStable) {
 		$updateNotice = [PSCustomObject]@{
 			embeds	= @(
 				[PSCustomObject]@{
-					title		= 'Update Available'
-					description	= 'A new version of VeeamDiscordNotifications is available!'
-					color		= 3429867
-					thumbnail	= $thumbObject
-					fields		= @(
+					title       = 'Update Available'
+					description	= 'A new version of VeeamNotify is available!'
+					color       = 3429867
+					thumbnail   = $thumbObject
+					fields      = @(
 						[PSCustomObject]@{
-							name	= 'Download'
-							value	= '[Link.](https://github.com/tigattack/VeeamDiscordNotifications/releases/latest)'
+							name  = 'Download'
+							value	= '[Link.](https://github.com/tigattack/VeeamNotify/releases/latest)'
 						}
 					)
-					footer		= [PSCustomObject]@{
-						text 		= "tigattack's VeeamDiscordNotifications $($updateStatus.CurrentVersion)."
+					footer      = [PSCustomObject]@{
+						text     = "tigattack's VeeamNotify $($updateStatus.CurrentVersion)."
 						icon_url	= 'https://avatars0.githubusercontent.com/u/10629864'
 					}
-					timestamp = $((Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ss.fffK'))
+					timestamp   = $((Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ss.fffK'))
 				}
 			)
 		}

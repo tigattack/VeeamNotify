@@ -207,8 +207,8 @@ function New-TeamsPayload {
 
 		# Add embedded URL to footer message
 		$FooterMessage = $FooterMessage.Replace(
-			'VeeamDiscordNotifications',
-			'[VeeamDiscordNotifications](https://github.com/tigattack/VeeamDiscordNotifications)'
+			'VeeamNotify',
+			'[VeeamNotify](https://github.com/tigattack/VeeamNotify)'
 		)
 
 		# Build body array.
