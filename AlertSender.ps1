@@ -292,7 +292,7 @@ If ($Config.Service -eq 'Teams' -and $mention -and $Config.teams_user_name) {
 If ($updateStatus.Status -eq 'Behind' -and $config.notify_update) {
 	$payloadParams += @{
 		UpdateNotification = $true
-		LatestVersion = $updateStatus.LatestStable
+		LatestVersion      = $updateStatus.LatestStable
 	}
 }
 
@@ -306,7 +306,14 @@ Switch ($Config.service) {
 
 # Send iiiit.
 Try {
-	Invoke-RestMethod -Uri $Config.webhook -Body ($payload | ConvertTo-Json -Depth 11) -Method Post -ContentType 'application/json' -ErrorAction Stop
+	$postParams = @{
+		Uri         = $Config.webhook
+		Body        = ($payload | ConvertTo-Json -Depth 11)
+		Method      = 'Post'
+		ContentType = 'application/json'
+		ErrorAction = 'Stop'
+	}
+	Invoke-RestMethod @postParams
 }
 Catch [System.Net.WebException] {
 	Write-LogMessage -Tag 'ERROR' -Message 'Unable to send webhook. Check your webhook URL or network connection.'
