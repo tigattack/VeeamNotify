@@ -8,6 +8,10 @@ Send Veeam Backup & Replication session summary notifications to Discord, Micros
 
 ## Installing
 
+Requirements:
+* Veeam Backup & Replication 10 or higher.
+* PowerShell 5.1 or higher.
+
 * Option 1 - Install script. This option will also optionally configure any supported Veeam jobs to work with VeeamNotify.
   1. Download [VeeamNotify-Installer.ps1](VeeamNotify-Installer.ps1).
   2. Open PowerShell (as Administrator) on your Veeam server.
