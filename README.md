@@ -58,9 +58,9 @@ Configuration can be found in `C:\VeeamScripts\VeeamNotify\config\conf.json`
 | `teams_upn`          | string  | False    | null              | Your user UPN for Teams. Required if either of the `mention_` options below are `true`.                    |
 | `mention_on_fail`    | boolean | False    | False             | When `true`, you will be mentioned when a job finishes in a failed state. Requires that `userid` is set.   |
 | `mention_on_warning` | boolean | False    | False             | When `true`, you will be mentioned when a job finishes in a warning state. Requires that `userid` is set.  |
-| `notify_update`      | boolean | False    | True              | When `true`, the script will notify (but not mention) you on Discord if there's a newer version available. |
+| `notify_update`      | boolean | False    | True              | When `true`, the script will notify you if there's a newer version available.                              |
 | `self_update`        | boolean | False    | False             | When `true`, the script will update itself if there's a newer version available.                           |
-| `debug_log`          | boolean | False    | False             | When `true`, the script will log to a session-specific file in `C:\VeeamScripts\VeeamNotify\logs\`            |
+| `debug_log`          | boolean | False    | False             | When `true`, the script will log to a session-specific file in `C:\VeeamScripts\VeeamNotify\logs\`         |
 | `thumbnail`          | string  | False    | See example above | Image URL for the thumbnail shown in the report embed.                                                     |
 
 ---

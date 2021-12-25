@@ -197,7 +197,7 @@ Write-Output "`nInstallation complete!`n"
 
 # Run configuration deployment script.
 do {
-	$configPrompt = Read-Host -Prompt 'Would you like to automatically configure any of your jobs for Discord notifications? Y/N'
+	$configPrompt = Read-Host -Prompt 'Would you like to to run the VeeamNotify configuration deployment tool? Only selected Veeam jobs will be modified. Y/N'
 }
 until ($configPrompt -in 'Y', 'N')
 
