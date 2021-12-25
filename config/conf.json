@@ -1,5 +1,5 @@
 {
-	"webhook": "DiscordWebook",
+	"webhook": "Webhook",
 	"service": "ServiceHere",
 	"discord_user_id": "123456789",
 	"slack_user_id": "A1B2C3D4E5",
