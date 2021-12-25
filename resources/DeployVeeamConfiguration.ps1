@@ -1,10 +1,6 @@
 <#
 TODO:
-Test-Path to Bootstrap and DiscordNotificationBootstrap to allow for configuration of older versions.
-If neither found, prompt for path and test for existence.
-
 Refactor; much of both foreach loops is repeated, need more functions.
-
 Sort by name L46
 #>
 
@@ -24,7 +20,7 @@ function DeploymentError {
 	}
 }
 
-# Post-job script for Discord notifications
+# Post-job script for VeeamNotify
 $newPostScriptCmd = 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -ExecutionPolicy Bypass -File C:\VeeamScripts\VeeamNotify\Bootstrap.ps1'
 
 # Import Veeam module
@@ -91,31 +87,16 @@ If ($configChoice -in 'D', 'Decide') {
 		$postScriptEnabled = $jobOptions.JobScriptCommand.PostScriptEnabled
 		$postScriptCmd = $jobOptions.JobScriptCommand.PostScriptCommandLine
 
-		# Check if job is already configured with correct post-job script
+		# Check if job is already configured for VeeamNotify
 		if ($postScriptCmd.EndsWith('\Bootstrap.ps1') -or $postScriptCmd.EndsWith("\Bootstrap.ps1'")) {
-			Write-Output "`n$($jobName) is already configured for Discord notifications; Skipping."
-			Continue
-		}
-		elseif ($postScriptCmd.EndsWith('\DiscordNotificationBootstrap.ps1') -or $postScriptCmd.EndsWith("\DiscordNotificationBootstrap.ps1'")) {
-			Write-Output "`n$($jobName) is configured for an older version of Discord notifications; Updating..."
-			try {
-				# Sets post-job script to Enabled and sets the command line to full command including path.
-				$jobOptions.JobScriptCommand.PostScriptEnabled = $true
-				$jobOptions.JobScriptCommand.PostScriptCommandLine = $newPostScriptCmd
-				Set-VBRJobOptions -Job $job -Options $jobOptions | Out-Null
-
-				Write-Output "$($jobName) is now updated."
-			}
-			catch {
-				DeploymentError
-			}
+			Write-Output "`n$($jobName) is already configured for VeeamNotify; Skipping."
 			Continue
 		}
 
 		# Different actions whether post-job script is already enabled. If yes we ask to modify it, if not we ask to enable & set it.
 		if ($postScriptEnabled) {
 			Write-Output "`n$($jobName) has an existing post-job script.`nScript: $postScriptCmd"
-			Write-Output "`nIf you wish to receive Discord notifications for this job, you must overwrite the existing post-job script."
+			Write-Output "`nIf you wish to receive notifications for this job, you must overwrite the existing post-job script."
 
 			do {
 				$overWriteCurrentCmd = Read-Host -Prompt 'Do you wish to overwrite it? Y/N'
@@ -136,11 +117,11 @@ If ($configChoice -in 'D', 'Decide') {
 							Set-VBRJobOptions -Job $job -Options $jobOptions | Out-Null
 
 							Write-Output "Updated post-job script for job $($jobName).`nOld: $postScriptCmd`nNew: $newPostScriptCmd"
-							Write-Output "$($jobName) is now configured for Discord notifications."
+							Write-Output "$($jobName) is now configured for VeeamNotify."
 						}
 						else {
 							# Script hasn't changed. Notify user of this and continue.
-							Write-Output "$($jobName) is already configured for Discord notifications; Skipping."
+							Write-Output "$($jobName) is already configured for VeeamNotify; Skipping."
 						}
 					}
 					catch {
@@ -151,7 +132,7 @@ If ($configChoice -in 'D', 'Decide') {
 		}
 		else {
 			do {
-				$setNewPostScript = Read-Host -Prompt "`nDo you wish to receive Discord notifications for $($jobName) ($($job.TypeToString))? Y/N"
+				$setNewPostScript = Read-Host -Prompt "`nDo you wish to receive notifications for $($jobName) ($($job.TypeToString))? Y/N"
 			}
 			until ($setNewPostScript -in 'Y', 'N')
 
@@ -165,7 +146,7 @@ If ($configChoice -in 'D', 'Decide') {
 						$jobOptions.JobScriptCommand.PostScriptCommandLine = $newPostScriptCmd
 						Set-VBRJobOptions -Job $job -Options $jobOptions | Out-Null
 
-						Write-Output "`n$($jobName) is now configured for Discord notifications."
+						Write-Output "`n$($jobName) is now configured for VeeamNotify."
 					}
 					catch {
 						DeploymentError
@@ -187,31 +168,16 @@ elseif ($configChoice -in 'A', 'All') {
 		$postScriptEnabled = $jobOptions.JobScriptCommand.PostScriptEnabled
 		$postScriptCmd = $jobOptions.JobScriptCommand.PostScriptCommandLine
 
-		# Check if job is already configured with correct post-job script
+		# Check if job is already configured for VeeamNotify
 		if ($postScriptCmd.EndsWith('\Bootstrap.ps1') -or $postScriptCmd.EndsWith("\Bootstrap.ps1'")) {
-			Write-Output "`n$($jobName) is already configured for Discord notifications; Skipping."
-			Continue
-		}
-		elseif ($postScriptCmd.EndsWith('\DiscordNotificationBootstrap.ps1') -or $postScriptCmd.EndsWith("\DiscordNotificationBootstrap.ps1'")) {
-			Write-Output "`n$($jobName) is configured for an older version of Discord notifications; Updating..."
-			try {
-				# Sets post-job script to Enabled and sets the command line to full command including path.
-				$jobOptions.JobScriptCommand.PostScriptEnabled = $true
-				$jobOptions.JobScriptCommand.PostScriptCommandLine = $newPostScriptCmd
-				Set-VBRJobOptions -Job $job -Options $jobOptions | Out-Null
-
-				Write-Output "$($jobName) is now updated."
-			}
-			catch {
-				DeploymentError
-			}
+			Write-Output "`n$($jobName) is already configured for VeeamNotify; Skipping."
 			Continue
 		}
 
 		# Different actions whether post-job script is already enabled. If yes we ask to modify it, if not we ask to enable & set it.
 		if ($postScriptEnabled) {
 			Write-Output "`n$($jobName) has an existing post-job script.`nScript: $postScriptCmd"
-			Write-Output "`nIf you wish to receive Discord notifications for this job, you must overwrite the existing post-job script."
+			Write-Output "`nIf you wish to receive notifications for this job, you must overwrite the existing post-job script."
 
 			do {
 				$overWriteCurrentCmd = Read-Host -Prompt 'Do you wish to overwrite it? Y/N'
@@ -232,11 +198,11 @@ elseif ($configChoice -in 'A', 'All') {
 							Set-VBRJobOptions -Job $job -Options $jobOptions | Out-Null
 
 							Write-Output "Updated post-job script for job $($jobName).`nOld: $postScriptCmd`nNew: $newPostScriptCmd"
-							Write-Output "$($jobName) is now configured for Discord notifications."
+							Write-Output "$($jobName) is now configured for VeeamNotify."
 						}
 						else {
 							# Script hasn't changed. Notify user of this and continue.
-							Write-Output "$($jobName) is already configured for Discord notifications; Skipping."
+							Write-Output "$($jobName) is already configured for VeeamNotify; Skipping."
 						}
 					}
 					catch {
@@ -252,7 +218,7 @@ elseif ($configChoice -in 'A', 'All') {
 				$jobOptions.JobScriptCommand.PostScriptCommandLine = $newPostScriptCmd
 				Set-VBRJobOptions -Job $job -Options $jobOptions | Out-Null
 
-				Write-Output "`n$($jobName) is now configured for Discord notifications."
+				Write-Output "`n$($jobName) is now configured for VeeamNotify."
 			}
 			catch {
 				DeploymentError
@@ -262,7 +228,7 @@ elseif ($configChoice -in 'A', 'All') {
 }
 
 elseif ($configChoice -in 'N', 'None') {
-	Write-Output 'Skipping Discord notifications configuration deployment for all jobs.'
+	Write-Output 'Skipping VeeamNotify configuration deployment for all jobs.'
 }
 
 Write-Output "`n`Finished. Exiting."
