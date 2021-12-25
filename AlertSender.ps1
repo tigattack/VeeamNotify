@@ -281,9 +281,18 @@ elseif ($jobType -eq 'EpAgentBackup') {
 	}
 }
 
+# Add Teams username for mention if relevant.
 If ($Config.Service -eq 'Teams' -and $mention -and $Config.teams_user_name) {
 	$payloadParams += @{
 		UserName = $Config.teams_user_name
+	}
+}
+
+# Add update message if relevant.
+If ($updateStatus.Status -eq 'Behind' -and $config.notify_update) {
+	$payloadParams += @{
+		UpdateNotification = $true
+		LatestVersion = $updateStatus.LatestStable
 	}
 }
 
@@ -305,7 +314,7 @@ Catch [System.Net.WebException] {
 
 
 # If newer version available...
-If ($updateStatus.CurrentVersion -lt $updateStatus.latestStable) {
+If ($updateStatus.Status -eq 'Behind') {
 
 	# Trigger update if configured to do so.
 	If ($Config.self_update) {
@@ -317,41 +326,6 @@ If ($updateStatus.CurrentVersion -lt $updateStatus.latestStable) {
 		# Run update script.
 		$updateArgs = "-file $PSScriptRoot\..\VDNotifs-Updater.ps1", "-LatestVersion $latestStable"
 		Start-Process -FilePath 'powershell' -Verb runAs -ArgumentList $updateArgs -WindowStyle hidden
-	}
-
-	# Send update notice if configured to do so.
-	If ($Config.notify_update) {
-
-		# Define
-		$updateNotice = [PSCustomObject]@{
-			embeds	= @(
-				[PSCustomObject]@{
-					title       = 'Update Available'
-					description	= 'A new version of VeeamNotify is available!'
-					color       = 3429867
-					thumbnail   = $thumbObject
-					fields      = @(
-						[PSCustomObject]@{
-							name  = 'Download'
-							value	= '[Link.](https://github.com/tigattack/VeeamNotify/releases/latest)'
-						}
-					)
-					footer      = [PSCustomObject]@{
-						text     = "tigattack's VeeamNotify $($updateStatus.CurrentVersion)."
-						icon_url	= 'https://avatars0.githubusercontent.com/u/10629864'
-					}
-					timestamp   = $((Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ss.fffK'))
-				}
-			)
-		}
-
-		# Send
-		Try {
-			Invoke-RestMethod -Uri $Config.webhook -Body ($updateNotice | ConvertTo-Json -Depth 4) -Method Post -ContentType 'application/json'
-		}
-		Catch [System.Net.WebException] {
-			Write-LogMessage -Tag 'ERROR' -Message 'Unable to send webhook. Check your webhook URL or network connection.'
-		}
 	}
 }
 

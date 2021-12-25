@@ -21,7 +21,9 @@ function New-DiscordPayload {
 		[boolean]$Mention,
 		[string]$UserId,
 		[string]$ThumbnailUrl,
-		[string]$FooterMessage
+		[string]$FooterMessage,
+		[boolean]$UpdateNotification,
+		[string]$LatestVersion
 	)
 
 	if ($PSCmdlet.ShouldProcess('Output stream', 'Create payload')) {
@@ -148,6 +150,21 @@ function New-DiscordPayload {
 			}
 		}
 
+		# Add update notice if relevant and configured to do so.
+		If ($UpdateNotification) {
+			# Add embed to payload.
+			$payload.embeds += @(
+				@{
+					title       = 'Update Available'
+					description	= "A new version of VeeamNotify is available! See [release $LatestVersion](https://github.com/tigattack/VeeamNotify/releases/$LatestVersion) on GitHub."
+					color       = 3429867
+					thumbnail   = $thumbObject
+					footer      = $footerObject
+					timestamp   = $((Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ss.fffK'))
+				}
+			)
+		}
+
 		# Return payload object.
 		return $payload
 	}
@@ -176,7 +193,9 @@ function New-TeamsPayload {
 		[string]$UserId,
 		[string]$UserName,
 		[string]$ThumbnailUrl,
-		[string]$FooterMessage
+		[string]$FooterMessage,
+		[boolean]$UpdateNotification,
+		[string]$LatestVersion
 	)
 
 	if ($PSCmdlet.ShouldProcess('Output stream', 'Create payload')) {
@@ -210,6 +229,12 @@ function New-TeamsPayload {
 			'VeeamNotify',
 			'[VeeamNotify](https://github.com/tigattack/VeeamNotify)'
 		)
+
+		# Add URL to update notice if relevant and configured to do so.
+		If ($UpdateNotification) {
+			# Add URL to update notice.
+			$FooterMessage += " [See release.](https://github.com/tigattack/VeeamNotify/releases/$LatestVersion)"
+		}
 
 		# Build body array.
 		$bodyArray += @(
@@ -361,9 +386,9 @@ function New-TeamsPayload {
 				}
 			}
 		}
-	}
 
-	return $payload
+		return $payload
+	}
 }
 
 function New-SlackPayload {
@@ -389,7 +414,9 @@ function New-SlackPayload {
 		[boolean]$Mention,
 		[string]$UserId,
 		[string]$ThumbnailUrl,
-		[string]$FooterMessage
+		[string]$FooterMessage,
+		[boolean]$UpdateNotification,
+		[string]$LatestVersion
 	)
 
 	if ($PSCmdlet.ShouldProcess('Output stream', 'Create payload')) {
@@ -515,6 +542,30 @@ function New-SlackPayload {
 				)
 			}
 		)
+
+		# Add update notice if relevant and configured to do so.
+		If ($UpdateNotification) {
+			# Add block to payload.
+			$payload.blocks += @(
+				@{
+					type      = 'section'
+					text      = @{
+						type = 'mrkdwn'
+						text = "A new version of VeeamNotify is available! See release $LatestVersion on GitHub."
+					}
+					accessory = @{
+						type      = 'button'
+						text      = @{
+							type = 'plain_text'
+							text = 'Open on GitHub'
+						}
+						value     = 'open_github'
+						url       = "https://github.com/tigattack/VeeamNotify/releases/$LatestVersion"
+						action_id = 'button-action'
+					}
+				}
+			)
+		}
 
 		# Remove obsolete extended-type system properties added by Add-Member ($payload.blocks +=)
 		# https://stackoverflow.com/a/57599481
