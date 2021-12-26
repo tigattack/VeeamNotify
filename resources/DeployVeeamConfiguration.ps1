@@ -11,12 +11,13 @@ function DeploymentError {
 	Write-Output "An error occured: $($_.ScriptStackTrace)"
 	Write-Output "Please raise an issue at $issues"
 
-	do {
-		$launchIssues = Read-Host -Prompt 'Do you wish to launch this URL? Y/N'
-	}
-	until ($launchIssues -eq 'Y' -or $launchIssues -eq 'N')
-	If ($launchIssues -eq 'Y') {
-		Start-Process "$issues/new?assignees=tigattack&labels=bug&template=bug_report.md&title=[BUG]+Veeam%20configuration%20deployment%20error"
+	$launchIssuesPrompt_yes = New-Object System.Management.Automation.Host.ChoiceDescription '&Yes', 'Open a new issue'
+	$launchIssuesPrompt_no = New-Object System.Management.Automation.Host.ChoiceDescription '&No', 'Do nothing'
+	$launchIssuesPrompt_opts = [System.Management.Automation.Host.ChoiceDescription[]]($launchIssuesPrompt_Yes, $launchIssuesPrompt_No)
+	$launchIssuesPrompt_result = $host.UI.PromptForChoice('Open a new issue', 'Do you wish to open the new issue page in your browser?', $launchIssuesPrompt_opts, -1)
+
+	If ($launchIssuesPrompt_result -eq 1) {
+		Start-Process "$issues/new?assignees=tigattack&labels=bug&template=bug_report.yml&title=[BUG]+Veeam%20configuration%20deployment%20error"
 	}
 }
 
@@ -39,16 +40,17 @@ if ($backupJobs.Count -eq 0) {
 }
 else {
 	Write-Output "Found $($backupJobs.count) supported jobs:"
-	Format-Table -InputObject $backupJobs -Property Name,@{Name='Type'; Expression={$_.TypeToString}} -AutoSize
+	Format-Table -InputObject $backupJobs -Property Name, @{Name = 'Type'; Expression = { $_.TypeToString } } -AutoSize
 }
 
 # Query config backup
-do {
-	$backupChoice = Read-Host -Prompt 'This script can make a Veeam configuration backup for you before making any changes. Do you want to create a backup now? Y/N'
-}
-until ($backupChoice -in 'Y','N')
+$backupChoice_yes = New-Object System.Management.Automation.Host.ChoiceDescription '&Yes', 'Create a Veeam configuration backup.'
+$backupChoice_no = New-Object System.Management.Automation.Host.ChoiceDescription '&No', 'Do not create a Veeam configuration backup.'
+$backupChoice_opts = [System.Management.Automation.Host.ChoiceDescription[]]($backupChoice_yes, $backupChoice_no)
+$backupChoice_message = 'This script can create a Veeam configuration backup for you before making any changes. Do you want to create a backup now?'
+$backupChoice_result = $host.UI.PromptForChoice('Veeam Configuration Backup', $backupChoice_message, $backupChoice_opts, 0)
 
-If ($backupChoice -eq 'Y') {
+If ($backupChoice_result -eq 0) {
 	# Run backup
 	Write-Output 'Creating backup, please wait...'
 	($backupResult = Start-VBRConfigurationBackupJob) | Out-Null
@@ -56,10 +58,12 @@ If ($backupChoice -eq 'Y') {
 		Write-Output 'Backup completed successfully.'
 	}
 	else {
-		do {
-			$continueChoice = Read-Host -Prompt 'Backup failed. Do you want to continue anyway? Y/N'
-		} until ($continueChoice -in 'Y','N')
-		if ($continueChoice -eq 'N') {
+		$continueChoice_yes = New-Object System.Management.Automation.Host.ChoiceDescription '&Yes', 'Continue anyway.'
+		$continueChoice_no = New-Object System.Management.Automation.Host.ChoiceDescription '&No', 'Exit now.'
+		$continueChoice_opts = [System.Management.Automation.Host.ChoiceDescription[]]($continueChoice_yes, $continueChoice_no)
+		$continueChoice_result = $host.UI.PromptForChoice('Backup Failed', 'Do you want to continue anyway', $continueChoice_opts, -1)
+
+		if ($continueChoice_result -eq 1) {
 			Write-Output 'Exiting.'
 			Start-Sleep 10
 			exit
@@ -71,12 +75,14 @@ If ($backupChoice -eq 'Y') {
 }
 
 # Query configure all or selected jobs
-do {
-	$configChoice = Read-Host -Prompt 'Do you wish to configure all supported jobs, make a decision for each job, or configure none? A(ll)/D(ecide)/N(one)'
-}
-until ($configChoice -in 'A', 'All', 'D', 'Decide', 'N', 'None')
+$configChoice_all = New-Object System.Management.Automation.Host.ChoiceDescription '&All', 'Configure all supported jobs automatically.'
+$configChoice_decide = New-Object System.Management.Automation.Host.ChoiceDescription '&Decide', 'Make a decision for each job.'
+$configChoice_none = New-Object System.Management.Automation.Host.ChoiceDescription '&None', 'Do not configure any jobs.'
+$configChoice_opts = [System.Management.Automation.Host.ChoiceDescription[]]($configChoice_all, $configChoice_decide, $configChoice_none)
+$configChoice_message = 'Do you wish to configure all supported jobs, make a decision for each job, or configure none?'
+$configChoice_result = $host.UI.PromptForChoice('Job Configuration Selection', $configChoice_message, $configChoice_opts, 0)
 
-If ($configChoice -in 'D', 'Decide') {
+If ($configChoice_result -eq 1) {
 	# Run foreach loop for all found backup jobs
 	foreach ($job in $backupJobs) {
 		# Set name string
@@ -98,16 +104,14 @@ If ($configChoice -in 'D', 'Decide') {
 			Write-Output "`n$($jobName) has an existing post-job script.`nScript: $postScriptCmd"
 			Write-Output "`nIf you wish to receive notifications for this job, you must overwrite the existing post-job script."
 
-			do {
-				$overWriteCurrentCmd = Read-Host -Prompt 'Do you wish to overwrite it? Y/N'
-			}
-			until ($overWriteCurrentCmd -in 'Y', 'N')
+			$overwriteCurrentCmd_yes = New-Object System.Management.Automation.Host.ChoiceDescription '&yes', 'Overwrite the current post-job script.'
+			$overwriteCurrentCmd_no = New-Object System.Management.Automation.Host.ChoiceDescription '&no', 'Skip configuration of this job, leaving it as-is.'
+			$overwriteCurrentCmd_opts = [System.Management.Automation.Host.ChoiceDescription[]]($overwriteCurrentCmd_yes, $overwriteCurrentCmd_no)
+			$overwriteCurrentCmd_result = $host.UI.PromptForChoice('Overwrite Job Configuration', 'Do you wish to overwrite the existing post-job script?', $overwriteCurrentCmd_opts, -1)
 
-			switch ($overWriteCurrentCmd) {
-
-				# Default action will be to skip the job.
-				default { Write-Output "`nSkipping job $($jobName)`n"}
-				Y {
+			switch ($overWriteCurrentCmd_result) {
+				# Overwrite current post-job script
+				0 {
 					try {
 						# Check to see if the script has even changed
 						if ($postScriptCmd -ne $newPostScriptCmd) {
@@ -128,18 +132,22 @@ If ($configChoice -in 'D', 'Decide') {
 						DeploymentError
 					}
 				}
+				# Skip configuration of this job
+				1 { Write-Output "`nSkipping job $($jobName)`n" }
+				# Default action will be to skip the job.
+				default { Write-Output "`nSkipping job $($jobName)`n" }
 			}
 		}
 		else {
-			do {
-				$setNewPostScript = Read-Host -Prompt "`nDo you wish to receive notifications for $($jobName) ($($job.TypeToString))? Y/N"
-			}
-			until ($setNewPostScript -in 'Y', 'N')
+			$setNewPostScript_yes = New-Object System.Management.Automation.Host.ChoiceDescription '&Yes', 'Configure this job to send notifications.'
+			$setNewPostScript_no = New-Object System.Management.Automation.Host.ChoiceDescription '&No', 'Skip configuration of this job, leaving it as-is.'
+			$setNewPostScript_opts = [System.Management.Automation.Host.ChoiceDescription[]]($setNewPostScript_yes, $setNewPostScript_no)
+			$setNewPostScript_message = "Do you wish to receive notifications for $($jobName) ($($job.TypeToString))?"
+			$setNewPostScript_result = $host.UI.PromptForChoice('Configure Job', $setNewPostScript_message, $setNewPostScript_opts, -1)
 
-			Switch ($setNewPostScript) {
-				# Default action will be to skip the job.
-				default { Write-Output "Skipping job $($jobName)"}
-				Y {
+			Switch ($setNewPostScript_result) {
+				# Overwrite current post-job script
+				0 {
 					try {
 						# Sets post-job script to Enabled and sets the command line to full command including path.
 						$jobOptions.JobScriptCommand.PostScriptEnabled = $true
@@ -152,12 +160,16 @@ If ($configChoice -in 'D', 'Decide') {
 						DeploymentError
 					}
 				}
+				# Skip configuration of this job
+				1 { Write-Output "`nSkipping job $($jobName)`n" }
+				# Default action will be to skip the job.
+				default { Write-Output "`nSkipping job $($jobName)`n" }
 			}
 		}
 	}
 }
 
-elseif ($configChoice -in 'A', 'All') {
+elseif ($configChoice_result -eq 0) {
 	# Run foreach loop for all found backup jobs
 	foreach ($job in $backupJobs) {
 		# Set name string
@@ -179,16 +191,14 @@ elseif ($configChoice -in 'A', 'All') {
 			Write-Output "`n$($jobName) has an existing post-job script.`nScript: $postScriptCmd"
 			Write-Output "`nIf you wish to receive notifications for this job, you must overwrite the existing post-job script."
 
-			do {
-				$overWriteCurrentCmd = Read-Host -Prompt 'Do you wish to overwrite it? Y/N'
-			}
-			until ($overWriteCurrentCmd -in 'Y', 'N')
+			$overwriteCurrentCmd_yes = New-Object System.Management.Automation.Host.ChoiceDescription '&Yes', 'Overwrite the current post-job script.'
+			$overwriteCurrentCmd_no = New-Object System.Management.Automation.Host.ChoiceDescription '&No', 'Skip configuration of this job, leaving it as-is.'
+			$overwriteCurrentCmd_opts = [System.Management.Automation.Host.ChoiceDescription[]]($overwriteCurrentCmd_yes, $overwriteCurrentCmd_no)
+			$overwriteCurrentCmd_result = $host.UI.PromptForChoice('Overwrite Job Configuration', 'Do you wish to overwrite the existing post-job script?', $overwriteCurrentCmd_opts, -1)
 
-			switch ($overWriteCurrentCmd) {
-
-				# Default action will be to skip the job.
-				default { Write-Output "`nSkipping job $($jobName)`n"}
-				Y {
+			switch ($overWriteCurrentCmd_result) {
+				# Overwrite current post-job script
+				0 {
 					try {
 						# Check to see if the script has even changed
 						if ($postScriptCmd -ne $newPostScriptCmd) {
@@ -209,6 +219,10 @@ elseif ($configChoice -in 'A', 'All') {
 						DeploymentError
 					}
 				}
+				# Skip configuration of this job
+				1 { Write-Output "`nSkipping job $($jobName)`n" }
+				# Default action will be to skip the job.
+				default { Write-Output "`nSkipping job $($jobName)`n" }
 			}
 		}
 		else {
@@ -227,7 +241,7 @@ elseif ($configChoice -in 'A', 'All') {
 	}
 }
 
-elseif ($configChoice -in 'N', 'None') {
+elseif ($configChoice_result -eq 2) {
 	Write-Output 'Skipping VeeamNotify configuration deployment for all jobs.'
 }
 

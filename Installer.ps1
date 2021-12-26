@@ -38,16 +38,16 @@ foreach ($i in $releases) {
 
 # Query release stream
 if ($releases[0].prerelease) {
-	do {
-		$prereleaseQuery = Read-Host -Prompt "Do you wish to install the latest prelease version $($latestPrerelease)? Y/N"
-	}
-	until ($prereleaseQuery -in 'Y', 'N')
+	$versionQuery_stable = New-Object System.Management.Automation.Host.ChoiceDescription '&Stable', "Stable version $latestStable"
+	$versionQuery_prerelease = New-Object System.Management.Automation.Host.ChoiceDescription '&Prerelease', "Prelease version $latestPrerelease"
+	$versionQuery_opts = [System.Management.Automation.Host.ChoiceDescription[]]($versionQuery_stable, $versionQuery_prerelease)
+	$versionQuery_result = $host.UI.PromptForChoice('Release Selection', "Which version would you like to install?`nEnter '?' to see versions.", $versionQuery_opts, 0)
 
-	if ($prereleaseQuery -eq 'Y') {
-		$release = $latestPrerelease
+	if ($versionQuery_result -eq 0) {
+		$release = $latestStable
 	}
 	else {
-		$release = $latestStable
+		$release = $latestPrerelease
 	}
 }
 else {
@@ -107,12 +107,13 @@ Remove-Item -Path "$env:TEMP\$project-$release.zip"
 $config = Get-Content "$rootPath\$project\config\conf.json" -Raw | ConvertFrom-Json
 
 # Prompt user with config options
-do {
-	$service = Read-Host -Prompt "Which service do you wish to send notifications to?`n1 = Discord`n2 = Slack`n3 = Teams"
-}
-until ($service -in '1', '2', '3')
+$servicePrompt_discord = New-Object System.Management.Automation.Host.ChoiceDescription '&Discord', 'Send notifications to Discord.'
+$servicePrompt_slack = New-Object System.Management.Automation.Host.ChoiceDescription '&Slack', 'Send notifications to Slack.'
+$servicePrompt_teams = New-Object System.Management.Automation.Host.ChoiceDescription '&Teams', 'Send notifications to Teams.'
+$servicePrompt_opts = [System.Management.Automation.Host.ChoiceDescription[]]($servicePrompt_discord, $servicePrompt_slack, $servicePrompt_teams)
+$servicePrompt_result = $host.UI.PromptForChoice('Notification Service', 'Which service do you wish to send notifications to?', $servicePrompt_opts, -1)
 
-Switch ($service) {
+Switch ($servicePrompt_result) {
 	1 {
 		$config.service = 'Discord'
 		$userIdMessage = 'Please enter your Discord user ID'
@@ -129,23 +130,15 @@ Switch ($service) {
 
 $config.webhook = Read-Host -Prompt 'Please enter your webhook URL'
 
-Write-Output @"
-`nDo you wish to be mentioned/tagged when a job fails or finishes with warnings?
-1 = No
-2 = On warn
-3 = On fail
-4 = On fail and on warn
-"@
+$mentionPreference_no = New-Object System.Management.Automation.Host.ChoiceDescription '&No', 'Do not mention me.'
+$mentionPreference_warn = New-Object System.Management.Automation.Host.ChoiceDescription '&Warning', 'Mention me when a session finishes in a warning state.'
+$mentionPreference_fail = New-Object System.Management.Automation.Host.ChoiceDescription '&Failure', 'Mention me when a session finishes in a failed state.'
+$mentionPreference_warnfail = New-Object System.Management.Automation.Host.ChoiceDescription '&Both', 'Notify me when a session finishes in either a warning or a failed state.'
+$mentionPreference_opts = [System.Management.Automation.Host.ChoiceDescription[]]($mentionPreference_no, $mentionPreference_warn, $mentionPreference_fail, $mentionPreference_warnfail)
+$mentionPreference_message = 'Do you wish to be mentioned/tagged when a session finishes in one of the following states?'
+$mentionPreference_result = $host.UI.PromptForChoice('Mention Preference', $mentionPreference_message, $mentionPreference_opts, 2)
 
-do {
-	$mentionPreference = Read-Host -Prompt 'Your choice'
-	If (1..4 -notcontains $mentionPreference) {
-		Write-Output 'Invalid choice. Please try again.'
-	}
-}
-until (1..4 -contains $mentionPreference)
-
-If ($mentionPreference -ne 1) {
+If ($mentionPreference_result -ne 0) {
 	do {
 		$userId = Read-Host -Prompt "`n$userIdMessage"
 	}
@@ -161,22 +154,22 @@ If ($mentionPreference -ne 1) {
 }
 
 # Set config values
-Switch ($mentionPreference) {
-	1 {
+Switch ($mentionPreference_result) {
+	0 {
 		$config.mention_on_fail = $false
 		$config.mention_on_warning = $false
 	}
-	2 {
+	1 {
 		$config.mention_on_fail = $false
 		$config.mention_on_warning = $true
 		$config."$($config.service)_user_id" = $userId
 	}
-	3 {
+	2 {
 		$config.mention_on_fail = $true
 		$config.mention_on_warning = $false
 		$config."$($config.service)_user_id" = $userId
 	}
-	4 {
+	3 {
 		$config.mention_on_fail = $true
 		$config.mention_on_warning = $true
 		$config."$($config.service)_user_id" = $userId
@@ -196,12 +189,12 @@ catch {
 Write-Output "`nInstallation complete!`n"
 
 # Run configuration deployment script.
-do {
-	$configPrompt = Read-Host -Prompt 'Would you like to to run the VeeamNotify configuration deployment tool? Only selected Veeam jobs will be modified. Y/N'
-}
-until ($configPrompt -in 'Y', 'N')
+$configPrompt_yes = New-Object System.Management.Automation.Host.ChoiceDescription '&Yes', 'Execute configuration deployment tool.'
+$configPrompt_no = New-Object System.Management.Automation.Host.ChoiceDescription '&No', 'Skip configuration deployment tool.'
+$configPrompt_opts = [System.Management.Automation.Host.ChoiceDescription[]]($configPrompt_yes, $configPrompt_no)
+$configPrompt_result = $host.UI.PromptForChoice('Configuration Deployment Tool', "Would you like to to run the VeeamNotify configuration deployment tool?`nNone of your job configurations will be modified without confirmation.", $configPrompt_opts, 0)
 
-If ($configPrompt -eq 'Y') {
+If ($configPrompt_result -eq 0) {
 	Write-Output "`nRunning configuration deployment script...`n"
 	& "$rootPath\$project\resources\DeployVeeamConfiguration.ps1"
 }
