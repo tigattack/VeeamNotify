@@ -182,6 +182,7 @@ function New-TeamsPayload {
 		[string]$Status,
 		[string]$DataSize,
 		[string]$TransferSize,
+		[string]$ProcessedSize,
 		[int]$DedupRatio,
 		[int]$CompressRatio,
 		[string]$Speed,
@@ -236,7 +237,7 @@ function New-TeamsPayload {
 			$FooterMessage += " [See release.](https://github.com/tigattack/VeeamNotify/releases/$LatestVersion)"
 		}
 
-		# Build body array.
+		# Add header information to body array
 		$bodyArray += @(
 			@{ type = 'ColumnSet'; columns = @(
 					@{ type = 'Column'; width = 'stretch'; items = @(
@@ -277,59 +278,134 @@ function New-TeamsPayload {
 					}
 				)
 			}
-			@{ type = 'ColumnSet'; columns = @(
-					@{ type = 'Column'; width = 'stretch'; items = @(
-							@{
-								type  = 'FactSet'
-								facts = @(
-									@{
-										title = 'Backup size'
-										value = "$DataSize"
-									}
-									@{
-										title = 'Transferred data'
-										value = "$transferSize"
-									}
-									@{
-										title = 'Dedup ratio'
-										value = "$DedupRatio"
-									}
-									@{
-										title = 'Compress ratio'
-										value = "$CompressRatio"
-									}
-									@{
-										title = 'Processing rate'
-										value = "$Speed"
-									}
-								)
-							}
-						)
-					}
-					@{ type = 'Column'; width = 'stretch'; items = @(
-							@{ type = 'FactSet'; facts = @(
-									@{
-										title = 'Bottleneck'
-										value = "$Bottleneck"
-									}
-									@{
-										title = 'Start Time'
-										value = "$timestampStart"
-									}
-									@{
-										title = 'End Time'
-										value = "$timestampEnd"
-									}
-									@{
-										title = 'Duration'
-										value = "$Duration"
-									}
-								)
-							}
-						)
-					}
-				)
-			}
+		)
+
+		# Add job information to body array
+		if ($JobType -ne 'Agent Backup') {
+			$bodyArray += @(
+				@{ type = 'ColumnSet'; columns = @(
+						@{ type = 'Column'; width = 'stretch'; items = @(
+								@{
+									type  = 'FactSet'
+									facts = @(
+										@{
+											title = 'Backup size'
+											value = "$DataSize"
+										}
+										@{
+											title = 'Transferred data'
+											value = "$transferSize"
+										}
+										@{
+											title = 'Dedup ratio'
+											value = "$DedupRatio"
+										}
+										@{
+											title = 'Compress ratio'
+											value = "$CompressRatio"
+										}
+										@{
+											title = 'Processing rate'
+											value = "$Speed"
+										}
+									)
+								}
+							)
+						}
+						@{ type = 'Column'; width = 'stretch'; items = @(
+								@{ type = 'FactSet'; facts = @(
+										@{
+											title = 'Bottleneck'
+											value = "$Bottleneck"
+										}
+										@{
+											title = 'Start Time'
+											value = "$timestampStart"
+										}
+										@{
+											title = 'End Time'
+											value = "$timestampEnd"
+										}
+										@{
+											title = 'Duration'
+											value = "$Duration"
+										}
+									)
+								}
+							)
+						}
+					)
+				}
+			)
+		}
+
+		elseif ($JobType -eq 'Agent Backup') {
+			$bodyArray += @(
+				@{ type = 'ColumnSet'; columns = @(
+						@{ type = 'Column'; width = 'stretch'; items = @(
+								@{
+									type  = 'FactSet'
+									facts = @(
+										@{
+											title = 'Processed Size'
+											value = "$ProcessedSize"
+										}
+										@{
+											title = 'Transferred Data'
+											value = "$transferSize"
+										}
+										@{
+											title = 'Processing rate'
+											value = "$Speed"
+										}
+									)
+								}
+							)
+						}
+						@{ type = 'Column'; width = 'stretch'; items = @(
+								@{ type = 'FactSet'; facts = @(
+										@{
+											title = 'Bottleneck'
+											value = "$Bottleneck"
+										}
+										@{
+											title = 'Start Time'
+											value = "$timestampStart"
+										}
+										@{
+											title = 'End Time'
+											value = "$timestampEnd"
+										}
+										@{
+											title = 'Duration'
+											value = "$Duration"
+										}
+									)
+								}
+							)
+						}
+					)
+				}
+				@{ type = 'ColumnSet'; columns = @(
+						@{ type = 'Column'; width = 'stretch'; items = @(
+								@{
+									type  = 'FactSet'
+									facts = @(
+										@{
+											title = 'Notice'
+											value = "Further details are missing due to limitations in Veeam's PowerShell module."
+										}
+									)
+								}
+							)
+						}
+					)
+				}
+			)
+		}
+
+		# Add footer information to the body array
+		$bodyArray += @(
 			@{ type = 'ColumnSet'; separator = $true ; columns = @(
 					@{ type = 'Column'; width = 'auto'; items = @(
 							@{
