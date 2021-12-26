@@ -57,22 +57,22 @@ function New-DiscordPayload {
 			$fieldArray = @(
 				[PSCustomObject]@{
 					name   = 'Backup Size'
-					value  = [String]$DataSize
+					value  = $DataSize
 					inline = 'true'
 				},
 				[PSCustomObject]@{
 					name   = 'Transferred Data'
-					value  = [String]$TransferSize
+					value  = $TransferSize
 					inline = 'true'
 				}
 				[PSCustomObject]@{
 					name   = 'Dedup Ratio'
-					value  = [String]$DedupRatio
+					value  = $DedupRatio
 					inline = 'true'
 				}
 				[PSCustomObject]@{
 					name   = 'Compression Ratio'
-					value  = [String]$CompressRatio
+					value  = $CompressRatio
 					inline = 'true'
 				}
 				[PSCustomObject]@{
@@ -82,7 +82,7 @@ function New-DiscordPayload {
 				}
 				[PSCustomObject]@{
 					name   = 'Bottleneck'
-					value  = [String]$Bottleneck
+					value  = $Bottleneck
 					inline = 'true'
 				}
 				[PSCustomObject]@{
@@ -107,12 +107,12 @@ function New-DiscordPayload {
 			$fieldArray = @(
 				[PSCustomObject]@{
 					name   = 'Processed Size'
-					value  = [String]$ProcessedSize
+					value  = $ProcessedSize
 					inline	= 'true'
 				}
 				[PSCustomObject]@{
 					name   = 'Transferred Data'
-					value  = [String]$TransferSize
+					value  = $TransferSize
 					inline	= 'true'
 				}
 				[PSCustomObject]@{
