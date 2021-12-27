@@ -94,9 +94,24 @@ If ($configChoice_result -eq 1) {
 		$postScriptCmd = $jobOptions.JobScriptCommand.PostScriptCommandLine
 
 		# Check if job is already configured for VeeamNotify
-		if ($postScriptCmd.EndsWith('\Bootstrap.ps1') -or $postScriptCmd.EndsWith("\Bootstrap.ps1'")) {
+		if ($postScriptCmd.EndsWith('\Bootstrap.ps1') -or $postScriptCmd.EndsWith("\Bootstrap.ps1'") -and (!($postScriptCmd.StartsWith("powershell.exe","CurrentCultureIgnoreCase")))) {
 			Write-Output "`n$($jobName) is already configured for VeeamNotify; Skipping."
 			Continue
+		} elseif ($postScriptCmd.StartsWith("powershell.exe","CurrentCultureIgnoreCase")) {
+			Write-Output "`n$($jobName) does not have full Powershell path. Updating."
+			try {
+			# Replace Powershell.exe with full path in a new variable for update.
+			$PostScriptFullPSPath = $postScriptCmd -replace "Powershell.exe", "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
+			# Set job to use modified post script path
+			$jobOptions.JobScriptCommand.PostScriptCommandLine = $PostScriptFullPSPath
+			Set-VBRJobOptions -Job $job -Options $jobOptions | Out-Null
+
+			Write-Output "$($jobName) is now updated."
+			Continue
+			}
+			catch {
+				DeploymentError
+			}
 		}
 
 		# Different actions whether post-job script is already enabled. If yes we ask to modify it, if not we ask to enable & set it.
@@ -181,9 +196,24 @@ elseif ($configChoice_result -eq 0) {
 		$postScriptCmd = $jobOptions.JobScriptCommand.PostScriptCommandLine
 
 		# Check if job is already configured for VeeamNotify
-		if ($postScriptCmd.EndsWith('\Bootstrap.ps1') -or $postScriptCmd.EndsWith("\Bootstrap.ps1'")) {
+		if ($postScriptCmd.EndsWith('\Bootstrap.ps1') -or $postScriptCmd.EndsWith("\Bootstrap.ps1'") -and (!($postScriptCmd.StartsWith("powershell.exe","CurrentCultureIgnoreCase")))) {
 			Write-Output "`n$($jobName) is already configured for VeeamNotify; Skipping."
 			Continue
+		} elseif ($postScriptCmd.StartsWith("powershell.exe","CurrentCultureIgnoreCase")) {
+			Write-Output "`n$($jobName) does not have full Powershell path. Updating."
+			try {
+			# Replace Powershell.exe with full path in a new variable for update.
+			$PostScriptFullPSPath = $postScriptCmd -replace "Powershell.exe", "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
+			# Set job to use modified post script path
+			$jobOptions.JobScriptCommand.PostScriptCommandLine = $PostScriptFullPSPath
+			Set-VBRJobOptions -Job $job -Options $jobOptions | Out-Null
+
+			Write-Output "$($jobName) is now updated."
+			Continue
+			}
+			catch {
+				DeploymentError
+			}
 		}
 
 		# Different actions whether post-job script is already enabled. If yes we ask to modify it, if not we ask to enable & set it.
