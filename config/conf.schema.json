@@ -1,49 +1,77 @@
 {
-	"$schema": "http://json-schema.org/draft-04/schema#",
-	"type": "object",
-	"properties": {
-		"webhook": {
-			"type": "string"
-		},
-		"service": {
-			"type": "string"
-		},
-		"discord_user_id": {
-			"type": "string"
-		},
-		"slack_user_id": {
-			"type": "string"
-		},
-		"teams_user_id": {
-			"type": "string"
-		},
-		"teams_user_name": {
-			"type": "string"
-		},
-		"mention_on_fail": {
-			"type": "boolean"
-		},
-		"mention_on_warning": {
-			"type": "boolean"
-		},
-		"debug_log": {
-			"type": "boolean"
-		},
-		"thumbnail": {
-			"type": "string"
-		},
-		"notify_update": {
-			"type": "boolean"
-		},
-		"self_update": {
-			"type": "boolean"
-		},
-		"comment": {
-			"type": "string"
-		}
-	},
-	"required": [
-		"webhook",
-		"thumbnail"
-	]
+	"$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "services": {
+            "type": "object",
+            "properties": {
+                "discord": {
+                    "type": "object",
+                    "properties": {
+                        "webhook": {
+                            "type": "string"
+                        },
+                        "user_id": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "slack": {
+                    "type": "object",
+                    "properties": {
+                        "webhook": {
+                            "type": "string"
+                        },
+                        "user_id": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "teams": {
+                    "type": "object",
+                    "properties": {
+                        "webhook": {
+                            "type": "string"
+                        },
+                        "user_id": {
+                            "type": "string"
+                        },
+                        "user_name": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "required": [
+                "discord",
+                "slack",
+                "teams"
+            ]
+        },
+        "mention_on_fail": {
+            "type": "boolean"
+        },
+        "mention_on_warning": {
+            "type": "boolean"
+        },
+        "debug_log": {
+            "type": "boolean"
+        },
+        "thumbnail": {
+            "type": "string"
+        },
+        "notify_update": {
+            "type": "boolean"
+        },
+        "self_update": {
+            "type": "boolean"
+        },
+        "comment": {
+            "type": "string"
+        }
+    },
+    "required": [
+        "services",
+        "thumbnail"
+    ]
 }

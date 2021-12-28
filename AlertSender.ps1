@@ -14,7 +14,7 @@ $Config = $Config | ConvertFrom-Json
 Import-Module Veeam.Backup.PowerShell -DisableNameChecking
 Import-Module "$PSScriptRoot\resources\ConvertTo-ByteUnit.psm1"
 Import-Module "$PSScriptRoot\resources\Logger.psm1"
-Import-Module "$PSScriptRoot\resources\NotificationBuilder.psm1"
+Import-Module "$PSScriptRoot\resources\NotificationHandler.psm1"
 Import-Module "$PSScriptRoot\resources\Test-FileIsLocked.psm1"
 Import-Module "$PSScriptRoot\resources\UpdateInfo.psm1"
 Import-Module "$PSScriptRoot\resources\VBRSessionInfo.psm1"
@@ -257,7 +257,6 @@ If ($jobType -ne 'EpAgentBackup') {
 		StartTime     = $startTime
 		EndTime       = $endTime
 		Mention       = $mention
-		UserId        = $Config."$($Config.service)_user_id"
 		ThumbnailUrl  = $Config.thumbnail
 		FooterMessage = $footerMessage
 	}
@@ -275,16 +274,8 @@ elseif ($jobType -eq 'EpAgentBackup') {
 		StartTime     = $startTime
 		EndTime       = $endTime
 		Mention       = $mention
-		UserId        = $Config."$($Config.service)_user_id"
 		ThumbnailUrl  = $Config.thumbnail
 		FooterMessage = $footerMessage
-	}
-}
-
-# Add Teams username for mention if relevant.
-If ($Config.Service -eq 'Teams' -and $mention -and $Config.teams_user_name) {
-	$payloadParams += @{
-		UserName = $Config.teams_user_name
 	}
 }
 
@@ -296,27 +287,43 @@ If ($updateStatus.Status -eq 'Behind' -and $config.notify_update) {
 	}
 }
 
-# Build embed
-Switch ($Config.service) {
-	'Discord' { $payload = New-DiscordPayload @payloadParams }
-	'Slack' { $payload = New-SlackPayload @payloadParams }
-	'Teams' { $payload = New-TeamsPayload @payloadParams }
-}
+# Build embed and send iiiit.
+Switch ($Config.services) {
+	{$_.discord.webhook.StartsWith('https')} {
+		Write-LogMessage -Tag 'INFO' -Message 'Sending notification to Discord.'
 
+		# Add user information for mention if relevant.
+		If ($mention) {
+			$payloadParams.UserId = $_.discord.user_id
+		}
 
-# Send iiiit.
-Try {
-	$postParams = @{
-		Uri         = $Config.webhook
-		Body        = ($payload | ConvertTo-Json -Depth 11)
-		Method      = 'Post'
-		ContentType = 'application/json'
-		ErrorAction = 'Stop'
+		New-DiscordPayload @payloadParams | Send-Payload -Uri $Config.services.discord.webhook
 	}
-	Invoke-RestMethod @postParams
-}
-Catch [System.Net.WebException] {
-	Write-LogMessage -Tag 'ERROR' -Message 'Unable to send webhook. Check your webhook URL or network connection.'
+
+	{$_.slack.webhook.StartsWith('https')} {
+		Write-LogMessage -Tag 'INFO' -Message 'Sending notification to Slack.'
+
+		# Add user information for mention if relevant.
+		If ($mention) {
+			$payloadParams.UserId = $_.slack.user_id
+		}
+
+		New-SlackPayload @payloadParams | Send-Payload -Uri $Config.services.slack.webhook
+	}
+
+	{$_.teams.webhook.StartsWith('https')} {
+		Write-LogMessage -Tag 'INFO' -Message 'Sending notification to Teams.'
+
+		# Add user information for mention if relevant.
+		If ($mention) {
+			$payloadParams.UserId = $_.teams.user_id
+			If ($Config.teams_user_name -ne 'Your Name') {
+				$payloadParams.UserName = $_.teams.user_name
+			}
+		}
+
+		New-TeamsPayload @payloadParams | Send-Payload -Uri $Config.services.teams.webhook
+	}
 }
 
 

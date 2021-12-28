@@ -688,3 +688,35 @@ function New-SlackPayload {
 		return $payload
 	}
 }
+
+function Send-Payload {
+	[CmdletBinding()]
+	param (
+		[Parameter(ValueFromPipeline)]
+		$Payload,
+		$Uri
+	)
+
+	process {
+		# Build post parameters
+		$postParams = @{
+			Uri         = $Uri
+			Body        = ($Payload | ConvertTo-Json -Depth 11)
+			Method      = 'Post'
+			ContentType = 'application/json'
+			ErrorAction = 'Stop'
+		}
+
+		Try {
+			# Post payload
+			$request = Invoke-RestMethod @postParams
+
+			# Return request object
+			return $request
+		}
+		Catch [System.Net.WebException] {
+			Write-LogMessage -Tag 'ERROR' -Message 'Unable to send webhook. Check your webhook URL or network connection.'
+			throw
+		}
+	}
+}
