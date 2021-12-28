@@ -20,5 +20,5 @@
 	"thumbnail": "https://raw.githubusercontent.com/tigattack/VeeamDiscordNotifications/master/asset/thumb01.png",
 	"notify_update": true,
 	"self_update": false,
-	"comment": "Self-updater is still experimental. Use at your own risk."
+	"self_update_comment": "self_update will NOT work. Leave as 'false'."
 }
