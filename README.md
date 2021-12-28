@@ -36,9 +36,9 @@ Requirements:
 
 Due to limitations caused by the way some types of Veeam Agent jobs are executed, only Agent jobs of type "Managed by backup server" support post-job scripts.
 Such jobs will show up as follows:
-* In Veeam Backup & Replication Console, with type "Windows/Linux Agent Backup".
+* In Veeam Backup & Replication Console, with "Type" property of "Windows/Linux Agent Backup".
 If you see "Windows/Linux Agent _Policy_", this job is not supported.
-* In Veeam Backup & Replication PowerShell module, with type "EpAgentBackup".
+* In Veeam Backup & Replication PowerShell module, with "JobType" property of "EpAgentBackup".
 If you see "EpAgentPolicy", this job is not supported.
 
 You can read about the difference between these two Agent job types [here](https://helpcenter.veeam.com/docs/backup/agents/agent_job_protection_mode.html?ver=110#selecting-job-mode).
