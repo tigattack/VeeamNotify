@@ -263,7 +263,7 @@ function New-TeamsPayload {
 							}
 							@{
 								type     = 'TextBlock'
-								text     = "$((Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ss.fffK'))"
+								text     = "$((Get-Date -UFormat '%d %B %Y %R').ToString())"
 								wrap     = $true
 								isSubtle = $true
 								spacing  = 'None'
