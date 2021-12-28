@@ -198,7 +198,12 @@ Switch ($duration) {
 Switch ($jobType) {
 	Backup { $jobTypeNice = 'VM Backup' }
 	Replica { $jobTypeNice = 'VM Replication' }
-	EpAgentBackup	{ $jobTypeNice = 'Agent Backup' }
+	EpAgentBackup	{
+		Switch ($session.Platform) {
+			'ELinuxPhysical' { $jobTypeNice = 'Linux Agent Backup' }
+			'EEndPoint' { $jobTypeNice = 'Windows Agent Backup' }
+		}
+	}
 }
 
 # Decide whether to mention user

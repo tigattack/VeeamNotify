@@ -53,7 +53,7 @@ function New-DiscordPayload {
 		}
 
 		# Build field object.
-		if ($JobType -ne 'Agent Backup') {
+		if (-not ($JobType.EndsWith('Agent Backup'))) {
 			$fieldArray = @(
 				[PSCustomObject]@{
 					name   = 'Backup Size'
@@ -103,7 +103,7 @@ function New-DiscordPayload {
 			)
 		}
 
-		elseif ($JobType -eq 'Agent Backup') {
+		elseif ($JobType.EndsWith('Agent Backup')) {
 			$fieldArray = @(
 				[PSCustomObject]@{
 					name   = 'Processed Size'
@@ -295,7 +295,7 @@ function New-TeamsPayload {
 		)
 
 		# Add job information to body array
-		if ($JobType -ne 'Agent Backup') {
+		if (-not ($JobType.EndsWith('Agent Backup'))) {
 			$bodyArray += @(
 				@{ type = 'ColumnSet'; columns = @(
 						@{ type = 'Column'; width = 'stretch'; items = @(
@@ -353,7 +353,7 @@ function New-TeamsPayload {
 			)
 		}
 
-		elseif ($JobType -eq 'Agent Backup') {
+		elseif ($JobType.EndsWith('Agent Backup')) {
 			$bodyArray += @(
 				@{ type = 'ColumnSet'; columns = @(
 						@{ type = 'Column'; width = 'stretch'; items = @(
@@ -533,7 +533,7 @@ function New-SlackPayload {
 		$timestampEnd = $(Get-Date $EndTime -UFormat '%d %B %Y %R').ToString()
 
 		# Build blocks object.
-		if ($JobType -ne 'Agent Backup') {
+		if (-not ($JobType.EndsWith('Agent Backup'))) {
 			$fieldArray = @(
 				[PSCustomObject]@{
 					type = 'mrkdwn'
@@ -574,7 +574,7 @@ function New-SlackPayload {
 			)
 		}
 
-		elseif ($JobType -eq 'Agent Backup') {
+		elseif ($JobType.EndsWith('Agent Backup')) {
 			$fieldArray += @(
 				[PSCustomObject]@{
 					type = 'mrkdwn'
@@ -624,7 +624,7 @@ function New-SlackPayload {
 		)
 
 		# Add agent notice if applicable.
-		if ($JobType -eq 'Agent Backup') {
+		if ($JobType.EndsWith('Agent Backup')) {
 			$payload.blocks += @(
 				@{
 					type = 'section'
