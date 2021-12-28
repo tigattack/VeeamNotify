@@ -78,7 +78,7 @@ If ($session.State -ne 'Stopped') {
 if ($jobType -in 'Backup', 'Replica') {
 	# Gather session data sizes and timing.
 	[Float]$dataSize = $session.BackupStats.DataSize
-	[Float]$transferSize	= $session.BackupStats.BackupSize
+	[Float]$transferSize = $session.BackupStats.BackupSize
 	[Float]$speed = $session.Info.Progress.AvgSpeed
 	$endTime = $session.Info.EndTime
 	$startTime = $session.Info.CreationTime
@@ -163,6 +163,11 @@ If ($jobType -eq 'EpAgentBackup') {
 	$processedSizeRound = ConvertTo-ByteUnit -Data $processedSize
 	$transferSizeRound	= ConvertTo-ByteUnit -Data $transferSize
 	$speedRound = (ConvertTo-ByteUnit -Data $speed).ToString() + '/s'
+
+	# Set processing speed "Unknown" if 0B/s to avoid confusion.
+	If ($speedRound -eq '0 B/s') {
+		$speedRound = 'Unknown'
+	}
 
 	# Define bottleneck
 	Switch ($session.Info.Progress.BottleneckInfo.Bottleneck) {
