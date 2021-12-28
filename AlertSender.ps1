@@ -24,6 +24,13 @@ Import-Module "$PSScriptRoot\resources\VBRSessionInfo.psm1"
 If ($Config.debug_log) {
 	## Wait until log file is closed by Bootstrap.ps1
 	try {
+		$count = 1
+		do {
+			$logExist = Test-Path -Path $Logfile
+			$count++
+			Start-Sleep -Seconds 1
+		}
+		until ($logExist -eq $true -or $count -ge 10)
 		do {
 			$logLocked = $(Test-FileIsLocked -Path "$Logfile" -ErrorAction Stop).IsLocked
 			Start-Sleep -Seconds 1
