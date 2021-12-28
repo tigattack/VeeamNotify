@@ -609,7 +609,7 @@ function New-SlackPayload {
 				type      = 'section'
 				text      = @{
 					type = 'mrkdwn'
-					text = "*$JobName*`nSession result: $Status`nJob type: $JobType"
+					text = "*$JobName*`nSession result: $Status`n`nJob type: $JobType"
 				}
 				accessory = @{
 					type      = 'image'
