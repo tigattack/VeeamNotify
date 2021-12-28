@@ -94,7 +94,9 @@ If ($configChoice_result -eq 1) {
 		$postScriptCmd = $jobOptions.JobScriptCommand.PostScriptCommandLine
 
 		# Check if job is already configured for VeeamNotify
-		if ($postScriptCmd.EndsWith('\Bootstrap.ps1') -or $postScriptCmd.EndsWith("\Bootstrap.ps1'") -and (!($postScriptCmd.StartsWith('powershell.exe', 'CurrentCultureIgnoreCase')))) {
+		if ($postScriptCmd.EndsWith('\Bootstrap.ps1') -or $postScriptCmd.EndsWith("\Bootstrap.ps1'") -and (
+				-not ($postScriptCmd.StartsWith('powershell.exe', 'CurrentCultureIgnoreCase'))
+			)) {
 			Write-Output "`n$($jobName) is already configured for VeeamNotify; Skipping."
 			Continue
 		}
@@ -197,7 +199,9 @@ elseif ($configChoice_result -eq 0) {
 		$postScriptCmd = $jobOptions.JobScriptCommand.PostScriptCommandLine
 
 		# Check if job is already configured for VeeamNotify
-		if ($postScriptCmd.EndsWith('\Bootstrap.ps1') -or $postScriptCmd.EndsWith("\Bootstrap.ps1'") -and (!($postScriptCmd.StartsWith('powershell.exe', 'CurrentCultureIgnoreCase')))) {
+		if ($postScriptCmd.EndsWith('\Bootstrap.ps1') -or $postScriptCmd.EndsWith("\Bootstrap.ps1'") -and (
+				-not ($postScriptCmd.StartsWith('powershell.exe', 'CurrentCultureIgnoreCase'))
+			)) {
 			Write-Output "`n$($jobName) is already configured for VeeamNotify; Skipping."
 			Continue
 		}
