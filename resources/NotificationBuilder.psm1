@@ -121,8 +121,23 @@ function New-DiscordPayload {
 					inline	= 'true'
 				}
 				[PSCustomObject]@{
+					name   = 'Start Time'
+					value  = $timestampStart
+					inline = 'true'
+				}
+				[PSCustomObject]@{
+					name   = 'End Time'
+					value  = $timestampEnd
+					inline = 'true'
+				}
+				[PSCustomObject]@{
+					name   = 'Duration'
+					value  = $Duration
+					inline = 'true'
+				}
+				[PSCustomObject]@{
 					name   = 'Notice'
-					value  = "Further details are missing due to limitations in Veeam's PowerShell module."
+					value  = "Further Agent session details are missing due to limitations in Veeam's PowerShell module."
 					inline = 'false'
 				}
 			)
@@ -358,6 +373,10 @@ function New-TeamsPayload {
 											title = 'Processing rate'
 											value = "$Speed"
 										}
+										@{
+											title = 'Duration'
+											value = "$Duration"
+										}
 									)
 								}
 							)
@@ -365,20 +384,12 @@ function New-TeamsPayload {
 						@{ type = 'Column'; width = 'stretch'; items = @(
 								@{ type = 'FactSet'; facts = @(
 										@{
-											title = 'Bottleneck'
-											value = "$Bottleneck"
-										}
-										@{
 											title = 'Start Time'
 											value = "$timestampStart"
 										}
 										@{
 											title = 'End Time'
 											value = "$timestampEnd"
-										}
-										@{
-											title = 'Duration'
-											value = "$Duration"
 										}
 									)
 								}
@@ -393,7 +404,7 @@ function New-TeamsPayload {
 									facts = @(
 										@{
 											title = 'Notice'
-											value = "Further details are missing due to limitations in Veeam's PowerShell module."
+											value = "Further Agent session details are missing due to limitations in Veeam's PowerShell module."
 										}
 									)
 								}
@@ -568,19 +579,27 @@ function New-SlackPayload {
 			$fieldArray += @(
 				[PSCustomObject]@{
 					type = 'mrkdwn'
-					name = "Processed Size`n$ProcessedSize"
+					text = "*Processed Size*`n$ProcessedSize"
 				}
 				[PSCustomObject]@{
 					type = 'mrkdwn'
-					name = "Transferred Data`n$TransferSize"
+					text = "*Transferred Data*`n$TransferSize"
 				}
 				[PSCustomObject]@{
 					type = 'mrkdwn'
-					name = "Processing Rate`n$Speed"
+					text = "*Processing Rate*`n$Speed"
 				}
 				[PSCustomObject]@{
 					type = 'mrkdwn'
-					text = "Notice`nFurther details are missing due to limitations in Veeam's PowerShell module."
+					text = "*Start Time*`n$timestampStart"
+				}
+				[PSCustomObject]@{
+					type = 'mrkdwn'
+					text = "*End Time*`n$timestampEnd"
+				}
+				[PSCustomObject]@{
+					type = 'mrkdwn'
+					text = "*Duration*`n$Duration"
 				}
 			)
 		}
@@ -602,6 +621,26 @@ function New-SlackPayload {
 			@{
 				type   = 'section'
 				fields = $fieldArray
+			}
+		)
+
+		# Add agent notice if applicable.
+		if ($JobType -eq 'Agent Backup') {
+			$payload.blocks += @(
+				@{
+					type = 'section'
+					text = @{
+						type = 'mrkdwn'
+						text = "*Notice*`nFurther Agent session details are missing due to limitations in Veeam's PowerShell module."
+					}
+				}
+			)
+		}
+
+		# Add footer to payload object.
+		$payload.blocks += @(
+			@{
+				type = 'divider'
 			}
 			@{
 				type     = 'context'
