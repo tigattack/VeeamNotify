@@ -41,6 +41,7 @@ Try {
 }
 Catch {
 	Write-LogMessage -Tag 'ERROR' -Message "Failed to validate configuration: $_"
+	exit 1
 }
 
 # Get the command line used to start the Veeam session.
@@ -53,6 +54,7 @@ $sessionId = ([regex]::Matches($parentCmd, $idRegex)).Value[1]
 
 # Get the Veeam job details and hide warnings to mute the warning regarding deprecation of the use of some cmdlets to get certain job type details.
 # At time of writing, there is no alternative way to discover the job time.
+Write-LogMessage -Tag 'INFO' -Message 'Getting VBR job details'
 $job = Get-VBRJob -WarningAction SilentlyContinue | Where-Object {$_.Id.Guid -eq $jobId}
 
 # Quit if job type is not supported.
@@ -62,6 +64,7 @@ If ($job.JobType -notin $supportedTypes) {
 }
 
 # Get the session information and name.
+Write-LogMessage -Tag 'INFO' -Message 'Getting VBR session information'
 $sessionInfo = Get-VBRSessionInfo -SessionID $sessionId -JobType $job.JobType
 $jobName = $sessionInfo.JobName
 
@@ -83,7 +86,15 @@ $powershellArguments = "-file $PSScriptRoot\AlertSender.ps1", "-JobName `"$jobNa
 
 # Start a new new script in a new process with some of the information gathered here.
 # This allows Veeam to finish the current session faster and allows us gather information from the completed job.
-Start-Process -FilePath 'powershell' -Verb runAs -ArgumentList $powershellArguments -WindowStyle hidden
+Try {
+	Write-LogMessage -Tag 'INFO' -Message 'Launching AlertSender.ps1...'
+	Start-Process -FilePath 'powershell' -Verb runAs -ArgumentList $powershellArguments -WindowStyle hidden -ErrorAction Stop
+	Write-LogMessage -Tag 'INFO' -Message 'AlertSender.ps1 launched successfully.'
+}
+Catch {
+	Write-LogMessage -Tag 'ERROR' -Message "Failed to launch AlertSender.ps1: $_"
+	exit 1
+}
 
 # Stop logging.
 If ($config.debug_log) {
@@ -94,6 +105,6 @@ If ($config.debug_log) {
 		Rename-Item -Path $logFile -NewName "$(Split-Path $newLogfile -Leaf)"
 	}
 	Catch {
-		Write-LogMessage -Tag 'ERROR' -Message "Failed to rename log file: $_"
+		Write-Output "ERROR: Failed to rename log file: $_" | Out-File $logFile -Append
 	}
 }
