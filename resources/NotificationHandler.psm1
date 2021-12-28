@@ -121,6 +121,11 @@ function New-DiscordPayload {
 					inline	= 'true'
 				}
 				[PSCustomObject]@{
+					name   = 'Bottleneck'
+					value  = $Bottleneck
+					inline = 'true'
+				}
+				[PSCustomObject]@{
 					name   = 'Start Time'
 					value  = $timestampStart
 					inline = 'true'
@@ -373,8 +378,8 @@ function New-TeamsPayload {
 											value = "$Speed"
 										}
 										@{
-											title = 'Duration'
-											value = "$Duration"
+											title = 'Bottleneck'
+											value = "$Bottleneck"
 										}
 									)
 								}
@@ -389,6 +394,10 @@ function New-TeamsPayload {
 										@{
 											title = 'End Time'
 											value = "$timestampEnd"
+										}
+										@{
+											title = 'Duration'
+											value = "$Duration"
 										}
 									)
 								}
@@ -587,6 +596,10 @@ function New-SlackPayload {
 				[PSCustomObject]@{
 					type = 'mrkdwn'
 					text = "*Processing Rate*`n$Speed"
+				}
+				[PSCustomObject]@{
+					type = 'mrkdwn'
+					text = "*Bottleneck*`n$Bottleneck"
 				}
 				[PSCustomObject]@{
 					type = 'mrkdwn'

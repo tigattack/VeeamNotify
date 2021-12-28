@@ -163,6 +163,16 @@ If ($jobType -eq 'EpAgentBackup') {
 	$processedSizeRound = ConvertTo-ByteUnit -Data $processedSize
 	$transferSizeRound	= ConvertTo-ByteUnit -Data $transferSize
 	$speedRound = (ConvertTo-ByteUnit -Data $speed).ToString() + '/s'
+
+	# Define bottleneck
+	Switch ($session.Info.Progress.BottleneckInfo.Bottleneck) {
+		'NotDefined' {
+			$bottleneck = 'Undefined'
+		}
+		Default {
+			$bottleneck = $_
+		}
+	}
 }
 
 
@@ -275,6 +285,7 @@ elseif ($jobType -eq 'EpAgentBackup') {
 		ProcessedSize = $processedSizeRound
 		TransferSize  = $transferSizeRound
 		Speed         = $speedRound
+		Bottleneck    = $bottleneck
 		Duration      = $durationFormatted
 		StartTime     = $startTime
 		EndTime       = $endTime
@@ -294,7 +305,7 @@ If ($updateStatus.Status -eq 'Behind' -and $config.notify_update) {
 
 # Build embed and send iiiit.
 Switch ($Config.services) {
-	{$_.discord.webhook.StartsWith('https')} {
+	{ $_.discord.webhook.StartsWith('https') } {
 		Write-LogMessage -Tag 'INFO' -Message 'Sending notification to Discord.'
 
 		# Add user information for mention if relevant.
@@ -305,7 +316,7 @@ Switch ($Config.services) {
 		New-DiscordPayload @payloadParams | Send-Payload -Uri $Config.services.discord.webhook
 	}
 
-	{$_.slack.webhook.StartsWith('https')} {
+	{ $_.slack.webhook.StartsWith('https') } {
 		Write-LogMessage -Tag 'INFO' -Message 'Sending notification to Slack.'
 
 		# Add user information for mention if relevant.
@@ -316,7 +327,7 @@ Switch ($Config.services) {
 		New-SlackPayload @payloadParams | Send-Payload -Uri $Config.services.slack.webhook
 	}
 
-	{$_.teams.webhook.StartsWith('https')} {
+	{ $_.teams.webhook.StartsWith('https') } {
 		Write-LogMessage -Tag 'INFO' -Message 'Sending notification to Teams.'
 
 		# Add user information for mention if relevant.
