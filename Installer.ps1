@@ -15,11 +15,11 @@ Write-Output @"
 # Support for passing a parameter to CLI to install using branch
 $BranchToUse = $args[0]
 
-if ($BranchToUse -eq "--main") {
-	$release = "main"
+if ($BranchToUse -eq '--main') {
+	$release = 'main'
 	# Pull latest version of script from GitHub
 	$DownloadParams = @{
-		Uri     = "https://github.com/tigattack/VeeamNotify/archive/refs/heads/main.zip"
+		Uri     = 'https://github.com/tigattack/VeeamNotify/archive/refs/heads/main.zip'
 		OutFile = "$env:TEMP\$project-$release.zip"
 	}
 	Try {
@@ -32,11 +32,11 @@ if ($BranchToUse -eq "--main") {
 		exit 1
 	}
 }
-elseif ($BranchToUse -eq "--dev") {
-	$release = "dev"
+elseif ($BranchToUse -eq '--dev') {
+	$release = 'dev'
 	# Pull latest version of script from GitHub
 	$DownloadParams = @{
-		Uri     = "https://github.com/tigattack/VeeamNotify/archive/refs/heads/dev.zip"
+		Uri     = 'https://github.com/tigattack/VeeamNotify/archive/refs/heads/dev.zip'
 		OutFile = "$env:TEMP\$project-$release.zip"
 	}
 	Try {
@@ -50,7 +50,8 @@ elseif ($BranchToUse -eq "--dev") {
 	}
 
 
-} else {
+}
+else {
 	# Get latest release from GitHub
 	[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 	try {
