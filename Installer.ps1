@@ -48,7 +48,7 @@ if ($branch -eq 'main') {
 
 }
 elseif ($branch -eq 'dev') {
-	Get-ProjectBranch -branch 'dev'
+	Get-ProjectBranch -Branch 'dev'
 
 
 }
