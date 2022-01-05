@@ -23,7 +23,7 @@ if ($BranchToUse -eq '--main') {
 		OutFile = "$env:TEMP\$project-$release.zip"
 	}
 	Try {
-		Write-Output "`nDownloading $project $release from GitHub..."
+		Write-Output "`nDownloading $release branch of $project from GitHub..."
 		Invoke-WebRequest @DownloadParams
 	}
 	catch {
