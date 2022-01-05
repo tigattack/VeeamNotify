@@ -28,7 +28,7 @@ if ($BranchToUse -eq '--main') {
 	}
 	catch {
 		$downloadStatusCode = $_.Exception.Response.StatusCode.value__
-		Write-Warning "Failed to download $project $release. Please check your internet connection and try again.`nStatus code: $downloadStatusCode"
+		Write-Warning "Failed to download $release branch of $project. Please check your internet connection and try again.`nStatus code: $downloadStatusCode"
 		exit 1
 	}
 }
