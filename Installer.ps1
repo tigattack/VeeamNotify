@@ -15,11 +15,19 @@ Write-Output @"
 # Support for passing a parameter to CLI to install using branch
 $BranchToUse = $args[0]
 
-if ($BranchToUse -eq '--main') {
-	$release = 'main'
+function Get-ProjectBranch {
+    Param
+    (
+         [Parameter(Mandatory=$true, Position=0)]
+         [string] $branch
+    )
+
+	# This is required as release is used later for extracting etc.
+	$script:release = $branch
+
 	# Pull latest version of script from GitHub
 	$DownloadParams = @{
-		Uri     = 'https://github.com/tigattack/$project/archive/refs/heads/main.zip'
+		Uri     = "https://github.com/tigattack/$project/archive/refs/heads/$branch.zip"
 		OutFile = "$env:TEMP\$project-$release.zip"
 	}
 	Try {
@@ -31,23 +39,15 @@ if ($BranchToUse -eq '--main') {
 		Write-Warning "Failed to download $release branch of $project. Please check your internet connection and try again.`nStatus code: $downloadStatusCode"
 		exit 1
 	}
+	
+}
+
+if ($BranchToUse -eq '--main') {
+	Get-ProjectBranch -branch "main"
+
 }
 elseif ($BranchToUse -eq '--dev') {
-	$release = 'dev'
-	# Pull latest version of script from GitHub
-	$DownloadParams = @{
-		Uri     = 'https://github.com/tigattack/VeeamNotify/archive/refs/heads/dev.zip'
-		OutFile = "$env:TEMP\$project-$release.zip"
-	}
-	Try {
-		Write-Output "`nDownloading $project $release from GitHub..."
-		Invoke-WebRequest @DownloadParams
-	}
-	catch {
-		$downloadStatusCode = $_.Exception.Response.StatusCode.value__
-		Write-Warning "Failed to download $project $release. Please check your internet connection and try again.`nStatus code: $downloadStatusCode"
-		exit 1
-	}
+	Get-ProjectBranch -branch "dev"
 
 
 }
