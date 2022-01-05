@@ -26,7 +26,7 @@ function Get-ProjectBranch {
 		[string]$Branch
 	)
 	# This is required as release is used later for extracting etc.
-	$script:release = $branch
+	$script:release = $Branch
 	# Pull latest version of script from GitHub
 	$DownloadParams = @{
 		Uri     = "https://github.com/tigattack/$project/archive/refs/heads/$branch.zip"
