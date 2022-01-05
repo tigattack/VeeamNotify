@@ -4,7 +4,7 @@
 param
 (
 	[ValidateSet('main', 'dev')]
-	$branch
+    $Branch
 )
 
 # Prepare variables
