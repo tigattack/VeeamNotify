@@ -1,5 +1,11 @@
 #Requires -RunAsAdministrator
 
+# Support for passing a parameter to CLI to install using branch
+param(
+    [ValidateSet('main', 'dev')]
+    $branch
+)
+
 # Prepare variables
 $rootPath = 'C:\VeeamScripts'
 $project = 'VeeamNotify'
@@ -11,9 +17,6 @@ Write-Output @"
 #                                     #
 #######################################`n`n
 "@
-
-# Support for passing a parameter to CLI to install using branch
-$BranchToUse = $args[0]
 
 function Get-ProjectBranch {
     Param
@@ -42,11 +45,11 @@ function Get-ProjectBranch {
 	
 }
 
-if ($BranchToUse -eq '--main') {
+if ($branch -eq 'main') {
 	Get-ProjectBranch -branch "main"
 
 }
-elseif ($BranchToUse -eq '--dev') {
+elseif ($branch -eq 'dev') {
 	Get-ProjectBranch -branch "dev"
 
 
