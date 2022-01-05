@@ -1,9 +1,10 @@
 #Requires -RunAsAdministrator
 
 # Support for passing a parameter to CLI to install using branch
-param(
-    [ValidateSet('main', 'dev')]
-    $branch
+param
+(
+	[ValidateSet('main', 'dev')]
+	$branch
 )
 
 # Prepare variables
@@ -19,15 +20,13 @@ Write-Output @"
 "@
 
 function Get-ProjectBranch {
-    Param
-    (
-         [Parameter(Mandatory=$true, Position=0)]
-         [string] $branch
-    )
-
+	Param
+	(
+		[Parameter(Mandatory=$true, Position=0)]
+		[string] $branch
+	)
 	# This is required as release is used later for extracting etc.
 	$script:release = $branch
-
 	# Pull latest version of script from GitHub
 	$DownloadParams = @{
 		Uri     = "https://github.com/tigattack/$project/archive/refs/heads/$branch.zip"
@@ -42,15 +41,14 @@ function Get-ProjectBranch {
 		Write-Warning "Failed to download $release branch of $project. Please check your internet connection and try again.`nStatus code: $downloadStatusCode"
 		exit 1
 	}
-	
 }
 
 if ($branch -eq 'main') {
-	Get-ProjectBranch -branch "main"
+	Get-ProjectBranch -branch 'main'
 
 }
 elseif ($branch -eq 'dev') {
-	Get-ProjectBranch -branch "dev"
+	Get-ProjectBranch -branch 'dev'
 
 
 }
