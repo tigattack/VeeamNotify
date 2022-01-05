@@ -23,7 +23,7 @@ function Get-ProjectBranch {
 	Param
 	(
 		[Parameter(Mandatory=$true, Position=0)]
-		[string] $branch
+		[string]$Branch
 	)
 	# This is required as release is used later for extracting etc.
 	$script:release = $branch
