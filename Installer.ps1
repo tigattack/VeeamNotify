@@ -19,7 +19,7 @@ if ($BranchToUse -eq '--main') {
 	$release = 'main'
 	# Pull latest version of script from GitHub
 	$DownloadParams = @{
-		Uri     = 'https://github.com/tigattack/VeeamNotify/archive/refs/heads/main.zip'
+		Uri     = 'https://github.com/tigattack/$project/archive/refs/heads/main.zip'
 		OutFile = "$env:TEMP\$project-$release.zip"
 	}
 	Try {
