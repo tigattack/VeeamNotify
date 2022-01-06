@@ -17,6 +17,15 @@ body:
       placeholder: Tell us what you see!
     validations:
       required: true
+  - type: textarea
+    attributes:
+      label: Steps To Reproduce
+      description: Steps to reproduce the behavior.
+      placeholder: |
+        1. In this environment...
+        2. With this config...
+        3. Run '...'
+        4. See error...
   - type: dropdown
     id: project_version
     attributes:
@@ -26,14 +35,6 @@ body:
         - '1.0-beta1'
     validations:
       required: true
-  - type: input
-    id: veeam_version
-    attributes:
-      label: Veeam Backup & Replication build number
-      description: This can be found Veeam B&R console (Menu > Help > About > Build).
-      placeholder: e.g. 11.0.1.1261
-    validations:
-      required: false
   - type: dropdown
     id: pwsh_version
     attributes:
@@ -45,6 +46,12 @@ body:
         - '7.x'
     validations:
       required: true
+  - type: input
+    id: veeam_version
+    attributes:
+      label: Veeam Backup & Replication build number
+      description: This can be found Veeam B&R console (Menu > Help > About > Build).
+      placeholder: e.g. 11.0.1.1261
   - type: textarea
     id: logs
     attributes:

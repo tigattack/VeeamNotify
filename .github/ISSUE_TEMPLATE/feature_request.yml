@@ -20,10 +20,18 @@ body:
     attributes:
       label: Describe your ideal solution
       description: How would you like to see this feature implemented?
-      placeholder: |
-        Definition of done: _A short, concise definition of how this feature would look or work when done._
-        Stretch: _Any additional functionality that isn't required but would be nice._
       value: |
-        Definition of done:
+        ## Definition of done
+        
+        <!-- Give a short, concise definition of how this feature would look or work when done. -->
+        <!-- Bulletpoints, sentences, however you like. -->
+
+        ## Stretch
+        
+        <!-- Specify any additional functionality that isn't required but would be nice. -->
+
+        ## Further comments
+
+        <!-- Anything else you'd like to mention. -->
     validations:
       required: true
