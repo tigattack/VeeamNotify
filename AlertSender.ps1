@@ -54,6 +54,8 @@ $updateStatus = Get-UpdateStatus
 
 ## Get the backup session.
 $session = (Get-VBRSessionInfo -SessionId $id -JobType $jobType).Session
+## Initiate logger variable
+$vbrSessionLogger = $session.Logger
 
 ## Wait for the backup session to finish.
 If ($session.State -ne 'Stopped') {
@@ -74,6 +76,9 @@ If ($session.State -ne 'Stopped') {
 	Write-LogMessage -Tag 'ERROR' -Message 'Session not stopped. Aborting.'
 	Exit 1
 }
+
+# Add Veeam session log
+$logId_start = $vbrSessionLogger.AddLog('[VeeamNotify] Script running...')
 
 ## Gather generic session info.
 [String]$status = $session.Result
@@ -308,39 +313,66 @@ elseif ($jobType -eq 'EpAgentBackup') {
 }
 
 # Add update message if relevant.
-If ($updateStatus.Status -eq 'Behind' -and $config.notify_update) {
+If ($updateStatus.Status -eq 'Behind' -and $Config.notify_update) {
 	$payloadParams += @{
 		UpdateNotification = $true
 		LatestVersion      = $updateStatus.LatestStable
 	}
 }
 
+# Define services to be notified.
+$services = @()
+$Config.services.PSObject.Properties | ForEach-Object {
+	If ($_.Value.webhook.StartsWith('http')) {
+		$services += $_.Name
+	}
+}
+
 # Build embed and send iiiit.
-Switch ($Config.services) {
-	{ $_.discord.webhook.StartsWith('https') } {
+Switch ($services) {
+	'discord' {
 		Write-LogMessage -Tag 'INFO' -Message 'Sending notification to Discord.'
+		$logId_discord = $vbrSessionLogger.AddLog('[VeeamNotify] Sending notification to Discord...')
 
 		# Add user information for mention if relevant.
 		If ($mention) {
 			$payloadParams.UserId = $_.discord.user_id
 		}
 
-		New-DiscordPayload @payloadParams | Send-Payload -Uri $Config.services.discord.webhook
+		try {
+			New-DiscordPayload @payloadParams | Send-Payload -Uri $Config.services.discord.webhook
+			Write-LogMessage -Tag 'INFO' -Message 'Discord notification sent successfully.'
+			$vbrSessionLogger.UpdateSuccess($logId_discord, '[VeeamNotify] Discord notification sent successfully.')
+		}
+		catch {
+			Write-LogMessage -Tag 'WARN' -Message "Unable to send Discord notification: $_"
+			$vbrSessionLogger.UpdateErr($logId_discord, '[VeeamNotify] Discord notification could not be sent.', 'Please check logs at C:\VeeamScripts\VeeamNotify\log\')
+		}
 	}
 
-	{ $_.slack.webhook.StartsWith('https') } {
+	'slack' {
 		Write-LogMessage -Tag 'INFO' -Message 'Sending notification to Slack.'
+		$logId_discord = $vbrSessionLogger.AddLog('[VeeamNotify] Sending notification to Slack...')
 
 		# Add user information for mention if relevant.
 		If ($mention) {
 			$payloadParams.UserId = $_.slack.user_id
 		}
 
-		New-SlackPayload @payloadParams | Send-Payload -Uri $Config.services.slack.webhook
+		try {
+			New-SlackPayload @payloadParams | Send-Payload -Uri $Config.services.slack.webhook
+			Write-LogMessage -Tag 'INFO' -Message 'Slack notification sent successfully.'
+			$vbrSessionLogger.UpdateSuccess($logId_discord, '[VeeamNotify] Slack notification sent successfully.')
+		}
+		catch {
+			Write-LogMessage -Tag 'WARN' -Message "Unable to send Slack notification: $_"
+			$vbrSessionLogger.UpdateErr($logId_discord, '[VeeamNotify] Slack notification could not be sent.', 'Please check logs at C:\VeeamScripts\VeeamNotify\log\')
+		}
 	}
 
-	{ $_.teams.webhook.StartsWith('https') } {
+	'teams' {
 		Write-LogMessage -Tag 'INFO' -Message 'Sending notification to Teams.'
+		$logId_discord = $vbrSessionLogger.AddLog('[VeeamNotify] Sending notification to Teams...')
 
 		# Add user information for mention if relevant.
 		If ($mention) {
@@ -350,13 +382,24 @@ Switch ($Config.services) {
 			}
 		}
 
-		New-TeamsPayload @payloadParams | Send-Payload -Uri $Config.services.teams.webhook
+		try {
+			New-TeamsPayload @payloadParams | Send-Payload -Uri $Config.services.teams.webhook
+			Write-LogMessage -Tag 'INFO' -Message 'Teams notification sent successfully.'
+			$vbrSessionLogger.UpdateSuccess($logId_discord, '[VeeamNotify] Teams notification sent successfully.')
+		}
+		catch {
+			Write-LogMessage -Tag 'WARN' -Message "Unable to send Teams notification: $_"
+			$vbrSessionLogger.UpdateErr($logId_discord, '[VeeamNotify] Teams notification could not be sent.', 'Please check logs at C:\VeeamScripts\VeeamNotify\log\')
+		}
 	}
 }
 
-
 # If newer version available...
 If ($updateStatus.Status -eq 'Behind') {
+
+	If ($Config.notify_update) {
+		$vbrSessionLogger.AddWarning("[VeeamNotify] A new version is available: $($updateStatus.LatestStable). Currently running: $($updateStatus.CurrentVersion)")
+	}
 
 	# Trigger update if configured to do so.
 	If ($Config.self_update) {
@@ -366,10 +409,19 @@ If ($updateStatus.Status -eq 'Behind') {
 		Unblock-File $PSScriptRoot\..\VDNotifs-Updater.ps1
 
 		# Run update script.
-		$updateArgs = "-file $PSScriptRoot\..\VDNotifs-Updater.ps1", "-LatestVersion $latestStable"
+		$updateArgs = "-file $PSScriptRoot\..\VDNotifs-Updater.ps1", "-LatestVersion $($updateStatus.LatestStable)"
 		Start-Process -FilePath 'powershell' -Verb runAs -ArgumentList $updateArgs -WindowStyle hidden
 	}
 }
+
+# Somehow get status of payload dispatch (hence refactor of service switch above, could use a boolean var per service to indicate success/failure) ideally overall status if possible, and then...
+# if success:
+# $vbrSessionLogger.UpdateSuccess($logId_start, '[VeeamNotify] Script completed successfully.')
+# if error:
+# $vbrSessionLogger.UpdateErr($logId_start, '[VeeamNotify] Script failed.', 'Please check logs at C:\VeeamScripts\VeeamNotify\log\')
+# stretch, if warning:
+# $vbrSessionLogger.UpdateWarning($logId_start, '[VeeamNotify] Script completed with warnings.', 'Please check logs at C:\VeeamScripts\VeeamNotify\log\')
+
 
 # Stop logging.
 If ($Config.debug_log) {
