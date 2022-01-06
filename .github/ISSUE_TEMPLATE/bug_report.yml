@@ -53,5 +53,5 @@ body:
     id: logs
     attributes:
       label: Relevant log output
-      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks. Logging can be enabled in `C:\VeeamScripts\VeeamNotify\config\conf.json` and logs can be found in `C:\VeeamScripts\VeeamNotify\logs\`.
+      description: Please copy and paste any relevant log output, AFTER removing any sensitive information such as webhooks or user information. Logging can be enabled in `C:\VeeamScripts\VeeamNotify\config\conf.json` and logs can be found in `C:\VeeamScripts\VeeamNotify\logs\`.
       render: PowerShell
