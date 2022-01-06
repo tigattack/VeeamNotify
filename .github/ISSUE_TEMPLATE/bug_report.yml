@@ -38,11 +38,8 @@ body:
     id: pwsh_version
     attributes:
       label: PowerShell version
-      description: This can be found by running `$PSVersionTable` in PowerShell.
+      description: This can be found by running `$PSVersionTable` in PowerShell. If you don't see your version here, it's not supported.
       options:
-        - '3.0'
-        - '4.0'
-        - '5.0'
         - '5.1'
         - '6.x'
         - '7.x'
