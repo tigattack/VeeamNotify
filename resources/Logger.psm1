@@ -5,16 +5,21 @@ Function Write-LogMessage {
 		ConfirmImpact = 'Low'
 	)]
 	Param (
-		$Tag,
+		[ValidateSet('Debug', 'Info', 'Warn', 'Error')]
+		[Parameter(Mandatory)]
+		[String]$Tag,
+		[Parameter(Mandatory)]
 		$Message
 	)
-	$time = Get-Date -Format 'HH:mm:ss.ff'
+
+	$time = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ss.fffK')
+
 	If ($PSCmdlet.ShouldProcess('Output stream', 'Write log message')) {
-		Write-Output "[$time] $($Tag.ToUpper()): $Message"
+		Write-Output "$time [$($Tag.ToUpper())] $Message"
 	}
 }
 
-# These functions handle Logging
+# These functions handle the initiation and termination of transcript logging.
 Function Start-Logging {
 	[CmdletBinding(
 		SupportsShouldProcess,
@@ -32,7 +37,7 @@ Function Start-Logging {
 			Write-LogMessage -Tag 'INFO' -Message "Transcript is being logged to '$Path'."
 		}
 		Catch [System.IO.IOException] {
-			Write-LogMessage -Tag 'INFO' -Message "Transcript is already being logged to '$Path'."
+			Write-LogMessage -Tag 'INFO' -Message "Transcript start attemped but transcript is already being logged to '$Path'."
 		}
 	}
 }
