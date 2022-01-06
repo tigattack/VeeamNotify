@@ -23,7 +23,7 @@ body:
       label: VeeamNotify version
       description: This can be found in the footer of any notification or in `C:\VeeamScripts\VeeamNotify\resources\version.txt`.
       options:
-        - '1.0'
+        - '1.0-beta1'
     validations:
       required: true
   - type: input
