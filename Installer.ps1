@@ -1,5 +1,12 @@
 #Requires -RunAsAdministrator
 
+# Support for passing a parameter to CLI to install using branch
+param
+(
+	[ValidateSet('main', 'dev')]
+    $Branch
+)
+
 # Prepare variables
 $rootPath = 'C:\VeeamScripts'
 $project = 'VeeamNotify'
@@ -12,75 +19,110 @@ Write-Output @"
 #######################################`n`n
 "@
 
-# Get latest release from GitHub
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-try {
-	$releases = Invoke-RestMethod -Uri "https://api.github.com/repos/tigattack/$project/releases" -Method Get
-}
-catch {
-	$versionStatusCode = $_.Exception.Response.StatusCode.value__
-	Write-Warning "Failed to query GitHub for the latest version. Please check your internet connection and try again.`nStatus code: $versionStatusCode"
-	exit 1
+function Get-ProjectBranch {
+	Param
+	(
+		[Parameter(Mandatory=$true, Position=0)]
+		[string]$Branch
+	)
+	# This is required as release is used later for extracting etc.
+	$script:release = $Branch
+	# Pull latest version of script from GitHub
+	$DownloadParams = @{
+		Uri     = "https://github.com/tigattack/$project/archive/refs/heads/$Branch.zip"
+		OutFile = "$env:TEMP\$project-$release.zip"
+	}
+	Try {
+		Write-Output "`nDownloading $release branch of $project from GitHub..."
+		Invoke-WebRequest @DownloadParams
+	}
+	catch {
+		$downloadStatusCode = $_.Exception.Response.StatusCode.value__
+		Write-Warning "Failed to download $release branch of $project. Please check your internet connection and try again.`nStatus code: $downloadStatusCode"
+		exit 1
+	}
 }
 
-foreach ($i in $releases) {
-	if ($i.prerelease) {
-		$latestPrerelease = $i.tag_name
-		break
-	}
-}
-foreach ($i in $releases) {
-	if (-not $i.prerelease) {
-		$latestStable = $i.tag_name
-		break
-	}
-}
+if ($branch -eq 'main') {
+	Get-ProjectBranch -Branch 'main'
 
-# Query release stream
-if ($releases[0].prerelease) {
-	$versionQuery_stable = New-Object System.Management.Automation.Host.ChoiceDescription '&Stable', "Stable version $latestStable"
-	$versionQuery_prerelease = New-Object System.Management.Automation.Host.ChoiceDescription '&Prerelease', "Prelease version $latestPrerelease"
-	$versionQuery_opts = [System.Management.Automation.Host.ChoiceDescription[]]($versionQuery_stable, $versionQuery_prerelease)
-	$versionQuery_result = $host.UI.PromptForChoice('Release Selection', "Which version would you like to install?`nEnter '?' to see versions.", $versionQuery_opts, 0)
+}
+elseif ($branch -eq 'dev') {
+	Get-ProjectBranch -Branch 'dev'
 
-	if ($versionQuery_result -eq 0) {
-		$release = $latestStable
-	}
-	else {
-		$release = $latestPrerelease
-	}
+
 }
 else {
-	$release = $latestStable
-}
+	# Get latest release from GitHub
+	[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+	try {
+		$releases = Invoke-RestMethod -Uri "https://api.github.com/repos/tigattack/$project/releases" -Method Get
+	}
+	catch {
+		$versionStatusCode = $_.Exception.Response.StatusCode.value__
+		Write-Warning "Failed to query GitHub for the latest version. Please check your internet connection and try again.`nStatus code: $versionStatusCode"
+		exit 1
+	}
 
-# Check if this project is already installed and, if so, whether it's the latest version.
-if (Test-Path $rootPath\$project) {
-	$installedVersion = Get-Content -Raw "$rootPath\$project\resources\version.txt"
-	If ($installedVersion -ge $release) {
-		Write-Output "`n$project is already installed and up to date.`nExiting."
-		Start-Sleep -Seconds 5
-		exit
+	foreach ($i in $releases) {
+		if ($i.prerelease) {
+			$latestPrerelease = $i.tag_name
+			break
+		}
+	}
+	foreach ($i in $releases) {
+		if (-not $i.prerelease) {
+			$latestStable = $i.tag_name
+			break
+		}
+	}
+
+	# Query release stream
+	if ($releases[0].prerelease) {
+		$versionQuery_stable = New-Object System.Management.Automation.Host.ChoiceDescription '&Stable', "Stable version $latestStable"
+		$versionQuery_prerelease = New-Object System.Management.Automation.Host.ChoiceDescription '&Prerelease', "Prelease version $latestPrerelease"
+		$versionQuery_opts = [System.Management.Automation.Host.ChoiceDescription[]]($versionQuery_stable, $versionQuery_prerelease)
+		$versionQuery_result = $host.UI.PromptForChoice('Release Selection', "Which version would you like to install?`nEnter '?' to see versions.", $versionQuery_opts, 0)
+
+		if ($versionQuery_result -eq 0) {
+			$release = $latestStable
+		}
+		else {
+			$release = $latestPrerelease
+		}
 	}
 	else {
-		Write-Output "$project is already installed but it's out of date!"
-		Write-Output "Please try the updater script in `"$rootPath\$project`" or download from https://github.com/tigattack/$project/releases."
+		$release = $latestStable
 	}
-}
 
-# Pull latest version of script from GitHub
-$DownloadParams = @{
-	Uri     = "https://github.com/tigattack/$project/releases/download/$release/$project-$release.zip"
-	OutFile = "$env:TEMP\$project-$release.zip"
-}
-Try {
-	Write-Output "`nDownloading $project $release from GitHub..."
-	Invoke-WebRequest @DownloadParams
-}
-catch {
-	$downloadStatusCode = $_.Exception.Response.StatusCode.value__
-	Write-Warning "Failed to download $project $release. Please check your internet connection and try again.`nStatus code: $downloadStatusCode"
-	exit 1
+	# Check if this project is already installed and, if so, whether it's the latest version.
+	if (Test-Path $rootPath\$project) {
+		$installedVersion = Get-Content -Raw "$rootPath\$project\resources\version.txt"
+		If ($installedVersion -ge $release) {
+			Write-Output "`n$project is already installed and up to date.`nExiting."
+			Start-Sleep -Seconds 5
+			exit
+		}
+		else {
+			Write-Output "$project is already installed but it's out of date!"
+			Write-Output "Please try the updater script in `"$rootPath\$project`" or download from https://github.com/tigattack/$project/releases."
+		}
+	}
+
+	# Pull latest version of script from GitHub
+	$DownloadParams = @{
+		Uri     = "https://github.com/tigattack/$project/releases/download/$release/$project-$release.zip"
+		OutFile = "$env:TEMP\$project-$release.zip"
+	}
+	Try {
+		Write-Output "`nDownloading $project $release from GitHub..."
+		Invoke-WebRequest @DownloadParams
+	}
+	catch {
+		$downloadStatusCode = $_.Exception.Response.StatusCode.value__
+		Write-Warning "Failed to download $project $release. Please check your internet connection and try again.`nStatus code: $downloadStatusCode"
+		exit 1
+	}
 }
 
 # Unblock downloaded ZIP
