@@ -352,7 +352,7 @@ Switch ($services) {
 
 	'slack' {
 		Write-LogMessage -Tag 'INFO' -Message 'Sending notification to Slack.'
-		$logId_discord = $vbrSessionLogger.AddLog('[VeeamNotify] Sending notification to Slack...')
+		$logId_slack = $vbrSessionLogger.AddLog('[VeeamNotify] Sending notification to Slack...')
 
 		# Add user information for mention if relevant.
 		If ($mention) {
@@ -362,17 +362,17 @@ Switch ($services) {
 		try {
 			New-SlackPayload @payloadParams | Send-Payload -Uri $Config.services.slack.webhook
 			Write-LogMessage -Tag 'INFO' -Message 'Slack notification sent successfully.'
-			$vbrSessionLogger.UpdateSuccess($logId_discord, '[VeeamNotify] Slack notification sent successfully.')
+			$vbrSessionLogger.UpdateSuccess($logId_slack, '[VeeamNotify] Slack notification sent successfully.')
 		}
 		catch {
 			Write-LogMessage -Tag 'WARN' -Message "Unable to send Slack notification: $_"
-			$vbrSessionLogger.UpdateErr($logId_discord, '[VeeamNotify] Slack notification could not be sent.', 'Please check logs at C:\VeeamScripts\VeeamNotify\log\')
+			$vbrSessionLogger.UpdateErr($logId_slack, '[VeeamNotify] Slack notification could not be sent.', 'Please check logs at C:\VeeamScripts\VeeamNotify\log\')
 		}
 	}
 
 	'teams' {
 		Write-LogMessage -Tag 'INFO' -Message 'Sending notification to Teams.'
-		$logId_discord = $vbrSessionLogger.AddLog('[VeeamNotify] Sending notification to Teams...')
+		$logId_teams = $vbrSessionLogger.AddLog('[VeeamNotify] Sending notification to Teams...')
 
 		# Add user information for mention if relevant.
 		If ($mention) {
@@ -385,11 +385,11 @@ Switch ($services) {
 		try {
 			New-TeamsPayload @payloadParams | Send-Payload -Uri $Config.services.teams.webhook
 			Write-LogMessage -Tag 'INFO' -Message 'Teams notification sent successfully.'
-			$vbrSessionLogger.UpdateSuccess($logId_discord, '[VeeamNotify] Teams notification sent successfully.')
+			$vbrSessionLogger.UpdateSuccess($logId_teams, '[VeeamNotify] Teams notification sent successfully.')
 		}
 		catch {
 			Write-LogMessage -Tag 'WARN' -Message "Unable to send Teams notification: $_"
-			$vbrSessionLogger.UpdateErr($logId_discord, '[VeeamNotify] Teams notification could not be sent.', 'Please check logs at C:\VeeamScripts\VeeamNotify\log\')
+			$vbrSessionLogger.UpdateErr($logId_teams, '[VeeamNotify] Teams notification could not be sent.', 'Please check logs at C:\VeeamScripts\VeeamNotify\log\')
 		}
 	}
 }
