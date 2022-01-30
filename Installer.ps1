@@ -1,10 +1,28 @@
 #Requires -RunAsAdministrator
 
+<#
+TODO:
+Offer to install the following:
+latest prerelease
+latest stable
+a branch
+
+Add params for every interactive prompt to allow automation of install
+
+#>
+
 # Support for passing a parameter to CLI to install using branch
 param
 (
-	[ValidateSet('main', 'dev')]
-	$Branch
+	[Parameter(ParameterSetName = 'Version', Position = 0)]
+	[ValidatePattern('^v(\d+\.)?(\d+\.)?(\*|\d+)$')]
+	[String]$Version,
+	[Parameter(ParameterSetName = 'Release', Position = 0)]
+	[Switch]$Latest,
+	[Parameter(ParameterSetName = 'Release', Position = 1)]
+	[Switch]$Prerelease,
+	[Parameter(ParameterSetName = 'Branch', Position = 0)]
+	[String]$Branch
 )
 
 # Prepare variables
@@ -20,15 +38,53 @@ Write-Output @"
 #######################################`n`n
 "@
 
-function Get-ProjectBranch {
-	Param
-	(
-		[Parameter(Mandatory=$true, Position=0)]
-		[string]$Branch
-	)
-	# This is required as release is used later for extracting etc.
-	$script:release = $Branch
-	# Pull latest version of script from GitHub
+# Check if this project is already installed and if so, exit
+if (Test-Path $rootPath\$project) {
+	$installedVersion = Get-Content -Raw "$rootPath\$project\resources\version.txt"
+	Write-Output "$project ($installedVersion) is already installed. This script cannot update an existing installation."
+	Write-Output 'Please manually update or delete/rename the existing installation and retry.'
+}
+
+# Download branch if specified
+If (-not [String]::IsNullOrWhiteSpace($Branch)) {
+
+	# Get branches from GitHub
+	[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+	try {
+		$branches = Invoke-RestMethod -Uri "https://api.github.com/repos/tigattack/$project/branches" -Method Get
+	}
+	catch {
+		$versionStatusCode = $_.Exception.Response.StatusCode.value__
+		Write-Warning "Failed to query GitHub for project branches. Please check your internet connection and try again.`nStatus code: $versionStatusCode"
+		exit 1
+	}
+
+	# Query if branch not found
+	If (-not $branches.name.Contains($Branch)) {
+		$unknownBranchQuery_main = New-Object System.Management.Automation.Host.ChoiceDescription '&Main', "'main' branch of VeeamNotify"
+		$unknownBranchQuery_dev = New-Object System.Management.Automation.Host.ChoiceDescription '&Dev', "'dev' branch of VeeamNotify"
+		$unknownBranchQuery_other = New-Object System.Management.Automation.Host.ChoiceDescription '&Other', 'Another branch of VeeamNotify'
+		$unknownBranchQuery_opts = [System.Management.Automation.Host.ChoiceDescription[]]($unknownBranchQuery_main, $unknownBranchQuery_dev, $unknownBranchQuery_other)
+		$unknownBranchQuery_result = $host.UI.PromptForChoice('Branch Selection', 'Which branch would you like to install?', $unknownBranchQuery_opts, 0)
+
+		Switch ($unknownBranchQuery_result) {
+			0 {
+				$Branch = 'main'
+			}
+			1 {
+				$Branch = 'dev'
+			}
+			2 {
+				$branchPrompt = 'Branch'
+				$Branch = ($host.UI.Prompt('Branch Name', "You've chosen to install a different branch. Please enter the branch name.", $branchPrompt)).$branchPrompt
+			}
+		}
+	}
+
+	# Set $release to sanitised branch name
+	$release = $Branch.Replace('/', '-').Replace('\', '-')
+
+	# Pull branch from GitHub
 	$DownloadParams = @{
 		Uri     = "https://github.com/tigattack/$project/archive/refs/heads/$Branch.zip"
 		OutFile = "$env:TEMP\$project-$release.zip"
@@ -44,15 +100,7 @@ function Get-ProjectBranch {
 	}
 }
 
-if ($branch -eq 'main') {
-	Get-ProjectBranch -Branch 'main'
-
-}
-elseif ($branch -eq 'dev') {
-	Get-ProjectBranch -Branch 'dev'
-
-
-}
+# Otherwise work with versions
 else {
 	# Get latest release from GitHub
 	[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -65,6 +113,7 @@ else {
 		exit 1
 	}
 
+	# Parse latest release and latest prerelease
 	foreach ($i in $releases) {
 		if ($i.prerelease) {
 			$latestPrerelease = $i.tag_name
@@ -78,35 +127,49 @@ else {
 		}
 	}
 
-	# Query release stream
-	if ($releases[0].prerelease) {
-		$versionQuery_stable = New-Object System.Management.Automation.Host.ChoiceDescription '&Stable', "Stable version $latestStable"
-		$versionQuery_prerelease = New-Object System.Management.Automation.Host.ChoiceDescription '&Prerelease', "Prelease version $latestPrerelease"
-		$versionQuery_opts = [System.Management.Automation.Host.ChoiceDescription[]]($versionQuery_stable, $versionQuery_prerelease)
-		$versionQuery_result = $host.UI.PromptForChoice('Release Selection', "Which version would you like to install?`nEnter '?' to see versions.", $versionQuery_opts, 0)
-
-		if ($versionQuery_result -eq 0) {
-			$release = $latestStable
-		}
-		else {
-			$release = $latestPrerelease
-		}
+	# If no releases found, exit with notice
+	If (-not $releases) {
+		Write-Output "No releases found. Please re-run this script with the '-Branch <branch-name>' parameter."
+		exit
 	}
-	else {
+
+	# Set $release to latest stable if $Latest parameter is specified
+	If ($Latest) {
 		$release = $latestStable
 	}
 
-	# Check if this project is already installed and, if so, whether it's the latest version.
-	if (Test-Path $rootPath\$project) {
-		$installedVersion = Get-Content -Raw "$rootPath\$project\resources\version.txt"
-		If ($installedVersion -ge $release) {
-			Write-Output "`n$project is already installed and up to date.`nExiting."
-			Start-Sleep -Seconds 5
-			exit
+	# Set $release to latest prerelease if $Prerelease parameter is specified
+	ElseIf ($Prerelease) {
+		$release = $latestPrerelease
+	}
+
+	# Set $release to $Version parameter if version is valid
+	ElseIf ($Version) {
+		If ($releases.tag_name.Contains($Version)) {
+			$release = $Version
 		}
-		else {
-			Write-Output "$project is already installed but it's out of date!"
-			Write-Output "Please try the updater script in `"$rootPath\$project`" or download from https://github.com/tigattack/$project/releases."
+
+		Else {
+			Write-Warning "Version $Version not found. Please check and try again."
+			exit 1
+		}
+	}
+
+	# Otherwise prompt for version
+	else {
+		# Query release stream
+		if ($releases[0].prerelease) {
+			$versionQuery_stable = New-Object System.Management.Automation.Host.ChoiceDescription '&Stable', "Stable version $latestStable"
+			$versionQuery_prerelease = New-Object System.Management.Automation.Host.ChoiceDescription '&Prerelease', "Prelease version $latestPrerelease"
+			$versionQuery_opts = [System.Management.Automation.Host.ChoiceDescription[]]($versionQuery_stable, $versionQuery_prerelease)
+			$versionQuery_result = $host.UI.PromptForChoice('Release Selection', "Which version would you like to install?`nEnter '?' to see versions.", $versionQuery_opts, 0)
+
+			if ($versionQuery_result -eq 0) {
+				$release = $latestStable
+			}
+			else {
+				$release = $latestPrerelease
+			}
 		}
 	}
 
