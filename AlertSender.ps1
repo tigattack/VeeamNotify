@@ -11,7 +11,7 @@ Param(
 $Config = $Config | ConvertFrom-Json
 
 # Create hash table for later use
-$hash = @{}
+$svcStatus = @{}
 
 # Import modules.
 Import-Module Veeam.Backup.PowerShell -DisableNameChecking
@@ -346,12 +346,12 @@ Switch ($services) {
 			New-DiscordPayload @payloadParams | Send-Payload -Uri $Config.services.discord.webhook
 			Write-LogMessage -Tag 'INFO' -Message 'Discord notification sent successfully.'
 			$vbrSessionLogger.UpdateSuccess($logId_discord, '[VeeamNotify] Discord notification sent successfully.')
-			$hash['Discord'] = 'Success'
+			$svcStatus['Discord'] = 'Success'
 		}
 		catch {
 			Write-LogMessage -Tag 'WARN' -Message "Unable to send Discord notification: $_"
 			$vbrSessionLogger.UpdateErr($logId_discord, '[VeeamNotify] Discord notification could not be sent.', 'Please check logs at C:\VeeamScripts\VeeamNotify\log\')
-			$hash['Discord'] = 'Failure'
+			$svcStatus['Discord'] = 'Failure'
 		}
 	}
 
@@ -368,12 +368,12 @@ Switch ($services) {
 			New-SlackPayload @payloadParams | Send-Payload -Uri $Config.services.slack.webhook
 			Write-LogMessage -Tag 'INFO' -Message 'Slack notification sent successfully.'
 			$vbrSessionLogger.UpdateSuccess($logId_slack, '[VeeamNotify] Slack notification sent successfully.')
-			$hash['Slack'] = 'Success'
+			$svcStatus['Slack'] = 'Success'
 		}
 		catch {
 			Write-LogMessage -Tag 'WARN' -Message "Unable to send Slack notification: $_"
 			$vbrSessionLogger.UpdateErr($logId_slack, '[VeeamNotify] Slack notification could not be sent.', 'Please check logs at C:\VeeamScripts\VeeamNotify\log\')
-			$hash['Slack'] = 'Failure'
+			$svcStatus['Slack'] = 'Failure'
 		}
 	}
 
@@ -393,20 +393,20 @@ Switch ($services) {
 			New-TeamsPayload @payloadParams | Send-Payload -Uri $Config.services.teams.webhook
 			Write-LogMessage -Tag 'INFO' -Message 'Teams notification sent successfully.'
 			$vbrSessionLogger.UpdateSuccess($logId_teams, '[VeeamNotify] Teams notification sent successfully.')
-			$hash['Teams'] = 'Success'
+			$svcStatus['Teams'] = 'Success'
 		}
 		catch {
 			Write-LogMessage -Tag 'WARN' -Message "Unable to send Teams notification: $_"
 			$vbrSessionLogger.UpdateErr($logId_teams, '[VeeamNotify] Teams notification could not be sent.', 'Please check logs at C:\VeeamScripts\VeeamNotify\log\')
-			$hash['Teams'] = 'Failure'
+			$svcStatus['Teams'] = 'Failure'
 		}
 	}
 }
 
-if (($hash.Values).Contains('Success') -and -not ($hash.Values -contains('Failed'))) {
+if (($svcStatus.Values).Contains('Success') -and -not ($svcStatus.Values -contains('Failed'))) {
 	$vbrSessionLogger.UpdateSuccess($logId_start, '[VeeamNotify] Script completed successfully.')
 }
-elseif (($hash.Values).Contains('Success') -and ($hash.Values -contains('Failed'))) {
+elseif (($svcStatus.Values).Contains('Success') -and ($svcStatus.Values -contains('Failed'))) {
 	$vbrSessionLogger.UpdateWarning($logId_start, '[VeeamNotify] Script completed with some send failures.', 'Please check logs at C:\VeeamScripts\VeeamNotify\log\')
 }
 else {
