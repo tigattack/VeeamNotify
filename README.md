@@ -13,13 +13,13 @@ Requirements:
 * PowerShell 5.1 or higher.
 
 * Option 1 - Install script. This option will also optionally configure any supported Veeam jobs to work with VeeamNotify.
-  1. Download [VeeamNotify-Installer.ps1](VeeamNotify-Installer.ps1).
+  1. Download [Installer.ps1](Installer.ps1).
   2. Open PowerShell (as Administrator) on your Veeam server.
   3. Run the following commands:
       ```powershell
       PS> Set-ExecutionPolicy -Scope Process -ExecutionPolicy Unrestricted -Force
-      PS> Unblock-File C:\path\to\VeeamNotify-Installer.ps1
-      PS> C:\path\to\VeeamNotify-Installer.ps1
+      PS> Unblock-File C:\path\to\Installer.ps1
+      PS> C:\path\to\Installer.ps1
       ```
       <img src="https://github.com/tigattack/VeeamDiscordNotifications/blob/dev/asset/installer.png?raw=true" alt="Installer Example" width="75%"/>
 
