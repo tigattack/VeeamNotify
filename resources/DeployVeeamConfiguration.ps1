@@ -1,7 +1,7 @@
 <#
 TODO:
 Refactor; much of both foreach loops is repeated, need more functions.
-Sort by name L46
+Sort by name L43
 #>
 
 # Function to be used when an error is encountered
@@ -94,26 +94,30 @@ If ($configChoice_result -eq 1) {
 		$postScriptCmd = $jobOptions.JobScriptCommand.PostScriptCommandLine
 
 		# Check if job is already configured for VeeamNotify
-		if ($postScriptCmd.EndsWith('\Bootstrap.ps1') -or $postScriptCmd.EndsWith("\Bootstrap.ps1'") -and (
-				-not ($postScriptCmd.StartsWith('powershell.exe', 'CurrentCultureIgnoreCase'))
-			)) {
-			Write-Output "`n$($jobName) is already configured for VeeamNotify; Skipping."
-			Continue
-		}
-		elseif ($postScriptCmd.StartsWith('powershell.exe', 'CurrentCultureIgnoreCase')) {
-			Write-Output "`n$($jobName) does not have full Powershell path. Updating."
-			try {
-				# Replace Powershell.exe with full path in a new variable for update.
-				$PostScriptFullPSPath = $postScriptCmd -replace 'Powershell.exe', 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe'
-				# Set job to use modified post script path
-				$jobOptions.JobScriptCommand.PostScriptCommandLine = $PostScriptFullPSPath
-				Set-VBRJobOptions -Job $job -Options $jobOptions | Out-Null
+		if ($postScriptCmd.EndsWith('\Bootstrap.ps1') -or $postScriptCmd.EndsWith("\Bootstrap.ps1'")) {
 
-				Write-Output "$($jobName) is now updated."
-				Continue
+			# Check if job has full PowerShell.exe path
+			if ($postScriptCmd.StartsWith('powershell.exe', 'CurrentCultureIgnoreCase')) {
+				Write-Output "`n$($jobName) is already configured for VeeamNotify, but does not have a full path to Powershell. Updating..."
+				try {
+					# Replace Powershell.exe with full path in a new variable for update.
+					$PostScriptFullPSPath = $postScriptCmd -replace 'Powershell.exe', 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe'
+					# Set job to use modified post script path
+					$jobOptions.JobScriptCommand.PostScriptCommandLine = $PostScriptFullPSPath
+					Set-VBRJobOptions -Job $job -Options $jobOptions | Out-Null
+
+					Write-Output "$($jobName) is now updated."
+					Continue
+				}
+				catch {
+					DeploymentError
+				}
 			}
-			catch {
-				DeploymentError
+
+			# skip if all correct
+			else {
+				Write-Output "`n$($jobName) is already configured for VeeamNotify; Skipping."
+				Continue
 			}
 		}
 
@@ -199,26 +203,30 @@ elseif ($configChoice_result -eq 0) {
 		$postScriptCmd = $jobOptions.JobScriptCommand.PostScriptCommandLine
 
 		# Check if job is already configured for VeeamNotify
-		if ($postScriptCmd.EndsWith('\Bootstrap.ps1') -or $postScriptCmd.EndsWith("\Bootstrap.ps1'") -and (
-				-not ($postScriptCmd.StartsWith('powershell.exe', 'CurrentCultureIgnoreCase'))
-			)) {
-			Write-Output "`n$($jobName) is already configured for VeeamNotify; Skipping."
-			Continue
-		}
-		elseif ($postScriptCmd.StartsWith('powershell.exe', 'CurrentCultureIgnoreCase')) {
-			Write-Output "`n$($jobName) does not have full Powershell path. Updating."
-			try {
-				# Replace Powershell.exe with full path in a new variable for update.
-				$PostScriptFullPSPath = $postScriptCmd -replace 'Powershell.exe', 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe'
-				# Set job to use modified post script path
-				$jobOptions.JobScriptCommand.PostScriptCommandLine = $PostScriptFullPSPath
-				Set-VBRJobOptions -Job $job -Options $jobOptions | Out-Null
+		if ($postScriptCmd.EndsWith('\Bootstrap.ps1') -or $postScriptCmd.EndsWith("\Bootstrap.ps1'")) {
 
-				Write-Output "$($jobName) is now updated."
-				Continue
+			# Check if job has full PowerShell.exe path
+			if ($postScriptCmd.StartsWith('powershell.exe', 'CurrentCultureIgnoreCase')) {
+				Write-Output "`n$($jobName) is already configured for VeeamNotify, but does not have a full path to Powershell. Updating..."
+				try {
+					# Replace Powershell.exe with full path in a new variable for update.
+					$PostScriptFullPSPath = $postScriptCmd -replace 'Powershell.exe', 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe'
+					# Set job to use modified post script path
+					$jobOptions.JobScriptCommand.PostScriptCommandLine = $PostScriptFullPSPath
+					Set-VBRJobOptions -Job $job -Options $jobOptions | Out-Null
+
+					Write-Output "$($jobName) is now updated."
+					Continue
+				}
+				catch {
+					DeploymentError
+				}
 			}
-			catch {
-				DeploymentError
+
+			# skip if all correct
+			else {
+				Write-Output "`n$($jobName) is already configured for VeeamNotify; Skipping."
+				Continue
 			}
 		}
 
