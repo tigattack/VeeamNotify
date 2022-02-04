@@ -4,12 +4,13 @@
 param
 (
 	[ValidateSet('main', 'dev')]
-    $Branch
+	$Branch
 )
 
 # Prepare variables
 $rootPath = 'C:\VeeamScripts'
 $project = 'VeeamNotify'
+$ErrorActionPreference = 'Stop'
 
 Write-Output @"
 #######################################
@@ -156,21 +157,19 @@ $servicePrompt_opts = [System.Management.Automation.Host.ChoiceDescription[]]($s
 $servicePrompt_result = $host.UI.PromptForChoice('Notification Service', 'Which service do you wish to send notifications to?', $servicePrompt_opts, -1)
 
 Switch ($servicePrompt_result) {
+	0 {
+		$config.services.discord.user_id = 'Please enter your Discord user ID'
+		$config.services.discord.webhook = Read-Host -Prompt 'Please enter your webhook URL'
+	}
 	1 {
-		$config.service = 'Discord'
-		$userIdMessage = 'Please enter your Discord user ID'
+		$config.services.slack.user_id = 'Please enter your Slack member ID'
+		$config.services.slack.webhook = Read-Host -Prompt 'Please enter your webhook URL'
 	}
 	2 {
-		$config.service = 'Slack'
-		$userIdMessage = 'Please enter your Slack member ID'
-	}
-	3 {
-		$config.service = 'Teams'
-		$userIdMessage = 'Please enter your Teams email address'
+		$config.services.teams.user_id = 'Please enter your Teams email address'
+		$config.services.teams.webhook = Read-Host -Prompt 'Please enter your webhook URL'
 	}
 }
-
-$config.webhook = Read-Host -Prompt 'Please enter your webhook URL'
 
 $mentionPreference_no = New-Object System.Management.Automation.Host.ChoiceDescription '&No', 'Do not mention me.'
 $mentionPreference_warn = New-Object System.Management.Automation.Host.ChoiceDescription '&Warning', 'Mention me when a session finishes in a warning state.'
@@ -181,17 +180,18 @@ $mentionPreference_message = 'Do you wish to be mentioned/tagged when a session 
 $mentionPreference_result = $host.UI.PromptForChoice('Mention Preference', $mentionPreference_message, $mentionPreference_opts, 2)
 
 If ($mentionPreference_result -ne 0) {
-	do {
-		$userId = Read-Host -Prompt "`n$userIdMessage"
-	}
-	until ($userId.ToString().Length -gt 1)
-
-	If ($config.service -eq 3) {
-		Write-Output "Teams also requires a name to be specified for mentions.`nIf you don't enter your name, your username (from your email address) will be used.`nIf you'd prefer this, type nothing and press enter."
-		$config.teams_user_name = Read-Host -Prompt 'Please enter your name on Teams'
-	}
-	Else {
-		$config.teams_user_name = ''
+	Switch ($servicePrompt_result) {
+		0 {
+			$config.services.discord.user_id = 'Please enter your Discord user ID'
+		}
+		1 {
+			$config.services.slack.user_id = 'Please enter your Slack member ID'
+		}
+		2 {
+			$config.services.teams.user_id = 'Please enter your Teams email address'
+			Write-Output "Teams also requires a name to be specified for mentions.`nIf you don't enter your name, your username (from your email address) will be used.`nIf you'd prefer this, type nothing and press enter."
+			$config.services.teams.user_name = Read-Host -Prompt 'Please enter your name on Teams (e.g. John Smith)'
+		}
 	}
 }
 
@@ -204,17 +204,14 @@ Switch ($mentionPreference_result) {
 	1 {
 		$config.mention_on_fail = $false
 		$config.mention_on_warning = $true
-		$config."$($config.service)_user_id" = $userId
 	}
 	2 {
 		$config.mention_on_fail = $true
 		$config.mention_on_warning = $false
-		$config."$($config.service)_user_id" = $userId
 	}
 	3 {
 		$config.mention_on_fail = $true
 		$config.mention_on_warning = $true
-		$config."$($config.service)_user_id" = $userId
 	}
 }
 
