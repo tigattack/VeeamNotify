@@ -235,38 +235,24 @@ elseif ($configChoice_result -eq 0) {
 			Write-Output "`n$($jobName) has an existing post-job script.`nScript: $postScriptCmd"
 			Write-Output "`nIf you wish to receive notifications for this job, you must overwrite the existing post-job script."
 
-			$overwriteCurrentCmd_yes = New-Object System.Management.Automation.Host.ChoiceDescription '&Yes', 'Overwrite the current post-job script.'
-			$overwriteCurrentCmd_no = New-Object System.Management.Automation.Host.ChoiceDescription '&No', 'Skip configuration of this job, leaving it as-is.'
-			$overwriteCurrentCmd_opts = [System.Management.Automation.Host.ChoiceDescription[]]($overwriteCurrentCmd_yes, $overwriteCurrentCmd_no)
-			$overwriteCurrentCmd_result = $host.UI.PromptForChoice('Overwrite Job Configuration', 'Do you wish to overwrite the existing post-job script?', $overwriteCurrentCmd_opts, -1)
+			try {
+				# Check to see if the script has even changed
+				if ($postScriptCmd -ne $newPostScriptCmd) {
 
-			switch ($overWriteCurrentCmd_result) {
-				# Overwrite current post-job script
-				0 {
-					try {
-						# Check to see if the script has even changed
-						if ($postScriptCmd -ne $newPostScriptCmd) {
+					# Script is not the same. Update the script command line.
+					$jobOptions.JobScriptCommand.PostScriptCommandLine = $newPostScriptCmd
+					Set-VBRJobOptions -Job $job -Options $jobOptions | Out-Null
 
-							# Script is not the same. Update the script command line.
-							$jobOptions.JobScriptCommand.PostScriptCommandLine = $newPostScriptCmd
-							Set-VBRJobOptions -Job $job -Options $jobOptions | Out-Null
-
-							Write-Output "Updated post-job script for job $($jobName).`nOld: $postScriptCmd`nNew: $newPostScriptCmd"
-							Write-Output "$($jobName) is now configured for VeeamNotify."
-						}
-						else {
-							# Script hasn't changed. Notify user of this and continue.
-							Write-Output "$($jobName) is already configured for VeeamNotify; Skipping."
-						}
-					}
-					catch {
-						DeploymentError
-					}
+					Write-Output "Updated post-job script for job $($jobName).`nOld: $postScriptCmd`nNew: $newPostScriptCmd"
+					Write-Output "$($jobName) is now configured for VeeamNotify."
 				}
-				# Skip configuration of this job
-				1 { Write-Output "`nSkipping job $($jobName)`n" }
-				# Default action will be to skip the job.
-				default { Write-Output "`nSkipping job $($jobName)`n" }
+				else {
+					# Script hasn't changed. Notify user of this and continue.
+					Write-Output "$($jobName) is already configured for VeeamNotify; Skipping."
+				}
+			}
+			catch {
+				DeploymentError
 			}
 		}
 		else {
