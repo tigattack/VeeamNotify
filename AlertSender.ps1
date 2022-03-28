@@ -354,6 +354,17 @@ Switch ($Config.services) {
 	}
 }
 
+# Clean up old log files if configured
+if ($Config.log_expiry_days -ne 0) {
+	if ((Get-ChildItem "$PSScriptRoot\log" | Where-Object { $_.CreationTime -lt (Get-Date).AddDays(-$Config.log_expiry_days)}).Count -ne 0) 
+	{
+		Write-LogMessage -Tag 'INFO' -Message "Found $FilesToRotate log files to rotate."
+		Get-ChildItem "$PSScriptRoot\log" | Where-Object { $_.CreationTime -lt (Get-Date).AddDays(-$Config.log_expiry_days)} | Remove-Item
+		Write-LogMessage -Tag 'INFO' -Message "Deleted $FilesToRotate log files as part of rotation."
+	} else {
+		Write-LogMessage -Tag 'INFO' -Message "Found no logs files exceeding retention date for rotation."
+	}
+}
 
 # If newer version available...
 If ($updateStatus.Status -eq 'Behind') {
