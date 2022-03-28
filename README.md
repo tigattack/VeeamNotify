@@ -62,7 +62,7 @@ Configuration can be found in `C:\VeeamScripts\VeeamNotify\config\conf.json`
 | `self_update`        | boolean | False    | False             | When `true`, the script will update itself if there's a newer version available.                           |
 | `debug_log`          | boolean | False    | False             | When `true`, the script will log to a session-specific file in `C:\VeeamScripts\VeeamNotify\logs\`         |
 | `thumbnail`          | string  | False    | See example above | Image URL for the thumbnail shown in the report embed.                                                     |
-| `log_expiry_days`    | integer | False    | 7                 | Will delete logs older than value. Set to 0 to disable.                                                      |
+| `log_expiry_days`    | integer | False    | 7                 | Will delete logs older than value. Set to 0 to disable.                                                    |
 
 ---
 
