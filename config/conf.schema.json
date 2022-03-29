@@ -68,6 +68,9 @@
         },
         "comment": {
             "type": "string"
+        },
+        "log_expiry_days": {
+            "type": "integer"
         }
     },
     "required": [
