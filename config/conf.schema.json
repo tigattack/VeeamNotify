@@ -71,6 +71,9 @@
         },
         "log_expiry_days": {
             "type": "integer"
+        },
+        "log_severity": {
+            "type": "string"
         }
     },
     "required": [

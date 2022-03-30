@@ -21,5 +21,6 @@
 	"notify_update": true,
 	"self_update": false,
 	"self_update_comment": "self_update will NOT work. Leave as 'false'.",
-	"log_expiry_days": 7
+	"log_expiry_days": 7,
+	"log_severity": "Debug"
 }
