@@ -11,10 +11,21 @@ Function Write-LogMessage {
 		[Parameter(Mandatory)]
 		$Message
 	)
-
+	# Reads config file to correlate log severity level.
+	$config = Get-Content -Raw "$PSScriptRoot\..\config\conf.json" | ConvertFrom-Json	
+	# Creates hash table with severities
+	$Severities = @{}
+	$Severities.Error = 1
+	$Severities.Warn = 2
+	$Severities.Info = 3
+	$Severities.Debug = 4
+	# Gets correct severity integer dependant on Tag.
+	$Severity = $Severities[$Tag]
+	# Gets correct severity integer dependant on severity in config.
+	$ConfigSeverity = $Severities[$config.log_severity]
 	$time = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ss.fffK')
 
-	If ($PSCmdlet.ShouldProcess('Output stream', 'Write log message')) {
+	If (($PSCmdlet.ShouldProcess('Output stream', 'Write log message')) -and ($ConfigSeverity -ge $Severity)) {
 		Write-Output "$time [$($Tag.ToUpper())] $Message"
 	}
 }
