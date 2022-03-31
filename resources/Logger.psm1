@@ -12,7 +12,7 @@ Function Write-LogMessage {
 		$Message
 	)
 	# Reads config file to correlate log severity level.
-	$config = Get-Content -Raw "$PSScriptRoot\..\config\conf.json" | ConvertFrom-Json	
+	$config = Get-Content -Raw "$PSScriptRoot\..\config\conf.json" | ConvertFrom-Json
 	# Creates hash table with severities
 	$Severities = @{}
 	$Severities.Error = 1
