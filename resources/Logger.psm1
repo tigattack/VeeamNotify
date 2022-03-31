@@ -22,7 +22,7 @@ Function Write-LogMessage {
 	# Gets correct severity integer dependant on Tag.
 	$Severity = $Severities[$Tag]
 	# Gets correct severity integer dependant on severity in config.
-	$ConfigSeverity = $Severities[$config.log_severity]
+	$ConfigSeverity = $Severities[$config.logging.severity]
 	$time = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ss.fffK')
 
 	If (($PSCmdlet.ShouldProcess('Output stream', 'Write log message')) -and ($ConfigSeverity -ge $Severity)) {
@@ -74,14 +74,14 @@ Function Remove-OldLogs {
 		[Parameter(Mandatory)]
 		[String]$Path,
 		[Parameter(Mandatory)]
-		[int]$MaximumAgeDays
+		[int]$MaxAgeDays
 	)
 
 	If ($PSCmdlet.ShouldProcess($Path, 'Remove expired log files')) {
 
-		Write-LogMessage -Tag 'DEBUG' -Message "Searching for log files older than $MaximumAgeDays days."
+		Write-LogMessage -Tag 'DEBUG' -Message "Searching for log files older than $MaxAgeDays days."
 
-		$oldLogs = (Get-ChildItem $Path | Where-Object { $_.CreationTime -lt (Get-Date).AddDays(-$Config.log_expiry_days)})
+		$oldLogs = (Get-ChildItem $Path | Where-Object { $_.CreationTime -lt (Get-Date).AddDays(-$MaxAgeDays)})
 
 		if ($($oldLogs.Count) -ne 0) {
 			Write-LogMessage -Tag 'DEBUG' -Message "Found $($oldLogs.Count) log files to remove."
