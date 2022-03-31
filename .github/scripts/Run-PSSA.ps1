@@ -1,7 +1,3 @@
-# Install PSSA module
-Set-PSRepository PSGallery -InstallationPolicy Trusted
-Install-Module PSScriptAnalyzer -ErrorAction Stop
-
 # Get all relevant PowerShell files
 $psFiles = Get-ChildItem -Path ./* -Include *.ps1,*.psm1 -Recurse
 
