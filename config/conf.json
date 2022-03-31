@@ -14,13 +14,17 @@
 			"user_name": "Your Name"
 		}
 	},
-	"mention_on_fail": false,
-	"mention_on_warning": false,
-	"debug_log": false,
+	"mentions": {
+		"on_failure": false,
+		"on_warning": false
+	},
+	"logging": {
+		"enabled": true,
+		"level": "info",
+		"max_age_days": 7
+	},
 	"thumbnail": "https://raw.githubusercontent.com/tigattack/VeeamDiscordNotifications/master/asset/thumb01.png",
 	"notify_update": true,
 	"self_update": false,
-	"self_update_comment": "self_update will NOT work. Leave as 'false'.",
-	"log_expiry_days": 7,
-	"log_severity": "Debug"
+	"self_update_comment": "self_update will NOT work. Leave as 'false'."
 }

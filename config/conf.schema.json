@@ -48,14 +48,35 @@
                 "teams"
             ]
         },
-        "mention_on_fail": {
-            "type": "boolean"
+        "mentions": {
+            "type": "object",
+            "properties": {
+                "on_failure": {
+                    "type": "boolean"
+                },
+                "on_warning": {
+                    "type": "boolean"
+                }
+            }
         },
-        "mention_on_warning": {
-            "type": "boolean"
-        },
-        "debug_log": {
-            "type": "boolean"
+        "logging": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "type": "boolean"
+                },
+                "level": {
+                    "type": "string"
+                },
+                "max_age_days": {
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "enabled",
+                "level",
+                "max_age_days"
+            ]
         },
         "thumbnail": {
             "type": "string"
@@ -68,16 +89,11 @@
         },
         "comment": {
             "type": "string"
-        },
-        "log_expiry_days": {
-            "type": "integer"
-        },
-        "log_severity": {
-            "type": "string"
         }
     },
     "required": [
         "services",
+        "logging",
         "thumbnail"
     ]
 }

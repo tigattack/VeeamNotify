@@ -198,20 +198,20 @@ If ($mentionPreference_result -ne 0) {
 # Set config values
 Switch ($mentionPreference_result) {
 	0 {
-		$config.mention_on_fail = $false
-		$config.mention_on_warning = $false
+		$config.mentions.on_fail = $false
+		$config.mentions.on_warning = $false
 	}
 	1 {
-		$config.mention_on_fail = $false
-		$config.mention_on_warning = $true
+		$config.mentions.on_fail = $false
+		$config.mentions.on_warning = $true
 	}
 	2 {
-		$config.mention_on_fail = $true
-		$config.mention_on_warning = $false
+		$config.mentions.on_fail = $true
+		$config.mentions.on_warning = $false
 	}
 	3 {
-		$config.mention_on_fail = $true
-		$config.mention_on_warning = $true
+		$config.mentions.on_fail = $true
+		$config.mentions.on_warning = $true
 	}
 }
 

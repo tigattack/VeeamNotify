@@ -321,11 +321,11 @@ Try {
 	Write-LogMessage -Tag 'INFO' -Message 'Populate conf.json with previous configuration.'
 	$newConfig.webhook = $currentConfig.webhook
 	$newConfig.userid = $currentConfig.userid
-	if ($currentConfig.mention_on_fail -ne $newConfig.mention_on_fail) {
-		$newConfig.mention_on_fail = $currentConfig.mention_on_fail
+	if ($currentConfig.mentions.on_fail -ne $newConfig.mentions.on_fail) {
+		$newConfig.mentions.on_fail = $currentConfig.mentions.on_fail
 	}
-	if ($currentConfig.debug_log -ne $newConfig.debug_log) {
-		$newConfig.debug_log = $currentConfig.debug_log
+	if ($currentConfig.logging.enabled -ne $newConfig.logging.enabled) {
+		$newConfig.logging.enabled = $currentConfig.logging.enabled
 	}
 	if ($currentConfig.self_update -ne $newConfig.self_update) {
 		$newConfig.self_update = $currentConfig.self_update

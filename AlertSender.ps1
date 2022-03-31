@@ -21,7 +21,7 @@ Import-Module "$PSScriptRoot\resources\VBRSessionInfo.psm1"
 
 
 # Start logging if logging is enabled in config
-If ($Config.debug_log) {
+If ($Config.logging.enabled) {
 	## Wait until log file is closed by Bootstrap.ps1
 	try {
 		$count = 1
@@ -232,7 +232,7 @@ Switch ($jobType) {
 $mention = $false
 ## On fail
 Try {
-	If ($Config.mention_on_fail -and $status -eq 'Failed') {
+	If ($Config.mentions.on_fail -and $status -eq 'Failed') {
 		$mention = $true
 	}
 }
@@ -242,7 +242,7 @@ Catch {
 
 ## On warning
 Try {
-	If ($Config.mention_on_warning -and $status -eq 'Warning') {
+	If ($Config.mentions.on_warning -and $status -eq 'Warning') {
 		$mention = $true
 	}
 }
@@ -355,17 +355,17 @@ Switch ($Config.services) {
 }
 
 # Clean up old log files if configured
-if ($Config.log_expiry_days -ne 0) {
+if ($Config.logging.max_age_days -ne 0) {
 	Write-LogMessage -Tag 'DEBUG' -Message 'Running log cleanup.'
 
-	If ($Config.log_severity -eq 'debug') {
+	If ($Config.logging.severity -eq 'debug') {
 		$debug = $true
 	}
 	else {
 		$debug = $false
 	}
 
-	Remove-OldLogs -Path "$PSScriptRoot\log" -MaximumAgeDays $Config.log_expiry_days -Verbose:$debug
+	Remove-OldLogs -Path "$PSScriptRoot\log" -MaximumAgeDays $Config.logging.max_age_days -Verbose:$debug
 }
 
 # If newer version available...
@@ -385,6 +385,6 @@ If ($updateStatus.Status -eq 'Behind') {
 }
 
 # Stop logging.
-If ($Config.debug_log) {
+If ($Config.logging.enabled) {
 	Stop-Logging
 }
