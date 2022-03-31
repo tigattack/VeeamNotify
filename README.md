@@ -48,22 +48,44 @@ As much relevant information as I've been able to discover from such backup sess
 
 ## Configuration options
 
-Configuration can be found in `C:\VeeamScripts\VeeamNotify\config\conf.json`
+Default configuration can be found in `C:\VeeamScripts\VeeamNotify\config\conf.json`
 
-| Name                 | Type    | Required | Default           | Description                                                                                                |
-|----------------------|---------|----------|-------------------|------------------------------------------------------------------------------------------------------------|
-| `webhook`            | string  | True     | null              | Your webhook URL.                                                                                          |
-| `discord_userid`     | string  | False    | null              | Your Discord user ID. Required if either of the `mention_` options below are `true`.                       |
-| `slack_userid`       | string  | False    | null              | Your Slack member ID. Required if either of the `mention_` options below are `true`.                       |
-| `teams_upn`          | string  | False    | null              | Your user UPN for Teams. Required if either of the `mention_` options below are `true`.                    |
-| `mention_on_fail`    | boolean | False    | False             | When `true`, you will be mentioned when a job finishes in a failed state. Requires that `userid` is set.   |
-| `mention_on_warning` | boolean | False    | False             | When `true`, you will be mentioned when a job finishes in a warning state. Requires that `userid` is set.  |
-| `notify_update`      | boolean | False    | True              | When `true`, the script will notify you if there's a newer version available.                              |
-| `self_update`        | boolean | False    | False             | When `true`, the script will update itself if there's a newer version available.                           |
-| `debug_log`          | boolean | False    | False             | When `true`, the script will log to a session-specific file in `C:\VeeamScripts\VeeamNotify\logs\`         |
-| `thumbnail`          | string  | False    | See example above | Image URL for the thumbnail shown in the report embed.                                                     |
-| `log_expiry_days`    | integer | False    | 7                 | Will delete logs older than value. Set to 0 to disable.                                                    |
-| `log_severity`       | string  | True     | Info              | Will only print logs related to severity. Options: `Error`, `Warn`, `Info`, `Debug`.                      |
+An example configuration can be found below with highlighted comments.
+
+__Do not copy/paste it. It is not valid JSON.__
+
+```json
+{
+    "services": {                       # Service definitions.
+        "discord": {                      # Discord service.
+            "webhook": "DiscordWebhook",    # Discord webhook.
+            "user_id": "123456789"          # Discord user id. Required only if any of the mention conditions are true.
+        },
+        "slack": {                        # Slack service.
+            "webhook": "SlackWebhook",      # Slack webhook.
+            "user_id": "A1B2C3D4E5"         # Slack user id. Required only if any of the mention conditions are true.
+        },
+        "teams": {                        # Teams service.
+            "webhook": "TeamsWebhook",      # Teams webhook.
+            "user_id": "user@domain.tld",   # Teams user id. Required only if any of the mention conditions are true.
+            "user_name": "Your Name"        # Teams user name. Required only if any of the mention conditions are true.
+        }
+    },
+    "mentions": {           # Mention definitions. All options require user_id (and user_name if Teams) above.
+        "on_failure": false,  # If true, you will be mentioned when a job finishes in a failed state. 
+        "on_warning": false   # If true, you will be mentioned when a job finishes in a warning state.
+    },
+    "logging": {            # Logging configuration.
+        "enabled": true,      # If true, VeeamNotify will log to a session-specific file in C:\VeeamScripts\VeeamNotify\logs\
+        "level": "info",      # Logging level. Possibly values: error, warn, info, debug.
+        "max_age_days": 7     # Max age of log files. Set to 0 to disable log expiry.
+    },
+    "thumbnail": "https://some.url/img.jpg",  # Image URL for the thumbnail shown in the report embed.
+    "notify_update": true,                    # If true, VeeamNotify will notify you if an update is available.
+    "self_update": false,                     # DO NOT USE. If true, VeeamNotify will update itself when an update is available.
+    "self_update_comment": "self_update will NOT work. Leave as 'false'."
+}
+```
 
 ---
 
