@@ -12,7 +12,7 @@ Function Write-LogMessage {
 		$Message
 	)
 	# Reads config file to correlate log severity level.
-	$config = Get-Content -Raw "$PSScriptRoot\..\config\conf.json" | ConvertFrom-Json	
+	$config = Get-Content -Raw "$PSScriptRoot\..\config\conf.json" | ConvertFrom-Json
 	# Creates hash table with severities
 	$Severities = @{}
 	$Severities.Error = 1
@@ -62,5 +62,39 @@ Function Stop-Logging {
 	If ($PSCmdlet.ShouldProcess('log file', 'Stop-Transcript')) {
 		Write-LogMessage -Tag 'INFO' -Message 'Stopping transcript logging.'
 		Stop-Transcript
+	}
+}
+
+Function Remove-OldLogs {
+	[CmdletBinding(
+		SupportsShouldProcess,
+		ConfirmImpact = 'Low'
+	)]
+	Param(
+		[Parameter(Mandatory)]
+		[String]$Path,
+		[Parameter(Mandatory)]
+		[int]$MaximumAgeDays
+	)
+
+	If ($PSCmdlet.ShouldProcess($Path, 'Remove expired log files')) {
+
+		Write-LogMessage -Tag 'DEBUG' -Message "Searching for log files older than $MaximumAgeDays days."
+
+		$oldLogs = (Get-ChildItem $Path | Where-Object { $_.CreationTime -lt (Get-Date).AddDays(-$Config.log_expiry_days)})
+
+		if ($($oldLogs.Count) -ne 0) {
+			Write-LogMessage -Tag 'DEBUG' -Message "Found $($oldLogs.Count) log files to remove."
+			Try {
+				$oldLogs | Remove-Item -Force -Verbose:$VerbosePreference
+				Write-LogMessage -Tag 'INFO' -Message "Removed $($oldLogs.Count) expired log files."
+			}
+			Catch {
+				Write-LogMessage -Tag 'ERROR' -Message 'Failed to remove some/all log files.'
+			}
+		}
+		else {
+			Write-LogMessage -Tag 'DEBUG' -Message 'Found 0 logs files exceeding retention period.'
+		}
 	}
 }

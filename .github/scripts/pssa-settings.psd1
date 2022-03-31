@@ -2,7 +2,8 @@
 @{
 	ExcludeRules = @(
 		'PSReviewUnusedParameter', # Required due to PowerShell/PSScriptAnalyzer#1472.
-		'PSAvoidLongLines'
+		'PSAvoidLongLines',
+		'PSUseSingularNouns'
 	)
 	Rules = @{
 		PSAvoidUsingDoubleQuotesForConstantString = @{
