@@ -74,14 +74,14 @@ Function Remove-OldLogs {
 		[Parameter(Mandatory)]
 		[String]$Path,
 		[Parameter(Mandatory)]
-		[int]$MaximumAgeDays
+		[int]$MaxAgeDays
 	)
 
 	If ($PSCmdlet.ShouldProcess($Path, 'Remove expired log files')) {
 
-		Write-LogMessage -Tag 'DEBUG' -Message "Searching for log files older than $MaximumAgeDays days."
+		Write-LogMessage -Tag 'DEBUG' -Message "Searching for log files older than $MaxAgeDays days."
 
-		$oldLogs = (Get-ChildItem $Path | Where-Object { $_.CreationTime -lt (Get-Date).AddDays(-$Config.logging.max_age_days)})
+		$oldLogs = (Get-ChildItem $Path | Where-Object { $_.CreationTime -lt (Get-Date).AddDays(-$MaxAgeDays)})
 
 		if ($($oldLogs.Count) -ne 0) {
 			Write-LogMessage -Tag 'DEBUG' -Message "Found $($oldLogs.Count) log files to remove."

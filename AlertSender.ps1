@@ -365,7 +365,7 @@ if ($Config.logging.max_age_days -ne 0) {
 		$debug = $false
 	}
 
-	Remove-OldLogs -Path "$PSScriptRoot\log" -MaximumAgeDays $Config.logging.max_age_days -Verbose:$debug
+	Remove-OldLogs -Path "$PSScriptRoot\log" -MaxAgeDays $Config.logging.max_age_days -Verbose:$debug
 }
 
 # If newer version available...
