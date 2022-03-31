@@ -9,8 +9,14 @@ jobs:
   lint:
     name: Run PSScriptAnalyzer
     runs-on: ubuntu-latest
+
     steps:
     - uses: actions/checkout@v2
-    - name: Lint with PSScriptAnalyzer
+
+    - name: Install PSScriptAnalyzer
       shell: pwsh
-      run: ./.github/scripts/pssa.ps1
+      run: ./.github/scripts/Install-PSSA.ps1
+
+    - name: Run PSScriptAnalyzer
+      shell: pwsh
+      run: ./.github/scripts/Run-PSSA.ps1
