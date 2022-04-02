@@ -366,7 +366,7 @@ Switch ($Config.services) {
 if ($Config.logging.max_age_days -ne 0) {
 	Write-LogMessage -Tag 'DEBUG' -Message 'Running log cleanup.'
 
-	If ($Config.logging.severity -eq 'debug') {
+	If ($config.logging.level -eq 'debug') {
 		$debug = $true
 	}
 	else {

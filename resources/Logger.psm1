@@ -22,7 +22,7 @@ Function Write-LogMessage {
 	# Gets correct severity integer dependant on Tag.
 	$Severity = $Severities[$Tag]
 	# Gets correct severity integer dependant on severity in config.
-	$ConfigSeverity = $Severities[$config.logging.severity]
+	$ConfigSeverity = $Severities[$Config.logging.level]
 	$time = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ss.fffK')
 
 	If (($PSCmdlet.ShouldProcess('Output stream', 'Write log message')) -and ($ConfigSeverity -ge $Severity)) {
