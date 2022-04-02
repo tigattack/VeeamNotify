@@ -91,10 +91,10 @@ __Do not copy/paste it. It is not valid JSON.__
 
 ## Credits
 
-[MelonSmasher](https://github.com/MelonSmasher)//[TheSageColleges](https://github.com/TheSageColleges) for [the project](https://github.com/TheSageColleges/VeeamSlackNotifications) which inspired this one. Much of MelonMasher's codebase was incredibly useful.  
+[MelonSmasher](https://github.com/MelonSmasher)//[TheSageColleges](https://github.com/TheSageColleges) for [the project](https://github.com/TheSageColleges/VeeamSlackNotifications) which inspired this one.  
 [dantho281](https://github.com/dantho281) for various things - Assistance with silly little issues, the odd bugfix here and there, and the inspiration for and first works on the `Updater.ps1` script.  
 [Lee_Dailey](https://reddit.com/u/Lee_Dailey) for general pointers and the [first revision](https://pastebin.com/srN5CKty) of the `ConvertTo-ByteUnit` function.  
-[philenst](https://github.com/philenst) for the `DeployVeeamConfiguration.ps1` script.  
+[philenst](https://github.com/philenst) for committing or assisting with a number of core components of the project.  
 [s0yun](https://github.com/s0yun) for the `Installer.ps1` script.  
 
 Thank you all.
