@@ -9,21 +9,49 @@ Function Write-LogMessage {
 		[Parameter(Mandatory)]
 		[String]$Tag,
 		[Parameter(Mandatory)]
-		$Message
+		$Message,
+		[switch]$FirstLog
 	)
-	# Reads config file to correlate log severity level.
-	$config = Get-Content -Raw "$PSScriptRoot\..\config\conf.json" | ConvertFrom-Json
+
+	# Get current timestamp
+	$time = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ss.fffK')
+
 	# Creates hash table with severities
-	$Severities = @{}
-	$Severities.Error = 1
-	$Severities.Warn = 2
-	$Severities.Info = 3
-	$Severities.Debug = 4
+	$Severities = @{
+		Error	= 1
+		Warn	= 2
+		Info	= 3
+		Debug	= 4
+	}
+
+	# Pull config if necessary to correlate logging level
+	If (-not (Get-Variable -Name 'config' -ErrorAction SilentlyContinue)) {
+		$configPath = Split-Path $PSScriptRoot -Parent | Join-Path -ChildPath 'config\conf.json'
+		$config = Get-Content -Path $configPath -Raw | ConvertFrom-Json
+	}
+
+	# If config is not found, default to info
+	If ($config.logging.level -notin $Severities.Keys) {
+		# Set if property exists
+		If ($config.logging | Get-Member -Name level) {
+			$config.logging.level = 'Info'
+		}
+		# Otherwise add property
+		Else {
+			$config.logging | Add-Member -MemberType NoteProperty -Name level -Value 'Info'
+		}
+
+		# Warn if this is the first log entry
+		If ($FirstLog) {
+			Write-Output "$time [WARNING] Logging level unset or set incorrectly in config.json. Defaulting to info level."
+		}
+	}
+
 	# Gets correct severity integer dependant on Tag.
 	$Severity = $Severities[$Tag]
+
 	# Gets correct severity integer dependant on severity in config.
 	$ConfigSeverity = $Severities[$Config.logging.level]
-	$time = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ss.fffK')
 
 	If (($PSCmdlet.ShouldProcess('Output stream', 'Write log message')) -and ($ConfigSeverity -ge $Severity)) {
 		Write-Output "$time [$($Tag.ToUpper())] $Message"
@@ -45,7 +73,7 @@ Function Start-Logging {
 	If ($PSCmdlet.ShouldProcess($Path, 'Start-Transcript')) {
 		Try {
 			Start-Transcript -Path $Path -Force -Append | Out-Null
-			Write-LogMessage -Tag 'INFO' -Message "Transcript is being logged to '$Path'."
+			Write-LogMessage -Tag 'INFO' -Message "Transcript is being logged to '$Path'." -FirstLog
 		}
 		Catch [System.IO.IOException] {
 			Write-LogMessage -Tag 'INFO' -Message "Transcript start attemped but transcript is already being logged to '$Path'."
