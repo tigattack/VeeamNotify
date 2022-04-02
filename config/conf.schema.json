@@ -59,6 +59,20 @@
                 }
             }
         },
+        "notify": {
+            "type": "object",
+            "properties": {
+                "on_success": {
+                    "type": "boolean"
+                },
+                "on_failure": {
+                    "type": "boolean"
+                },
+                "on_warning": {
+                    "type": "boolean"
+                }
+            }
+        },
         "logging": {
             "type": "object",
             "properties": {
