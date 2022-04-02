@@ -35,12 +35,7 @@ $Config = $Config | ConvertFrom-Json
 
 # Import modules.
 Import-Module Veeam.Backup.PowerShell -DisableNameChecking
-Import-Module "$PSScriptRoot\resources\ConvertTo-ByteUnit.psm1"
-Import-Module "$PSScriptRoot\resources\Logger.psm1"
-Import-Module "$PSScriptRoot\resources\NotificationHandler.psm1"
-Import-Module "$PSScriptRoot\resources\Test-FileIsLocked.psm1"
-Import-Module "$PSScriptRoot\resources\UpdateInfo.psm1"
-Import-Module "$PSScriptRoot\resources\VBRSessionInfo.psm1"
+Get-Item "$PSScriptRoot\resources\*.psm1" | Import-Module
 
 
 # Start logging if logging is enabled in config
