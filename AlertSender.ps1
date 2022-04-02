@@ -311,7 +311,11 @@ elseif ($jobType -eq 'EpAgentBackup') {
 }
 
 # Add update message if relevant.
-If ($updateStatus.Status -eq 'Behind' -and $config.notify_update) {
+# Default to sending notification of unconfigured
+If ($config.update | Get-Member -Name 'notify') {
+	$config.update.notify = $true
+}
+If ($updateStatus.Status -eq 'Behind' -and $config.update.notify) {
 	$payloadParams += @{
 		UpdateNotification = $true
 		LatestVersion      = $updateStatus.LatestStable
@@ -375,7 +379,7 @@ if ($Config.logging.max_age_days -ne 0) {
 If ($updateStatus.Status -eq 'Behind') {
 
 	# Trigger update if configured to do so.
-	If ($Config.self_update) {
+	If ($Config.update.auto_update) {
 
 		# Copy update script out of working directory.
 		Copy-Item $PSScriptRoot\Updater.ps1 $PSScriptRoot\..\VDNotifs-Updater.ps1

@@ -78,16 +78,21 @@
                 "max_age_days"
             ]
         },
+        "update": {
+            "type": "object",
+            "properties": {
+                "notify": {
+                    "type": "boolean"
+                },
+                "auto_update": {
+                    "type": "boolean"
+                },
+                "auto_update_comment": {
+                    "type": "string"
+                }
+            }
+        },
         "thumbnail": {
-            "type": "string"
-        },
-        "notify_update": {
-            "type": "boolean"
-        },
-        "self_update": {
-            "type": "boolean"
-        },
-        "comment": {
             "type": "string"
         }
     },

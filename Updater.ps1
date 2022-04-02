@@ -327,8 +327,8 @@ Try {
 	if ($currentConfig.logging.enabled -ne $newConfig.logging.enabled) {
 		$newConfig.logging.enabled = $currentConfig.logging.enabled
 	}
-	if ($currentConfig.self_update -ne $newConfig.self_update) {
-		$newConfig.self_update = $currentConfig.self_update
+	if ($currentConfig.auto_update -ne $newConfig.auto_update) {
+		$newConfig.auto_update = $currentConfig.auto_update
 	}
 	ConvertTo-Json $newConfig | Set-Content "$projectPath\config\conf.json"
 }

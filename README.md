@@ -80,10 +80,12 @@ __Do not copy/paste it. It is not valid JSON.__
         "level": "info",      # Logging level. Possibly values: error, warn, info, debug.
         "max_age_days": 7     # Max age of log files. Set to 0 to disable log expiry.
     },
+    "update": {             # Update configuration
+		"notify": true,       # If true, VeeamNotify will notify you if an update is available.
+		"auto_update": false, # DO NOT USE. If true, VeeamNotify will update itself when an update is available.
+		"auto_update_comment": "auto_update will NOT work. Leave as 'false'."
+	},
     "thumbnail": "https://some.url/img.jpg",  # Image URL for the thumbnail shown in the report embed.
-    "notify_update": true,                    # If true, VeeamNotify will notify you if an update is available.
-    "self_update": false,                     # DO NOT USE. If true, VeeamNotify will update itself when an update is available.
-    "self_update_comment": "self_update will NOT work. Leave as 'false'."
 }
 ```
 
@@ -91,7 +93,7 @@ __Do not copy/paste it. It is not valid JSON.__
 
 ## Credits
 
-[MelonSmasher](https://github.com/MelonSmasher)//[TheSageColleges](https://github.com/TheSageColleges) for [the project](https://github.com/TheSageColleges/VeeamSlackNotifications) which inspired this one.  
+[MelonSmasher](https://github.com/MelonSmasher)//[TheSageColleges](https://github.com/TheSageColleges) for [the project](https://github.com/TheSageColleges/VeeamSlackNotifications) which inspired me to make this.  
 [dantho281](https://github.com/dantho281) for various things - Assistance with silly little issues, the odd bugfix here and there, and the inspiration for and first works on the `Updater.ps1` script.  
 [Lee_Dailey](https://reddit.com/u/Lee_Dailey) for general pointers and the [first revision](https://pastebin.com/srN5CKty) of the `ConvertTo-ByteUnit` function.  
 [philenst](https://github.com/philenst) for committing or assisting with a number of core components of the project.  
