@@ -7,6 +7,29 @@ Param(
 	$Logfile
 )
 
+# Function to get a session's bottleneck from the session logs
+# See https://github.com/tigattack/VeeamNotify/issues/19 for more details.
+Function Get-Bottleneck {
+	param(
+		$Logger
+	)
+
+	$bottleneck = ($Logger.GetLog() | `
+				Select-Object -ExpandProperty UpdatedRecords | `
+				Where-Object {$_.Title -match 'Primary bottleneck:.*'} | `
+				Select-Object -ExpandProperty Title) `
+		-replace 'Primary bottleneck:',''
+
+	If ($bottleneck.Length -eq 0) {
+		$bottleneck = 'Unknown'
+	}
+	Else {
+		$bottleneck = $bottleneck.Trim()
+	}
+
+	return $bottleneck
+}
+
 # Convert config from JSON
 $Config = $Config | ConvertFrom-Json
 
@@ -55,6 +78,9 @@ $updateStatus = Get-UpdateStatus
 ## Get the backup session.
 $session = (Get-VBRSessionInfo -SessionId $id -JobType $jobType).Session
 
+## Initiate logger variable
+$vbrSessionLogger = $session.Logger
+
 ## Wait for the backup session to finish.
 If ($session.State -ne 'Stopped') {
 	$nonStoppedStates = 'Idle', 'Pausing', 'Postprocessing', 'Resuming', 'Starting', 'Stopping', 'WaitingRepository', 'WaitingTape ', 'Working'
@@ -91,6 +117,7 @@ if ($jobType -in 'Backup', 'Replica') {
 	$startTime = $session.Info.CreationTime
 	[string]$dedupRatio = $session.BackupStats.DedupRatio
 	[string]$compressRatio	= $session.BackupStats.CompressRatio
+	[string]$bottleneck = Get-Bottleneck -Logger $vbrSessionLogger
 
 	# Convert bytes to closest unit.
 	$dataSizeRound = ConvertTo-ByteUnit -Data $dataSize
@@ -100,16 +127,6 @@ if ($jobType -in 'Backup', 'Replica') {
 	# Set processing speed "Unknown" if 0B/s to avoid confusion.
 	If ($speedRound -eq '0 B/s') {
 		$speedRound = 'Unknown'
-	}
-
-	# Define bottleneck
-	Switch ($session.Info.Progress.BottleneckInfo.Bottleneck) {
-		'NotDefined' {
-			$bottleneck = 'Undefined'
-		}
-		Default {
-			$bottleneck = $_
-		}
 	}
 
 	<# TODO: utilise this.
@@ -165,6 +182,7 @@ If ($jobType -eq 'EpAgentBackup') {
 	[Float]$speed = $session.Info.Progress.AvgSpeed
 	$endTime = $session.EndTime
 	$startTime = $session.CreationTime
+	[string]$bottleneck = Get-Bottleneck -Logger $vbrSessionLogger
 
 	# Convert bytes to closest unit.
 	$processedSizeRound = ConvertTo-ByteUnit -Data $processedSize
@@ -174,16 +192,6 @@ If ($jobType -eq 'EpAgentBackup') {
 	# Set processing speed "Unknown" if 0B/s to avoid confusion.
 	If ($speedRound -eq '0 B/s') {
 		$speedRound = 'Unknown'
-	}
-
-	# Define bottleneck
-	Switch ($session.Info.Progress.BottleneckInfo.Bottleneck) {
-		'NotDefined' {
-			$bottleneck = 'Undefined'
-		}
-		Default {
-			$bottleneck = $_
-		}
 	}
 }
 
