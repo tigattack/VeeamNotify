@@ -252,6 +252,7 @@ Catch {
 # Expand downloaded ZIP
 Try {
 	Write-LogMessage -Tag 'INFO' -Message 'Expand downloaded ZIP.'
+	Unblock-File -Path $projectPath-$LatestVersion.zip
 	Expand-Archive $projectPath-$LatestVersion.zip -DestinationPath $PSScriptRoot
 }
 Catch {
@@ -294,25 +295,6 @@ Catch {
 	$errorVar = $_.CategoryInfo.Activity + ' : ' + $_.ToString()
 	Write-LogMessage -Tag 'ERROR' -Message "$errorVar"
 	$fail = 'after_rename_new'
-	Update-Fail
-}
-
-# Unblock script files
-Write-LogMessage -Tag 'INFO' -Message 'Unblock script files.'
-
-## Get script files
-$pwshFiles = Get-ChildItem $projectPath\* -Recurse | Where-Object { $_.Name -match '^.*\.ps(m)?1$' }
-
-## Unblock them
-Try {
-	foreach ($i in $pwshFiles) {
-		Unblock-File -Path $i.FullName
-	}
-}
-Catch {
-	$errorVar = $_.CategoryInfo.Activity + ' : ' + $_.ToString()
-	Write-LogMessage -Tag 'ERROR' -Message "$errorVar"
-	$fail = 'unblock_scripts'
 	Update-Fail
 }
 
