@@ -38,6 +38,7 @@ jobs:
         if: steps.changed-files.outputs.any_changed == 'true'
         shell: pwsh
         run: |
+          git checkout ${{ github.head_ref }}
           $changedFiles = "${{ steps.changed-files.outputs.all_changed_files }}".Split(' ')
           foreach ($file in $changedFiles) { ./.github/scripts/Run-Formatter.ps1 -Path $file }
           If ($(git diff --name-only).Length -gt 0) {
@@ -52,7 +53,7 @@ jobs:
           git config user.name "github-actions"
           git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
           git commit -am "[CI] Run script formatter"
-          git push origin HEAD:${{ github.head_ref }}
+          git push
 
   lint:
     runs-on: ubuntu-latest
