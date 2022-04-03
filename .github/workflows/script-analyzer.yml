@@ -8,7 +8,6 @@ on:
 
 jobs:
   lint:
-    name: Run PSScriptAnalyzer
     runs-on: ubuntu-latest
 
     steps:
