@@ -1,12 +1,21 @@
-# Get all relevant PowerShell files
-$psFiles = Get-ChildItem -Path ./* -Include *.ps1,*.psm1 -Recurse
+param (
+	[array]$Files
+)
+
+$ErrorActionPreference = 'Stop'
 
 # Run PSSA
-$issues = foreach ($i in $psFiles.FullName) {
-	Invoke-ScriptAnalyzer -Path $i -Recurse -Settings ./.github/scripts/pssa-settings.psd1
+$issues = foreach ($file in $Files) {
+	try {
+		Invoke-ScriptAnalyzer -Path $file -Recurse -Settings ./.github/scripts/pssa-settings.psd1
+		Write-Host "$($file) was analysed"
+	}
+	catch {
+		Write-Host "Error analysing $($file): $_.Exception.Message"
+	}
 }
 
-# init and set variables
+# init variables
 $errors = $warnings = $infos = $unknowns = 0
 
 # Get results, types and report to GitHub Actions
@@ -17,7 +26,7 @@ foreach ($i in $issues) {
 			$errors++
 		}
 		{$_ -eq 'Warning'} {
-			Write-Output "::warning file=$($i.ScriptName),line=$($i.Line),col=$($i.Column)::$($i.RuleName) - $($i.Message)"
+			Write-Output "::error file=$($i.ScriptName),line=$($i.Line),col=$($i.Column)::$($i.RuleName) - $($i.Message)"
 			$warnings++
 		}
 		{$_ -eq 'Information'} {
@@ -40,6 +49,6 @@ Else {
 }
 
 # Exit with error if any PSSA errors
-If ($errors -gt 0) {
+If ($errors -gt 0 -or $warnings -gt 0) {
 	exit 1
 }

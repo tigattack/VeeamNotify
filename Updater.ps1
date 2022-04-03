@@ -38,18 +38,18 @@ function Update-Notification {
 		}
 		# Field objects
 		$resultField = [PSCustomObject]@{
-			name = 'Update Result'
-			value = $result
+			name   = 'Update Result'
+			value  = $result
 			inline = 'false'
 		}
 		$newVersionField = [PSCustomObject]@{
-			name = 'New version'
-			value = $newVersion
+			name   = 'New version'
+			value  = $newVersion
 			inline = 'false'
 		}
 		$oldVersionField = [PSCustomObject]@{
-			name = 'Old version'
-			value = $oldVersion
+			name   = 'Old version'
+			value  = $oldVersion
 			inline = 'false'
 		}
 		# Add field objects to the field array
@@ -59,18 +59,18 @@ function Update-Notification {
 		# Send error if exist
 		If ($null -ne $errorVar) {
 			$errorField = [PSCustomObject]@{
-				name = 'Update Error'
-				value = $errorVar
+				name   = 'Update Error'
+				value  = $errorVar
 				inline = 'false'
 			}
 			$fieldArray.Add($errorField) | Out-Null
 		}
 		# Embed object including field and thumbnail vars from above
 		$embedObject = [PSCustomObject]@{
-			title		= 'Update'
-			color		= '1267393'
+			title     = 'Update'
+			color     = '1267393'
 			thumbnail	= $thumbObject
-			fields		= $fieldArray
+			fields    = $fieldArray
 		}
 		# Add embed object to the array created above
 		$embedArray.Add($embedObject) | Out-Null
@@ -225,7 +225,7 @@ Catch {
 }
 
 # Wait until the alert sender has finished running, or quit this if it's still running after 60s. It should never take that long.
-while (Get-CimInstance win32_process -filter "name='powershell.exe' and commandline like '%AlertSender.ps1%'") {
+while (Get-CimInstance win32_process -Filter "name='powershell.exe' and commandline like '%AlertSender.ps1%'") {
 	$timer++
 	Start-Sleep -Seconds 1
 	If ($timer -eq '90') {

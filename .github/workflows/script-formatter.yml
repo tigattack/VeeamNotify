@@ -1,0 +1,63 @@
+---
+name: PS Script Formatter & Analyser
+
+on: pull_request
+
+jobs:
+  format:
+
+    # Check if the PR is not from a fork
+    if: github.event.pull_request.head.repo.full_name == github.repository
+
+    runs-on: ubuntu-latest
+    outputs:
+      all_changed_files: ${{ steps.changed-files.outputs.all_changed_files }}
+    steps:
+
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Get changed PowerShell files
+        id: changed-files
+        uses: tj-actions/changed-files@v18
+        with:
+          files: |
+            *.ps1
+            *.psm1
+
+      - name: List changed files
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: |
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            echo "$file was changed"
+          done
+
+      - name: Run script formatter
+        id: files-formatted
+        if: steps.changed-files.outputs.any_changed == 'true'
+        shell: pwsh
+        run: |
+          git checkout ${{ github.head_ref }}
+          $changedFiles = "${{ steps.changed-files.outputs.all_changed_files }}".Split(' ')
+          foreach ($file in $changedFiles) { ./.github/scripts/Run-Formatter.ps1 -Path $file }
+          If ($(git diff --name-only).Length -gt 0) {
+            Write-Output "::set-output name=formatted::true"
+          }
+          Else { Write-Output "::set-output name=formatted::false" }
+
+      - name: Push changes
+        if: steps.files-formatted.outputs.formatted == 'true'
+        run: |
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions"
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
+          git commit -am "[CI] Run script formatter"
+          git push
+
+      - name: Run PSScriptAnalyzer
+        if: steps.changed-files.outputs.any_changed == 'true'
+        shell: pwsh
+        run: |
+          $changedFiles = "${{ steps.changed-files.outputs.all_changed_files }}".Split(' ')
+          ./.github/scripts/Run-PSSA.ps1 -Files $changedFiles
