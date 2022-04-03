@@ -13,7 +13,7 @@
 			Enable = $true
 		}
 		PSUseCompatibleCommands = @{
-			Enable = $true
+			Enable         = $true
 			# PowerShell platforms we want to check compatibility with
 			TargetProfiles = @(
 				'win-8_x64_10.0.14393.0_5.1.14393.2791_x64_4.0.30319.42000_framework', # PowerShell 5.1 on Windows Server 2016
@@ -28,7 +28,7 @@
 			)
 		}
 		PSUseCompatibleSyntax = @{
-			Enable = $true
+			Enable         = $true
 			# PowerShell versions we want to check compatibility with
 			TargetVersions = @(
 				'5.1'#,
@@ -37,25 +37,25 @@
 			)
 		}
 		PSPlaceCloseBrace = @{
-			Enable = $true
-			NoEmptyLineBefore = $false
+			Enable             = $true
+			NoEmptyLineBefore  = $false
 			IgnoreOneLineBlock = $true
-			NewLineAfter = $true
+			NewLineAfter       = $true
 		}
 		PSPlaceOpenBrace = @{
-			Enable = $true
-			OnSameLine = $true
-			NewLineAfter = $true
+			Enable             = $true
+			OnSameLine         = $true
+			NewLineAfter       = $true
 			IgnoreOneLineBlock = $true
 		}
 		PSUseConsistentIndentation = @{
-			Enable = $true
-			IndentationSize = 4
+			Enable              = $true
+			IndentationSize     = 4
 			PipelineIndentation = 'IncreaseIndentationForFirstPipeline'
-			Kind = 'tab'
+			Kind                = 'tab'
 		}
 		PSAvoidLongLines = @{
-			Enable = $true
+			Enable            = $true
 			MaximumLineLength = 155
 		}
 		PSAlignAssignmentStatement = @{
