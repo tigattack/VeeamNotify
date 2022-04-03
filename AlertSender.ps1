@@ -100,6 +100,26 @@ try {
 	## Gather generic session info.
 	[String]$status = $session.Result
 
+	# Decide whether to continue
+	# Default to sending notification if unconfigured
+	if (($status -eq 'Failed') -and (-not $config.notifications.on_failure)) {
+		$noNotify = $true
+		Write-LogMessage -Tag 'info' -Message 'Job succeeded; per configured options, no notification will be sent.'
+
+		# Throw to exit try block, continue to catch and finally blocks.
+		throw
+	}
+	elseif (($status -eq 'Warning') -and (-not $config.notifications.on_warning)) {
+		$noNotify = $true
+		Write-LogMessage -Tag 'info' -Message 'Job warning; per configured options, no notification will be sent.'
+		throw
+	}
+	elseif (($status -eq 'Success') -and (-not $config.notifications.on_success)) {
+		$noNotify = $true
+		Write-LogMessage -Tag 'info' -Message 'Job succeeded; per configured options, no notification will be sent.'
+		throw
+	}
+
 
 	# Define session statistics for the report.
 
@@ -312,7 +332,6 @@ try {
 	}
 
 	# Add update message if relevant.
-	# Default to sending notification of unconfigured
 	If ($config.update | Get-Member -Name 'notify') {
 		$config.update.notify = $true
 	}
@@ -322,21 +341,7 @@ try {
 			LatestVersion      = $updateStatus.LatestStable
 		}
 	}
-	if (($status -eq 'Failed') -and (-not $config.notifications.on_failure)) {
-		$noNotify = $true
-		Write-LogMessage -Tag 'info' -Message 'Job succeeded; per configured options, no notification will be sent.'
-		throw
-	}
-	elseif (($status -eq 'Warning') -and (-not $config.notifications.on_warning)) {
-		$noNotify = $true
-		Write-LogMessage -Tag 'info' -Message 'Job warning; per configured options, no notification will be sent.'
-		throw
-	}
-	elseif (($status -eq 'Success') -and (-not $config.notifications.on_success)) {
-		$noNotify = $true
-		Write-LogMessage -Tag 'info' -Message 'Job succeeded; per configured options, no notification will be sent.'
-		throw
-	}
+
 
 	# Build embed and send iiiit.
 	Switch ($Config.services) {
