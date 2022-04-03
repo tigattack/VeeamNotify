@@ -18,6 +18,11 @@
 		"on_failure": false,
 		"on_warning": false
 	},
+	"notify": {
+		"on_success": true,
+		"on_failure": true,
+		"on_warning": true
+	},
 	"logging": {
 		"enabled": true,
 		"level": "info",
