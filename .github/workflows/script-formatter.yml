@@ -59,6 +59,10 @@ jobs:
     needs: [format]
     steps:
 
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
       - name: Run PSScriptAnalyzer
         shell: pwsh
         run: |
