@@ -58,5 +58,12 @@
 			Enable = $true
 			MaximumLineLength = 155
 		}
+		PSAlignAssignmentStatement = @{
+			Enable         = $true
+			CheckHashtable = $true
+		}
+		PSUseCorrectCasing = @{
+			Enable = $true
+		}
 	}
 }
