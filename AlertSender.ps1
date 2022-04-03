@@ -106,19 +106,19 @@ try {
 	## If VM backup/replica, gather and include session info.
 	if ($jobType -in 'Backup', 'Replica') {
 		# Gather session data sizes and timing.
-		[Float]$dataSize = $session.BackupStats.DataSize
-		[Float]$transferSize = $session.BackupStats.BackupSize
-		[Float]$speed = $session.Info.Progress.AvgSpeed
-		$endTime = $session.Info.EndTime
-		$startTime = $session.Info.CreationTime
-		[string]$dedupRatio = $session.BackupStats.DedupRatio
+		[Float]$dataSize 		= $session.BackupStats.DataSize
+		[Float]$transferSize 	= $session.BackupStats.BackupSize
+		[Float]$speed 			= $session.Info.Progress.AvgSpeed
+		$endTime 				= $session.Info.EndTime
+		$startTime 				= $session.Info.CreationTime
+		[string]$dedupRatio 	= $session.BackupStats.DedupRatio
 		[string]$compressRatio	= $session.BackupStats.CompressRatio
-		[string]$bottleneck = Get-Bottleneck -Logger $vbrSessionLogger
+		[string]$bottleneck 	= Get-Bottleneck -Logger $vbrSessionLogger
 
 		# Convert bytes to closest unit.
-		$dataSizeRound = ConvertTo-ByteUnit -Data $dataSize
+		$dataSizeRound 		= ConvertTo-ByteUnit -Data $dataSize
 		$transferSizeRound	= ConvertTo-ByteUnit -Data $transferSize
-		$speedRound = (ConvertTo-ByteUnit -Data $speed).ToString() + '/s'
+		$speedRound 		= (ConvertTo-ByteUnit -Data $speed).ToString() + '/s'
 
 		# Set processing speed "Unknown" if 0B/s to avoid confusion.
 		If ($speedRound -eq '0 B/s') {
@@ -173,17 +173,17 @@ try {
 	# If agent backup, gather and include session info.
 	If ($jobType -eq 'EpAgentBackup') {
 		# Gather session data sizes and timings.
-		[Float]$processedSize = $session.Info.Progress.ProcessedSize
-		[Float]$transferSize = $session.Info.Progress.TransferedSize
-		[Float]$speed = $session.Info.Progress.AvgSpeed
-		$endTime = $session.EndTime
-		$startTime = $session.CreationTime
-		[string]$bottleneck = Get-Bottleneck -Logger $vbrSessionLogger
+		[Float]$processedSize	= $session.Info.Progress.ProcessedSize
+		[Float]$transferSize 	= $session.Info.Progress.TransferedSize
+		[Float]$speed			= $session.Info.Progress.AvgSpeed
+		$endTime				= $session.EndTime
+		$startTime				= $session.CreationTime
+		[string]$bottleneck 	= Get-Bottleneck -Logger $vbrSessionLogger
 
 		# Convert bytes to closest unit.
-		$processedSizeRound = ConvertTo-ByteUnit -Data $processedSize
+		$processedSizeRound	= ConvertTo-ByteUnit -Data $processedSize
 		$transferSizeRound	= ConvertTo-ByteUnit -Data $transferSize
-		$speedRound = (ConvertTo-ByteUnit -Data $speed).ToString() + '/s'
+		$speedRound 		= (ConvertTo-ByteUnit -Data $speed).ToString() + '/s'
 
 		# Set processing speed "Unknown" if 0B/s to avoid confusion.
 		If ($speedRound -eq '0 B/s') {
