@@ -1,0 +1,42 @@
+name: PS Script Formatter
+
+on: pull_request
+
+jobs:
+  format:
+
+    # Check if the PR is not from a fork
+    if: github.event.pull_request.head.repo.full_name == github.repository
+
+    runs-on: ubuntu-latest
+    steps:
+
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Get modified files
+        id: git-check
+        shell: pwsh
+        run: |
+          $changedPsFiles = git diff --name-only --diff-filter=ACMRT 887e0e67921bc9c19169d6b5307011e08cf9f12e 187cf9a | ?{$_ -match ".ps(m)?1$"}
+          If ($changedPsFiles.Count -eq 0) {
+            Write-Output 'No PowerShell files were changed.'
+            Write-Output "::set-output name=modified::$($false)"
+          } else {
+          
+            Write-Output "::set-output name=modified::$($true)"
+          }
+
+      - name: Run script formatter
+        if: steps.git-check.outputs.modified
+        shell: pwsh
+        run: |
+          foreach ($file in $changedPsFiles) { ./.github/scripts/Run-Formatter.ps1 -Path $file }
+
+      - name: Push changes
+        if: steps.git-check.outputs.modified
+        run: |
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
+          git commit -am "Format script"
+          git push
