@@ -49,7 +49,7 @@ jobs:
       - name: Push changes
         if: steps.files-formatted.outputs.formatted
         run: |
-          git config user.email "10629864+tigattack@users.noreply.github.com"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config user.name "github-actions"
           git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
           git commit -am "[CI] Run script formatter"
