@@ -21,8 +21,7 @@ Write-LogMessage -Tag 'INFO' -Message "Version: $(Get-Content "$PSScriptRoot\res
 $config = Get-Content -Raw $configFile | ConvertFrom-Json # TODO: import config from param instead of later as file. Can then improve logging flow.
 
 # Stop logging and remove log file if logging is disable in config.
-If (-not $config.logging.enabled)
-{
+If (-not $config.logging.enabled) {
 	Stop-Logging
 	Remove-Item $logFile -Force -ErrorAction SilentlyContinue
 }
@@ -35,7 +34,7 @@ $configRaw = (Get-Content -Raw $configFile).Replace('"','\"').Replace("`n",'').R
 Try {
 	$configSchema = Get-Content -Raw "$PSScriptRoot\config\conf.schema.json" | ConvertFrom-Json
 	foreach ($i in $configSchema.required) {
-		If (-not (Get-Member -InputObject $config -Name "$i" -Membertype NoteProperty)) {
+		If (-not (Get-Member -InputObject $config -Name "$i" -MemberType NoteProperty)) {
 			throw "Required configuration property is missing. Property: $i"
 		}
 	}

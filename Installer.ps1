@@ -30,11 +30,10 @@ function Get-ProjectBranch {
 	$script:release = $Branch
 	# Pull latest version of script from GitHub
 	$DownloadParams = @{
-		Uri = "https://github.com/tigattack/$project/archive/refs/heads/$Branch.zip"
+		Uri     = "https://github.com/tigattack/$project/archive/refs/heads/$Branch.zip"
 		OutFile = "$env:TEMP\$project-$release.zip"
 	}
-	Try
-	{
+	Try {
 		Write-Output "`nDownloading $release branch of $project from GitHub..."
 		Invoke-WebRequest @DownloadParams
 	}
