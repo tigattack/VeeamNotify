@@ -54,3 +54,9 @@ jobs:
           git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
           git commit -am "[CI] Run script formatter"
           git push
+
+      - name: Run PSScriptAnalyzer
+        shell: pwsh
+        run: |
+          $changedFiles = "${{ steps.changed-files.outputs.all_changed_files }}".Split(' ')
+          ./.github/scripts/Run-PSSA.ps1 -Files $changedFiles
