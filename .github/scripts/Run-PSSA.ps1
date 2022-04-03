@@ -7,11 +7,11 @@ $ErrorActionPreference = 'Stop'
 # Run PSSA
 $issues = foreach ($file in $Files) {
 	try {
-		Invoke-ScriptAnalyzer -Path $file.FullName -Recurse -Settings ./.github/scripts/pssa-settings.psd1
-		Write-Host "$($file.Name) was analysed"
+		Invoke-ScriptAnalyzer -Path $file -Recurse -Settings ./.github/scripts/pssa-settings.psd1
+		Write-Host "$($file) was analysed"
 	}
 	catch {
-		Write-Host "Error analysing $($file.Name): $_.Exception.Message"
+		Write-Host "Error analysing $($file): $_.Exception.Message"
 	}
 }
 
