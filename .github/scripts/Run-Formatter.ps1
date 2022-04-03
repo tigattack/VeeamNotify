@@ -32,9 +32,14 @@ try {
 	}
 
 	$scriptFormatted = Invoke-Formatter -ScriptDefinition $script -Settings ./.github/scripts/pssa-settings.psd1
-	Set-Content -Path $Path -Value $scriptFormatted -NoNewline
 
-	Write-Output "Formatted $($Path)"
+	If ($scriptFormatted -ne $script) {
+		Set-Content -Path $Path -Value $scriptFormatted -NoNewline
+		Write-Output "$($Path) has been formatted."
+	}
+	Else {
+		Write-Output "$($Path) has not been formatted (no changes required or changes could not be made non-interactively)."
+	}
 
 }
 catch {
