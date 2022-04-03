@@ -46,4 +46,4 @@ jobs:
           git config user.name "github-actions"
           git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
           git commit -am "Format script"
-          git push
+          git push origin HEAD:${{ github.head_ref }}
