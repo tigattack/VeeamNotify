@@ -75,10 +75,10 @@ __Do not copy/paste it. It is not valid JSON.__
         "on_failure": false,  # If true, you will be mentioned when a job finishes in a failed state. 
         "on_warning": false   # If true, you will be mentioned when a job finishes in a warning state.
     },
-        "notify": {           # Notify definitions.
-        "on_success": true,  # If true, a notification will be sent if the job finishes in a Successful state. 
-        "on_failure": false,  # If true, a notification will be sent if the job finishes in a Failed state. 
-        "on_warning": false   # If true, a notification will be sent if the job finishes in a Warning state.
+    "notify": {             # Notify definitions.
+        "on_success": true,   # If true, a notification will be sent if the job finishes in a Successful state. 
+        "on_failure": true,   # If true, a notification will be sent if the job finishes in a Failed state. 
+        "on_warning": true    # If true, a notification will be sent if the job finishes in a Warning state.
     },
     "logging": {            # Logging configuration.
         "enabled": true,      # If true, VeeamNotify will log to a session-specific file in C:\VeeamScripts\VeeamNotify\logs\
