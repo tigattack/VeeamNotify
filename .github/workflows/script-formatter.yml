@@ -42,12 +42,12 @@ jobs:
           $changedFiles = "${{ steps.changed-files.outputs.all_changed_files }}".Split(' ')
           foreach ($file in $changedFiles) { ./.github/scripts/Run-Formatter.ps1 -Path $file }
           If ($(git diff --name-only).Length -gt 0) {
-            Write-Output "::set-output name=formatted::$($true)"
+            Write-Output "::set-output name=formatted::true"
           }
-          Else { Write-Output "::set-output name=formatted::$($false)" }
+          Else { Write-Output "::set-output name=formatted::false" }
 
       - name: Push changes
-        if: steps.files-formatted.outputs.formatted
+        if: steps.files-formatted.outputs.formatted == 'true'
         run: |
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config user.name "github-actions"
@@ -56,6 +56,7 @@ jobs:
           git push
 
       - name: Run PSScriptAnalyzer
+        if: steps.changed-files.outputs.any_changed == 'true'
         shell: pwsh
         run: |
           $changedFiles = "${{ steps.changed-files.outputs.all_changed_files }}".Split(' ')
