@@ -24,7 +24,8 @@ jobs:
             Write-Output 'No PowerShell files were changed.'
             Write-Output "::set-output name=modified::$($false)"
           } else {
-          
+            Write-Output 'The following files were changed:'
+            $changedPsFiles
             Write-Output "::set-output name=modified::$($true)"
           }
 
