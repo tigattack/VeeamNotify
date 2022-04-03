@@ -1,5 +1,5 @@
 # Get all relevant PowerShell files
-$psFiles = Get-ChildItem -Path ./* -Include *.ps1,*.psm1 -Recurse
+$psFiles = Get-ChildItem -Path ./* -Include *.ps1,*.psm1 -Recurse | Where-Object {$_.DirectoryName -notmatch '.*\.github.*'}
 
 # Run PSSA
 $issues = foreach ($i in $psFiles.FullName) {
