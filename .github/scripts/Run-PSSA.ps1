@@ -14,7 +14,7 @@ $issues = foreach ($i in $psFiles) {
 	}
 }
 
-# init and set variables
+# init variables
 $errors = $warnings = $infos = $unknowns = 0
 
 # Get results, types and report to GitHub Actions
@@ -25,7 +25,7 @@ foreach ($i in $issues) {
 			$errors++
 		}
 		{$_ -eq 'Warning'} {
-			Write-Output "::warning file=$($i.ScriptName),line=$($i.Line),col=$($i.Column)::$($i.RuleName) - $($i.Message)"
+			Write-Output "::error file=$($i.ScriptName),line=$($i.Line),col=$($i.Column)::$($i.RuleName) - $($i.Message)"
 			$warnings++
 		}
 		{$_ -eq 'Information'} {
@@ -45,9 +45,4 @@ If ($unknowns -gt 0) {
 }
 Else {
 	Write-Output "There were $errors errors, $warnings warnings, and $infos infos in total."
-}
-
-# Exit with error if any PSSA errors
-If ($errors -gt 0) {
-	exit 1
 }
