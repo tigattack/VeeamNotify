@@ -20,8 +20,8 @@
 	},
 	"notify": {
 		"on_success": true,
-		"on_failure": false,
-		"on_warning": false
+		"on_failure": true,
+		"on_warning": true
 	},
 	"logging": {
 		"enabled": true,
