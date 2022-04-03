@@ -35,7 +35,8 @@ jobs:
         if: steps.changed-files.outputs.any_changed == 'true'
         shell: pwsh
         run: |
-          foreach ($file in $changedPsFiles) { ./.github/scripts/Run-Formatter.ps1 -Path $file }
+          $changedFiles = "${{ steps.changed-files.outputs.all_changed_files }}".Split(' ')
+          foreach ($file in $changedFiles) { ./.github/scripts/Run-Formatter.ps1 -Path $file }
           Write-Output "::set-output name=formatted::$($true)"
 
       - name: Push changes
