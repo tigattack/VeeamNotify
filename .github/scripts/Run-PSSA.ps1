@@ -1,16 +1,17 @@
+param (
+	[array]$Files
+)
+
 $ErrorActionPreference = 'Stop'
 
-# Get all relevant PowerShell files
-$psFiles = Get-ChildItem -Path ./* -Include *.ps1,*.psm1 -Recurse | Where-Object {$_.DirectoryName -notmatch '.*\.github.*'}
-
 # Run PSSA
-$issues = foreach ($i in $psFiles) {
+$issues = foreach ($file in $Files) {
 	try {
-		Invoke-ScriptAnalyzer -Path $i.FullName -Recurse -Settings ./.github/scripts/pssa-settings.psd1
-		Write-Host "Analysed $($i.Name)"
+		Invoke-ScriptAnalyzer -Path $file.FullName -Recurse -Settings ./.github/scripts/pssa-settings.psd1
+		Write-Host "$($file.Name) was analysed"
 	}
 	catch {
-		Write-Host "Error checking $($i.Name): $_.Exception.Message"
+		Write-Host "Error analysing $($file.Name): $_.Exception.Message"
 	}
 }
 
