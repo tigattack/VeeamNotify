@@ -59,7 +59,7 @@
                 }
             }
         },
-        "notify": {
+        "notifications": {
             "type": "object",
             "properties": {
                 "on_success": {

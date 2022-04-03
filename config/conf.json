@@ -18,7 +18,7 @@
 		"on_failure": false,
 		"on_warning": false
 	},
-	"notify": {
+	"notifications": {
 		"on_success": true,
 		"on_failure": true,
 		"on_warning": true
