@@ -34,7 +34,7 @@ $configRaw = (Get-Content -Raw $configFile).Replace('"','\"').Replace("`n",'').R
 Try {
 	$configSchema = Get-Content -Raw "$PSScriptRoot\config\conf.schema.json" | ConvertFrom-Json
 	foreach ($i in $configSchema.required) {
-		If (-not (Get-Member -InputObject $config -Name "$i" -Membertype NoteProperty)) {
+		If (-not (Get-Member -InputObject $config -Name "$i" -MemberType NoteProperty)) {
 			throw "Required configuration property is missing. Property: $i"
 		}
 	}
