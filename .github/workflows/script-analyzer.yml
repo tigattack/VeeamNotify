@@ -1,5 +1,6 @@
 ---
-name: CI
+name: PSScriptAnalyzer
+
 on:
   push:
   pull_request:
@@ -15,7 +16,7 @@ jobs:
 
     - name: Install PSScriptAnalyzer
       shell: pwsh
-      run: ./.github/scripts/Install-PSSA.ps1
+      run: Install-Module PSScriptAnalyzer -ErrorAction Stop -Force -Confirm:$false
 
     - name: Run PSScriptAnalyzer
       shell: pwsh
