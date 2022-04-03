@@ -19,7 +19,7 @@ jobs:
         id: git-check
         shell: pwsh
         run: |
-          $changedPsFiles = git diff --name-only --diff-filter=ACMRT 887e0e67921bc9c19169d6b5307011e08cf9f12e 187cf9a | ?{$_ -match ".ps(m)?1$"}
+          $changedPsFiles = git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | ?{$_ -match ".ps(m)?1$"}
           If ($changedPsFiles.Count -eq 0) {
             Write-Output 'No PowerShell files were changed.'
             Write-Output "::set-output name=modified::$($false)"
