@@ -6,12 +6,10 @@ on: pull_request
 jobs:
   format:
 
-    # Check if the PR is not from a fork
+    # Ensure the PR is not from a fork
     if: github.event.pull_request.head.repo.full_name == github.repository
 
     runs-on: ubuntu-latest
-    outputs:
-      all_changed_files: ${{ steps.changed-files.outputs.all_changed_files }}
     steps:
 
       - uses: actions/checkout@v2
@@ -54,6 +52,40 @@ jobs:
           git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
           git commit -am "[CI] Run script formatter"
           git push
+
+      - name: Run PSScriptAnalyzer
+        if: steps.changed-files.outputs.any_changed == 'true'
+        shell: pwsh
+        run: |
+          $changedFiles = "${{ steps.changed-files.outputs.all_changed_files }}".Split(' ')
+          ./.github/scripts/Run-PSSA.ps1 -Files $changedFiles
+
+  lint-fork:
+
+    # Ensure the PR is from a fork
+    if: github.event.pull_request.head.repo.full_name != github.repository
+
+    runs-on: ubuntu-latest
+    steps:
+
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Get changed PowerShell files
+        id: changed-files
+        uses: tj-actions/changed-files@v18
+        with:
+          files: |
+            *.ps1
+            *.psm1
+
+      - name: List changed files
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: |
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            echo "$file was changed"
+          done
 
       - name: Run PSScriptAnalyzer
         if: steps.changed-files.outputs.any_changed == 'true'
