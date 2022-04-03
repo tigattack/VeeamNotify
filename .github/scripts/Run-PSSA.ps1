@@ -46,3 +46,8 @@ If ($unknowns -gt 0) {
 Else {
 	Write-Output "There were $errors errors, $warnings warnings, and $infos infos in total."
 }
+
+# Exit with error if any PSSA errors
+If ($errors -gt 0 -or $warnings -gt 0) {
+	exit 1
+}
