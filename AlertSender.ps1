@@ -322,7 +322,7 @@ try {
 			LatestVersion      = $updateStatus.LatestStable
 		}
 	}
-	if (($status -eq 'Failed') -and (-not $config.notifications.on_fail)) {
+	if (($status -eq 'Failed') -and (-not $config.notifications.on_failure)) {
 		$noNotify = $true
 		Write-LogMessage -Tag 'info' -Message 'Job succeeded; per configured options, no notification will be sent.'
 		throw
