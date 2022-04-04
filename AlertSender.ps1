@@ -388,7 +388,7 @@ try {
 			Unblock-File $PSScriptRoot\..\VDNotifs-Updater.ps1
 
 			# Run update script.
-			$updateArgs = "-file $PSScriptRoot\..\VDNotifs-Updater.ps1", "-LatestVersion $latestStable"
+			$updateArgs = "-file $PSScriptRoot\..\VDNotifs-Updater.ps1", "-LatestVersion $($updateStatus.LatestStable)"
 			Start-Process -FilePath 'powershell' -Verb runAs -ArgumentList $updateArgs -WindowStyle hidden
 		}
 	}
