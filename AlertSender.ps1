@@ -352,6 +352,11 @@ try {
 			# Add user information for mention if relevant.
 			If ($mention) {
 				$payloadParams.UserId = $service.Value.user_id
+
+				# Get username if Teams
+				If ($service.Value.user_name -and $service.Value.user_name -ne 'Your Name') {
+					$payloadParams.UserName = $service.Value.user_name
+				}
 			}
 
 			New-Payload -Service $service.Name -Parameters $payloadParams | Send-Payload -Uri $service.Value.webhook
