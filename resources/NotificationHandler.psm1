@@ -1,3 +1,29 @@
+function New-Payload {
+	param (
+		[Parameter(Mandatory=$true)]
+		[ValidateSet('Discord', 'Slack', 'Teams')]
+		[string]$Service,
+
+		[Parameter(Mandatory=$true)]
+		[Hashtable]$Parameters
+	)
+
+	switch ($Service) {
+		'Discord' {
+			New-DiscordPayload @Parameters
+		}
+		'Slack' {
+			New-SlackPayload @Parameters
+		}
+		'Teams' {
+			New-TeamsPayload @Parameters
+		}
+		Default {
+			Write-LogMessage -Tag 'Error' -Message "Unknown service: $Service"
+		}
+	}
+}
+
 function New-DiscordPayload {
 	[CmdletBinding(
 		SupportsShouldProcess,
