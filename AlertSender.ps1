@@ -344,41 +344,17 @@ try {
 
 
 	# Build embed and send iiiit.
-	Switch ($Config.services) {
-		{ $_.discord.webhook.StartsWith('https') } {
-			Write-LogMessage -Tag 'INFO' -Message 'Sending notification to Discord.'
+	$Config.services.PSObject.Properties | ForEach-Object {
+		$service = $_
+		If ($service.Value.webhook.StartsWith('https')) {
+			Write-LogMessage -Tag 'INFO' -Message "Sending notification to $($service.Name)."
 
 			# Add user information for mention if relevant.
 			If ($mention) {
-				$payloadParams.UserId = $_.discord.user_id
+				$payloadParams.UserId = $service.Value.user_id
 			}
 
-			New-DiscordPayload @payloadParams | Send-Payload -Uri $Config.services.discord.webhook
-		}
-
-		{ $_.slack.webhook.StartsWith('https') } {
-			Write-LogMessage -Tag 'INFO' -Message 'Sending notification to Slack.'
-
-			# Add user information for mention if relevant.
-			If ($mention) {
-				$payloadParams.UserId = $_.slack.user_id
-			}
-
-			New-SlackPayload @payloadParams | Send-Payload -Uri $Config.services.slack.webhook
-		}
-
-		{ $_.teams.webhook.StartsWith('https') } {
-			Write-LogMessage -Tag 'INFO' -Message 'Sending notification to Teams.'
-
-			# Add user information for mention if relevant.
-			If ($mention) {
-				$payloadParams.UserId = $_.teams.user_id
-				If ($Config.teams_user_name -ne 'Your Name') {
-					$payloadParams.UserName = $_.teams.user_name
-				}
-			}
-
-			New-TeamsPayload @payloadParams | Send-Payload -Uri $Config.services.teams.webhook
+			New-Payload -Service $service.Name -Parameters $payloadParams | Send-Payload -Uri $service.Value.webhook
 		}
 	}
 
