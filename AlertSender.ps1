@@ -104,7 +104,7 @@ try {
 	# Default to sending notification if unconfigured
 	if (($status -eq 'Failed') -and (-not $config.notifications.on_failure)) {
 		$noNotify = $true
-		Write-LogMessage -Tag 'info' -Message 'Job succeeded; per configured options, no notification will be sent.'
+		Write-LogMessage -Tag 'info' -Message 'Job failed; per configured options, no notification will be sent.'
 
 		# Throw to exit try block, continue to catch and finally blocks.
 		throw
