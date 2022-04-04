@@ -1,0 +1,30 @@
+{
+  "Write Log Message": {
+    "prefix": "log",
+    "body": [
+      "Write-LogMessage -Tag '$1' -Message '$2'",
+    ],
+    "description": "Write Log Message"
+  },
+  "TryCatch": {
+    "prefix": "try",
+    "body": [
+      "try {",
+      "\t$1",
+      "} catch {",
+      "\tWrite-LogMessage -Tag '$2' -Message '$3'",
+      "}",
+    ],
+    "description": "TryCatch"
+  },
+	"User Query": {
+		"prefix": "query",
+		"body": [
+      "$$1_$2 = New-Object System.Management.Automation.Host.ChoiceDescription '&$2', '$4'",
+      "$$1_$3 = New-Object System.Management.Automation.Host.ChoiceDescription '&$3', '$5'",
+      "$$1_opts = [System.Management.Automation.Host.ChoiceDescription[]]($$1_$2, $$1_$3)",
+      "$$1_result = $$host.UI.PromptForChoice('$6', '$7', $$1_opts, 0)"
+		],
+		"description": "User Query"
+	},
+}
