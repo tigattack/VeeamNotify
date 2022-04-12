@@ -158,15 +158,12 @@ $servicePrompt_result = $host.UI.PromptForChoice('Notification Service', 'Which 
 
 Switch ($servicePrompt_result) {
 	0 {
-		$config.services.discord.user_id = 'Please enter your Discord user ID'
 		$config.services.discord.webhook = Read-Host -Prompt 'Please enter your webhook URL'
 	}
 	1 {
-		$config.services.slack.user_id = 'Please enter your Slack member ID'
 		$config.services.slack.webhook = Read-Host -Prompt 'Please enter your webhook URL'
 	}
 	2 {
-		$config.services.teams.user_id = 'Please enter your Teams email address'
 		$config.services.teams.webhook = Read-Host -Prompt 'Please enter your webhook URL'
 	}
 }
@@ -182,14 +179,14 @@ $mentionPreference_result = $host.UI.PromptForChoice('Mention Preference', $ment
 If ($mentionPreference_result -ne 0) {
 	Switch ($servicePrompt_result) {
 		0 {
-			$config.services.discord.user_id = 'Please enter your Discord user ID'
+			$config.services.discord.user_id = Read-Host -Prompt 'Please enter your Discord user ID'
 		}
 		1 {
-			$config.services.slack.user_id = 'Please enter your Slack member ID'
+			$config.services.slack.user_id = Read-Host -Prompt 'Please enter your Slack member ID'
 		}
 		2 {
-			$config.services.teams.user_id = 'Please enter your Teams email address'
-			Write-Output "Teams also requires a name to be specified for mentions.`nIf you don't enter your name, your username (from your email address) will be used.`nIf you'd prefer this, type nothing and press enter."
+			$config.services.teams.user_id = Read-Host -Prompt 'Please enter your Teams email address'
+			Write-Output "Teams also requires a name to be specified for mentions.`nIf you do not specify anything, your username (from your email address) will be used."
 			$config.services.teams.user_name = Read-Host -Prompt 'Please enter your name on Teams (e.g. John Smith)'
 		}
 	}
