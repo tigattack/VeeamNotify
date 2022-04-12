@@ -256,7 +256,7 @@ try {
 	$mention = $false
 	## On fail
 	Try {
-		If ($Config.mentions.on_fail -and $status -eq 'Failed') {
+		If ($Config.mentions.on_failure -and $status -eq 'Failed') {
 			$mention = $true
 		}
 	}
