@@ -12,15 +12,17 @@ Add params for every interactive prompt to allow automation of install
 #>
 
 # Support for passing a parameter to CLI to install using branch
+[CmdletBinding(DefaultParameterSetName='None')]
 param
 (
 	[Parameter(ParameterSetName = 'Version', Position = 0)]
 	[ValidatePattern('^v(\d+\.)?(\d+\.)?(\*|\d+)$')]
 	[String]$Version,
-	[Parameter(ParameterSetName = 'Release', Position = 0)]
-	[Switch]$Latest,
+
 	[Parameter(ParameterSetName = 'Release', Position = 1)]
-	[Switch]$Prerelease,
+	[ValidateSet('Latest', 'Prerelease')]
+	[String]$Release,
+
 	[Parameter(ParameterSetName = 'Branch', Position = 0)]
 	[String]$Branch
 )
