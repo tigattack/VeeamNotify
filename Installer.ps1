@@ -19,7 +19,7 @@ param
 	[ValidatePattern('^v(\d+\.)?(\d+\.)?(\*|\d+)$')]
 	[String]$Version,
 
-	[Parameter(ParameterSetName = 'Release', Position = 1)]
+	[Parameter(ParameterSetName = 'Release', Position = 0)]
 	[ValidateSet('Latest', 'Prerelease')]
 	[String]$Release,
 
