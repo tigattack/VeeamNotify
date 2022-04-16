@@ -83,21 +83,21 @@ If (-not [String]::IsNullOrWhiteSpace($Branch)) {
 		}
 	}
 
-	# Set $release to sanitised branch name
-	$release = $Branch.Replace('/', '-').Replace('\', '-')
+	# Set $releaseName to sanitised branch name
+	$releaseName = $Branch.Replace('/', '-').Replace('\', '-')
 
 	# Pull branch from GitHub
 	$DownloadParams = @{
 		Uri     = "https://github.com/tigattack/$project/archive/refs/heads/$Branch.zip"
-		OutFile = "$env:TEMP\$project-$release.zip"
+		OutFile = "$env:TEMP\$project-$releaseName.zip"
 	}
 	Try {
-		Write-Output "`nDownloading $release branch of $project from GitHub..."
+		Write-Output "`nDownloading $releaseName branch of $project from GitHub..."
 		Invoke-WebRequest @DownloadParams
 	}
 	catch {
 		$downloadStatusCode = $_.Exception.Response.StatusCode.value__
-		Write-Warning "Failed to download $release branch of $project. Please check your internet connection and try again.`nStatus code: $downloadStatusCode"
+		Write-Warning "Failed to download $releaseName branch of $project. Please check your internet connection and try again.`nStatus code: $downloadStatusCode"
 		exit 1
 	}
 }
@@ -135,20 +135,20 @@ else {
 		exit
 	}
 
-	# Set $release to latest stable if $Latest parameter is specified
+	# Set $releaseName to latest stable if $Latest parameter is specified
 	If ($Latest) {
-		$release = $latestStable
+		$releaseName = $latestStable
 	}
 
-	# Set $release to latest prerelease if $Prerelease parameter is specified
+	# Set $releaseName to latest prerelease if $Prerelease parameter is specified
 	ElseIf ($Prerelease) {
-		$release = $latestPrerelease
+		$releaseName = $latestPrerelease
 	}
 
-	# Set $release to $Version parameter if version is valid
+	# Set $releaseName to $Version parameter if version is valid
 	ElseIf ($Version) {
 		If ($releases.tag_name.Contains($Version)) {
-			$release = $Version
+			$releaseName = $Version
 		}
 
 		Else {
@@ -167,26 +167,26 @@ else {
 			$versionQuery_result = $host.UI.PromptForChoice('Release Selection', "Which version would you like to install?`nEnter '?' to see versions.", $versionQuery_opts, 0)
 
 			if ($versionQuery_result -eq 0) {
-				$release = $latestStable
+				$releaseName = $latestStable
 			}
 			else {
-				$release = $latestPrerelease
+				$releaseName = $latestPrerelease
 			}
 		}
 	}
 
 	# Pull latest version of script from GitHub
 	$DownloadParams = @{
-		Uri     = "https://github.com/tigattack/$project/releases/download/$release/$project-$release.zip"
-		OutFile = "$env:TEMP\$project-$release.zip"
+		Uri     = "https://github.com/tigattack/$project/releases/download/$releaseName/$project-$releaseName.zip"
+		OutFile = "$env:TEMP\$project-$releaseName.zip"
 	}
 	Try {
-		Write-Output "`nDownloading $project $release from GitHub..."
+		Write-Output "`nDownloading $project $releaseName from GitHub..."
 		Invoke-WebRequest @DownloadParams
 	}
 	catch {
 		$downloadStatusCode = $_.Exception.Response.StatusCode.value__
-		Write-Warning "Failed to download $project $release. Please check your internet connection and try again.`nStatus code: $downloadStatusCode"
+		Write-Warning "Failed to download $project $releaseName. Please check your internet connection and try again.`nStatus code: $downloadStatusCode"
 		exit 1
 	}
 }
@@ -194,7 +194,7 @@ else {
 # Unblock downloaded ZIP
 try {
 	Write-Output 'Unblocking ZIP...'
-	Unblock-File -Path "$env:TEMP\$project-$release.zip"
+	Unblock-File -Path "$env:TEMP\$project-$releaseName.zip"
 }
 catch {
 	Write-Warning 'Failed to unblock downloaded files. You will need to run the following commands manually once installation is complete:'
@@ -204,12 +204,12 @@ catch {
 
 # Extract release to destination path
 Write-Output "Extracting files to '$rootPath'..."
-Expand-Archive -Path "$env:TEMP\$project-$release.zip" -DestinationPath "$rootPath"
+Expand-Archive -Path "$env:TEMP\$project-$releaseName.zip" -DestinationPath "$rootPath"
 
 # Rename destination and tidy up
 Write-Output "Renaming directory and tidying up...`n"
-Rename-Item -Path "$rootPath\$project-$release" -NewName "$project"
-Remove-Item -Path "$env:TEMP\$project-$release.zip"
+Rename-Item -Path "$rootPath\$project-$releaseName" -NewName "$project"
+Remove-Item -Path "$env:TEMP\$project-$releaseName.zip"
 
 # Get config
 $config = Get-Content "$rootPath\$project\config\conf.json" -Raw | ConvertFrom-Json
