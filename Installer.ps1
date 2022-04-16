@@ -78,7 +78,10 @@ If ($Branch) {
 			}
 			2 {
 				$branchPrompt = 'Branch'
-				$Branch = ($host.UI.Prompt('Branch Name', "You've chosen to install a different branch. Please enter the branch name.", $branchPrompt)).$branchPrompt
+				do {
+					$Branch = ($host.UI.Prompt('Branch Name', "You've chosen to install a different branch. Please enter the branch name.", $branchPrompt)).$branchPrompt
+				}
+				until ($branches.name.Contains($Branch))
 			}
 		}
 	}
