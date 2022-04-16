@@ -48,7 +48,7 @@ if (Test-Path $rootPath\$project) {
 }
 
 # Download branch if specified
-If (-not [String]::IsNullOrWhiteSpace($Branch)) {
+If ($Branch) {
 
 	# Get branches from GitHub
 	[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
