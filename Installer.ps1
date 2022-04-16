@@ -86,8 +86,8 @@ If ($Branch) {
 		}
 	}
 
-	# Set $releaseName to sanitised branch name
-	$releaseName = $Branch.Replace('/', '-').Replace('\', '-')
+	# Set $releaseName to branch name
+	$releaseName = $Branch
 
 	# Pull branch from GitHub
 	$DownloadParams = @{
