@@ -1,3 +1,6 @@
+param(
+	[String]$InstallPath = 'C:\VeeamScripts'
+)
 <#
 TODO:
 Refactor; much of both foreach loops is repeated, need more functions.
@@ -22,7 +25,7 @@ function DeploymentError {
 }
 
 # Post-job script for VeeamNotify
-$newPostScriptCmd = 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -ExecutionPolicy Bypass -File C:\VeeamScripts\VeeamNotify\Bootstrap.ps1'
+$newPostScriptCmd = "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -ExecutionPolicy Bypass -File $InstallPath\VeeamNotify\Bootstrap.ps1"
 
 # Import Veeam module
 Import-Module Veeam.Backup.PowerShell -DisableNameChecking

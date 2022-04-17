@@ -16,11 +16,12 @@ param (
 	[Parameter(ParameterSetName = 'Version', Position = 1)]
 	[Parameter(ParameterSetName = 'Release', Position = 1)]
 	[Parameter(ParameterSetName = 'Branch', Position = 1)]
-	[Switch]$NonInterative
+	[Switch]$NonInterative,
+
+	[String]$InstallPath = 'C:\VeeamScripts'
 )
 
 # Prepare variables
-$rootPath = 'C:\VeeamScripts'
 $project = 'VeeamNotify'
 $ErrorActionPreference = 'Stop'
 
@@ -35,8 +36,8 @@ Write-Output @'
 '@
 
 # Check if this project is already installed and if so, exit
-if (Test-Path $rootPath\$project) {
-	$installedVersion = Get-Content -Raw "$rootPath\$project\resources\version.txt"
+if (Test-Path $InstallPath\$project) {
+	$installedVersion = Get-Content -Raw "$InstallPath\$project\resources\version.txt"
 	Write-Output "$project ($installedVersion) is already installed. This script cannot update an existing installation."
 	Write-Output 'Please manually update or delete/rename the existing installation and retry.'
 }
@@ -257,22 +258,22 @@ try {
 }
 catch {
 	Write-Warning 'Failed to unblock downloaded files. You will need to run the following commands manually once installation is complete:'
-	Write-Output "Unblock-File -Path $rootPath\$project\*.ps*"
-	Write-Output "Unblock-File -Path $rootPath\$project\resources\*.ps*"
+	Write-Output "Unblock-File -Path $InstallPath\$project\*.ps*"
+	Write-Output "Unblock-File -Path $InstallPath\$project\resources\*.ps*"
 }
 
 # Extract release to destination path
-Write-Output "Extracting files to '$rootPath'..."
-Expand-Archive -Path "$env:TEMP\$project-$releaseName.zip" -DestinationPath "$rootPath"
+Write-Output "Extracting files to '$InstallPath'..."
+Expand-Archive -Path "$env:TEMP\$project-$releaseName.zip" -DestinationPath "$InstallPath"
 
 # Rename destination and tidy up
 Write-Output "Renaming directory and tidying up...`n"
-Rename-Item -Path "$rootPath\$project-$releaseName" -NewName "$project"
+Rename-Item -Path "$InstallPath\$project-$releaseName" -NewName "$project"
 Remove-Item -Path "$env:TEMP\$project-$releaseName.zip"
 
 If (-not $NonInterative) {
 	# Get config
-	$config = Get-Content "$rootPath\$project\config\conf.json" -Raw | ConvertFrom-Json
+	$config = Get-Content "$InstallPath\$project\config\conf.json" -Raw | ConvertFrom-Json
 
 	# Prompt user with config options
 	$servicePrompt_discord = New-Object System.Management.Automation.Host.ChoiceDescription '&Discord', 'Send notifications to Discord.'
@@ -340,11 +341,11 @@ If (-not $NonInterative) {
 	# Write config
 	Try {
 		Write-Output "`nSetting configuration..."
-		ConvertTo-Json $config | Set-Content "$rootPath\$project\config\conf.json"
-		Write-Output "`nConfiguration set successfully. Configuration can be found in `"$rootPath\$project\config\conf.json`"."
+		ConvertTo-Json $config | Set-Content "$InstallPath\$project\config\conf.json"
+		Write-Output "`nConfiguration set successfully. Configuration can be found in `"$InstallPath\$project\config\conf.json`"."
 	}
 	catch {
-		Write-Warning "Failed to write configuration file at `"$rootPath\$project\config\conf.json`". Please open the file and complete configuration manually."
+		Write-Warning "Failed to write configuration file at `"$InstallPath\$project\config\conf.json`". Please open the file and complete configuration manually."
 	}
 }
 Else {
@@ -356,12 +357,11 @@ Write-Output "`nInstallation complete!`n"
 # Run configuration deployment script.
 $configPrompt_yes = New-Object System.Management.Automation.Host.ChoiceDescription '&Yes', 'Execute configuration deployment tool.'
 $configPrompt_no = New-Object System.Management.Automation.Host.ChoiceDescription '&No', 'Skip configuration deployment tool.'
-$configPrompt_opts = [System.Management.Automation.Host.ChoiceDescription[]]($configPrompt_yes, $configPrompt_no)
-$configPrompt_result = $host.UI.PromptForChoice('Configuration Deployment Tool', "Would you like to to run the VeeamNotify configuration deployment tool?`nNone of your job configurations will be modified without confirmation.", $configPrompt_opts, 0)
+)
 
 If ($configPrompt_result -eq 0) {
 	Write-Output "`nRunning configuration deployment script...`n"
-	& "$rootPath\$project\resources\DeployVeeamConfiguration.ps1"
+	& "$InstallPath\$project\resources\DeployVeeamConfiguration.ps1 -InstallPath $InstallPath"
 }
 else {
 	Write-Output 'Exiting.'
