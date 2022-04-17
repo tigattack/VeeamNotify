@@ -1,7 +1,9 @@
 ---
 name: PSScriptAnalyzer
 
-on: push
+on:
+  push:
+  pull_request:
 
 jobs:
   lint:
@@ -17,8 +19,9 @@ jobs:
         uses: tj-actions/changed-files@v18
         with:
           files: |
-            *.ps1
-            *.psm1
+            **/*.ps1
+            **/*.psm1
+            **/*.psd1
 
       - name: List changed files
         if: steps.changed-files.outputs.any_changed == 'true'
@@ -26,6 +29,15 @@ jobs:
           for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
             echo "$file was changed"
           done
+
+      - name: Update PSScriptAnalyzer
+        if: steps.changed-files.outputs.any_changed == 'true'
+        shell: pwsh
+        run: |
+          $module = Get-Module -Name PSScriptAnalyzer
+          $module | Remove-Module -Force
+          $module | Update-Module -Force
+          Import-Module -Name PSScriptAnalyzer -Force
 
       - name: Run PSScriptAnalyzer
         if: steps.changed-files.outputs.any_changed == 'true'
