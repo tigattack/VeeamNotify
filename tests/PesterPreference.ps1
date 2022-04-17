@@ -19,7 +19,7 @@
 		FullName   = ''
 	}
 	CodeCoverage = @{
-		#Enabled = $true
+		Enabled               = $false
 		OutputFormat          = 'JaCoCo'
 		OutputPath            = './CodeCoverage.xml'
 		OutputEncoding        = 'UTF8'
@@ -29,9 +29,9 @@
 		SingleHitBreakpoints  = 'true'
 	}
 	TestResult   = @{
-		Enabled        = 'false'
-		OutputFormat   = 'NUnitXml'
-		OutputPath     = 'testResults.xml'
+		Enabled        = $true
+		OutputFormat   = 'JUnitXml'
+		OutputPath     = './PesterResults.xml'
 		OutputEncoding = 'UTF8'
 		TestSuiteName  = 'Pester'
 	}

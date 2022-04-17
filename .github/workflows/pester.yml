@@ -1,0 +1,71 @@
+---
+name: Pester
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: windows-latest
+    steps:
+
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Get changed PowerShell files
+        id: changed-files
+        uses: tj-actions/changed-files@v18
+        with:
+          files: |
+            **/*.ps1
+            **/*.psm1
+            **/*.psd1
+            !tests/*
+
+      - name: List changed files
+        if: steps.changed-files.outputs.any_changed == 'true'
+        shell: powershell
+        run: |
+          foreach ($file in $("${{ steps.changed-files.outputs.all_changed_files }}".Split(' '))) {
+            Write-Output "$file was changed"
+          }
+
+      - name: Find Pester test files
+        id: test-files
+        if: steps.changed-files.outputs.any_changed == 'true'
+        shell: powershell
+        run: |
+          foreach ($file in $("${{ steps.changed-files.outputs.all_changed_files }}".Split(' '))) {
+            If (Get-ChildItem -Path .\tests\ -Filter "$($file.TrimEnd('.ps1')).Tests.ps1") {
+              Write-Output 'Found Pester test file for changed file. Will continue.'
+              Write-Output "::set-output name=test::true"
+              break
+            }
+            Else { Write-Output 'No Pester test files were found for any changed files.' }
+          }
+
+      - name: Update Pester
+        if: steps.changed-files.outputs.any_changed == 'true'
+        shell: powershell
+        run: |
+          $module = Get-Module -Name Pester
+          $module | Remove-Module -Force
+          $module | Update-Module -Force
+          Import-Module -Name Pester -Force
+
+      - name: Run Pester
+        if: steps.changed-files.outputs.any_changed == 'true' && steps.test-files.outputs.test == 'true'
+        shell: powershell
+        run: |
+          $pesterConfig = Get-Content .\tests\PesterPreference.ps1 -Raw | Invoke-Expression
+          Invoke-Pester -Configuration $pesterConfig
+          If ( $Error[0].FullyQualifiedErrorId -eq 'PesterAssertionFailed' ) { exit 1 }
+
+      - name: Upload test report
+        uses: actions/upload-artifact@v2
+        if: success() || failure()
+        with:
+          name: Pester-Results
+          path: PesterResults.xml
