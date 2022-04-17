@@ -270,8 +270,7 @@ try {
 }
 catch {
 	Write-Warning 'Failed to unblock downloaded files. You will need to run the following commands manually once installation is complete:'
-	Write-Output "Unblock-File -Path $InstallPath\$project\*.ps*"
-	Write-Output "Unblock-File -Path $InstallPath\$project\resources\*.ps*"
+	Write-Output "Get-ChildItem -Path $InstallParentPath -Filter *.ps* -Recurse | Unblock-File"
 }
 
 # Extract release to destination path
