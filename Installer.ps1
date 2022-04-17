@@ -158,8 +158,8 @@ If ($Branch) {
 	}
 
 	# Query if branch not found
-	If (-not $NonInteractive) {
-		If (-not $branches.name.Contains($Branch)) {
+	If (-not $branches.name.Contains($Branch)) {
+		If (-not $NonInteractive) {
 			$unknownBranchQuery_main = New-Object System.Management.Automation.Host.ChoiceDescription '&Main', "'main' branch of VeeamNotify"
 			$unknownBranchQuery_dev = New-Object System.Management.Automation.Host.ChoiceDescription '&Dev', "'dev' branch of VeeamNotify"
 			$unknownBranchQuery_other = New-Object System.Management.Automation.Host.ChoiceDescription '&Other', 'Another branch of VeeamNotify'
@@ -198,10 +198,10 @@ If ($Branch) {
 				}
 			}
 		}
-	}
-	Else {
-		Write-Output "Branch '$Branch' not found. Will not prompt for branch in non-interactive mode.`n"
-		exit
+		Else {
+			Write-Output "Branch '$Branch' not found. Will not prompt for branch in non-interactive mode.`n"
+			exit
+		}
 	}
 
 	# Set $releaseName to branch name
