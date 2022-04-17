@@ -50,8 +50,8 @@ try {
 }
 catch {
 	$versionStatusCode = $_.Exception.Response.StatusCode.value__
-	Write-Warning "Failed to query GitHub for the latest version. Please check your internet connection and try again.`nStatus code: $versionStatusCode"
-	exit 1
+	Write-Warning "Failed to query GitHub for $project releases. Please check your internet connection and try again."
+	throw "HTTP status code: $versionStatusCode"
 }
 
 # Parse latest release and latest prerelease
@@ -153,8 +153,8 @@ If ($Branch) {
 	}
 	catch {
 		$versionStatusCode = $_.Exception.Response.StatusCode.value__
-		Write-Warning "Failed to query GitHub for project branches. Please check your internet connection and try again.`nStatus code: $versionStatusCode"
-		exit 1
+		Write-Warning "Failed to query GitHub for $project branches. Please check your internet connection and try again."
+		throw "HTTP status code: $versionStatusCode"
 	}
 
 	# Query if branch not found
@@ -199,8 +199,7 @@ If ($Branch) {
 			}
 		}
 		Else {
-			Write-Output "Branch '$Branch' not found. Will not prompt for branch in non-interactive mode.`n"
-			exit
+			throw "Branch '$Branch' not found. Will not prompt for branch in non-interactive mode."
 		}
 	}
 
@@ -260,8 +259,8 @@ Try {
 }
 catch {
 	$downloadStatusCode = $_.Exception.Response.StatusCode.value__
-	Write-Warning "Failed to download $project $releaseName. Please check your internet connection and try again.`nStatus code: $downloadStatusCode"
-	exit 1
+	Write-Warning "Failed to download $project $releaseName. Please check your internet connection and try again."
+	throw "HTTP status code: $downloadStatusCode"
 }
 
 # Unblock downloaded ZIP
