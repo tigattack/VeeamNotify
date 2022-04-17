@@ -67,7 +67,7 @@ If ($Branch) {
 		$unknownBranchQuery_dev = New-Object System.Management.Automation.Host.ChoiceDescription '&Dev', "'dev' branch of VeeamNotify"
 		$unknownBranchQuery_other = New-Object System.Management.Automation.Host.ChoiceDescription '&Other', 'Another branch of VeeamNotify'
 		$unknownBranchQuery_opts = [System.Management.Automation.Host.ChoiceDescription[]]($unknownBranchQuery_main, $unknownBranchQuery_dev, $unknownBranchQuery_other)
-		$unknownBranchQuery_result = $host.UI.PromptForChoice('Branch Selection', 'Which branch would you like to install?', $unknownBranchQuery_opts, 0)
+		$unknownBranchQuery_result = $host.UI.PromptForChoice('Branch Selection', "Branch '$Branch' not found. Which branch would you like to install?", $unknownBranchQuery_opts, 0)
 
 		Switch ($unknownBranchQuery_result) {
 			0 {
@@ -81,7 +81,7 @@ If ($Branch) {
 				do {
 					$Branch = ($host.UI.Prompt('Branch Name', "You've chosen to install a different branch. Please enter the branch name.", $branchPrompt)).$branchPrompt
 					If (-not $branches.name.Contains($Branch)) {
-						Write-Warning "Branch '$Branch' not found. Please try again.`n"
+						Write-Warning "Branch '$Branch' not found. Please try again."
 					}
 				}
 				until ($branches.name.Contains($Branch))
@@ -109,7 +109,7 @@ If ($Branch) {
 }
 
 # Otherwise work with versions
-else {
+Else {
 	# Get latest release from GitHub
 	[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 	try {
@@ -137,48 +137,49 @@ else {
 
 	# If no releases found, exit with notice
 	If (-not $releases) {
-		Write-Output "No releases found. Please re-run this script with the '-Branch <branch-name>' parameter."
+		Write-Output "`nNo releases were found. Please re-run this script with the '-Branch <branch-name>' parameter."
+		Write-Output "NOTE: If you decide to install from a branch, please know you may be more likely to experience issues."
 		exit
 	}
 
-	# Set $releaseName to latest stable if $Latest parameter is specified
-	If ($Latest) {
-		$releaseName = $latestStable
-	}
-
-	# Set $releaseName to latest prerelease if $Prerelease parameter is specified
-	ElseIf ($Prerelease) {
-		$releaseName = $latestPrerelease
-	}
-
-	# Set $releaseName to $Version parameter if version is valid
-	ElseIf ($Version) {
-		If ($releases.tag_name.Contains($Version)) {
-			$releaseName = $Version
-		}
-
-		Else {
-			Write-Warning "Version $Version not found. Please check and try again."
-			exit 1
-		}
-	}
-
-	# Otherwise prompt for version
-	else {
-		# Query release stream
-		if ($releases[0].prerelease) {
-			$versionQuery_stable = New-Object System.Management.Automation.Host.ChoiceDescription '&Stable', "Stable version $latestStable"
-			$versionQuery_prerelease = New-Object System.Management.Automation.Host.ChoiceDescription '&Prerelease', "Prelease version $latestPrerelease"
-			$versionQuery_opts = [System.Management.Automation.Host.ChoiceDescription[]]($versionQuery_stable, $versionQuery_prerelease)
-			$versionQuery_result = $host.UI.PromptForChoice('Release Selection', "Which version would you like to install?`nEnter '?' to see versions.", $versionQuery_opts, 0)
-
-			if ($versionQuery_result -eq 0) {
+	# Define release to use
+	If ($Release) {
+		Switch ($Release) {
+			'Latest' {
 				$releaseName = $latestStable
 			}
-			else {
+			'Prerelease' {
 				$releaseName = $latestPrerelease
 			}
 		}
+	}
+	ElseIf ($Version) {
+		$releaseName = $Version
+	}
+	Else {
+		$releasePrompt = $true
+		# Query release stream
+		$versionQuery_stable = New-Object System.Management.Automation.Host.ChoiceDescription 'Latest &stable', "Latest stable version $latestStable"
+		$versionQuery_prerelease = New-Object System.Management.Automation.Host.ChoiceDescription 'Latest &prerelease', "Latest prelease version $latestPrerelease"
+		$versionQuery_opts = [System.Management.Automation.Host.ChoiceDescription[]]($versionQuery_stable, $versionQuery_prerelease)
+		$versionQuery_result = $host.UI.PromptForChoice('Release Selection', "Which release type would you like to install?`nEnter '?' to see versions.", $versionQuery_opts, 0)
+
+		If ($versionQuery_result -eq 0) {
+			$releaseName = $latestStable
+		}
+		Else {
+			$releaseName = $latestPrerelease
+		}
+	}
+
+	# If release not found, exit with notice
+	If ($Version -and (-not $releases.tag_names -contains $Version)) {
+		Write-Warning "The specified release could not found. Valid releases are:`n$($releases.tag_name)"
+		exit
+	}
+	If (($Release -or $releasePrompt) -and (-not $releaseName)) {
+		Write-Warning "A release of the specified type could not found."
+		exit
 	}
 
 	# Pull latest version of script from GitHub
