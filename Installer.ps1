@@ -92,20 +92,8 @@ If ($Branch) {
 	# Set $releaseName to branch name
 	$releaseName = $Branch
 
-	# Pull branch from GitHub
-	$DownloadParams = @{
-		Uri     = "https://github.com/tigattack/$project/archive/refs/heads/$Branch.zip"
-		OutFile = "$env:TEMP\$project-$releaseName.zip"
-	}
-	Try {
-		Write-Output "`nDownloading $releaseName branch of $project from GitHub..."
-		Invoke-WebRequest @DownloadParams
-	}
-	catch {
-		$downloadStatusCode = $_.Exception.Response.StatusCode.value__
-		Write-Warning "Failed to download $releaseName branch of $project. Please check your internet connection and try again.`nStatus code: $downloadStatusCode"
-		exit 1
-	}
+	# Define download URL
+	$downloadUrl = "https://github.com/tigattack/$project/archive/refs/heads/$Branch.zip"
 }
 
 # Otherwise work with versions
@@ -182,20 +170,23 @@ Else {
 		exit
 	}
 
-	# Pull latest version of script from GitHub
-	$DownloadParams = @{
-		Uri     = "https://github.com/tigattack/$project/releases/download/$releaseName/$project-$releaseName.zip"
-		OutFile = "$env:TEMP\$project-$releaseName.zip"
-	}
-	Try {
-		Write-Output "`nDownloading $project $releaseName from GitHub..."
-		Invoke-WebRequest @DownloadParams
-	}
-	catch {
-		$downloadStatusCode = $_.Exception.Response.StatusCode.value__
-		Write-Warning "Failed to download $project $releaseName. Please check your internet connection and try again.`nStatus code: $downloadStatusCode"
-		exit 1
-	}
+	# Define download URL
+	$downloadUrl = "https://github.com/tigattack/$project/releases/download/$releaseName/$project-$releaseName.zip"
+}
+
+# Download project from GitHub
+$DownloadParams = @{
+	Uri     = $downloadUrl
+	OutFile = "$env:TEMP\$project-$releaseName.zip"
+}
+Try {
+	Write-Output "`nDownloading $project $releaseName from GitHub..."
+	Invoke-WebRequest @DownloadParams
+}
+catch {
+	$downloadStatusCode = $_.Exception.Response.StatusCode.value__
+	Write-Warning "Failed to download $project $releaseName. Please check your internet connection and try again.`nStatus code: $downloadStatusCode"
+	exit 1
 }
 
 # Unblock downloaded ZIP
