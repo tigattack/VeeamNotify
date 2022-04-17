@@ -22,6 +22,7 @@ jobs:
             **/*.ps1
             **/*.psm1
             **/*.psd1
+            !tests/*
 
       - name: List changed files
         if: steps.changed-files.outputs.any_changed == 'true'
