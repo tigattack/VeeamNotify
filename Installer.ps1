@@ -7,8 +7,8 @@ param (
 	[String]$Version,
 
 	[Parameter(ParameterSetName = 'Release', Position = 0, Mandatory = $true)]
-	[ValidateSet('Latest', 'Prerelease')]
-	[String]$Release,
+	[ValidateSet('Release', 'Prerelease')]
+	[String]$Latest,
 
 	[Parameter(ParameterSetName = 'Branch', Position = 0, Mandatory = $true)]
 	[String]$Branch,
@@ -70,7 +70,7 @@ foreach ($i in $releases) {
 
 
 # Query download type if not specified
-If (-not $Version -and -not $Release -and -not $Branch -and -not $NonInteractive) {
+If (-not $Version -and -not $Latest -and -not $Branch -and -not $NonInteractive) {
 
 	# Query download type
 	[System.Management.Automation.Host.ChoiceDescription[]]$downloadQuery_opts = @()
@@ -110,20 +110,20 @@ If (-not $Version -and -not $Release -and -not $Branch -and -not $NonInteractive
 
 				Switch ($versionQuery_result) {
 					0 {
-						$Release = 'Latest'
+						$Latest = 'Release'
 					}
 					1 {
-						$Release = 'Prerelease'
+						$Latest = 'Prerelease'
 					}
 				}
 			}
 			ElseIf ($latestStable) {
-				$Release = 'Latest'
+				$Latest = 'Release'
 			}
 			ElseIf ($latestPrerelease) {
 				Write-Output "`nNOTICE: You chose release. Currently there are only prereleases available.`nContinuing with prerelease installation in 5 seconds."
 				Start-Sleep -Seconds 5
-				$Release = 'Prerelease'
+				$Latest = 'Prerelease'
 			}
 		}
 		1 {
@@ -214,9 +214,9 @@ If ($Branch) {
 Else {
 
 	# Define release to use
-	If ($Release) {
-		Switch ($Release) {
-			'Latest' {
+	If ($Latest) {
+		Switch ($Latest) {
+			'Release' {
 				$releaseName = $latestStable
 			}
 			'Prerelease' {
@@ -239,7 +239,7 @@ Else {
 		Write-Warning "The specified release could not found. Valid releases are:`n$($releases.tag_name)"
 		exit
 	}
-	If (($Release -or $releasePrompt) -and (-not $releaseName)) {
+	If (($Latest -or $releasePrompt) -and (-not $releaseName)) {
 		Write-Warning 'A release of the specified type could not found.'
 		exit
 	}
