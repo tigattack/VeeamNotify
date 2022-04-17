@@ -1,0 +1,37 @@
+---
+name: Pester
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: windows-latest
+    steps:
+
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Update Pester
+        shell: powershell
+        run: |
+          $module = Get-Module -Name Pester
+          $module | Remove-Module -Force
+          $module | Update-Module -Force
+          Import-Module -Name Pester -Force -PassThru
+
+      - name: Run Pester
+        shell: powershell
+        run: |
+          Import-Module -Name Pester
+          $pesterConfig = Get-Content .\tests\PesterPreference.ps1 -Raw | Invoke-Expression
+          Invoke-Pester -Configuration $pesterConfig
+
+      - name: Upload test report
+        uses: actions/upload-artifact@v2
+        if: success() || failure()
+        with:
+          name: Pester-Results
+          path: PesterResults.xml

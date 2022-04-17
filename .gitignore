@@ -1,3 +1,4 @@
 notes.md
 ExampleData
-Test*
+Test-*
+!/tests/*

@@ -21,8 +21,10 @@ jobs:
         uses: tj-actions/changed-files@v18
         with:
           files: |
-            *.ps1
-            *.psm1
+            **/*.ps1
+            **/*.psm1
+            **/*.psd1
+            !tests/*
 
       - name: List changed files
         if: steps.changed-files.outputs.any_changed == 'true'
