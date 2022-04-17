@@ -16,9 +16,12 @@ param (
 	[Parameter(ParameterSetName = 'Version', Position = 1)]
 	[Parameter(ParameterSetName = 'Release', Position = 1)]
 	[Parameter(ParameterSetName = 'Branch', Position = 1)]
-	[Switch]$NonInteractive,
+	[String]$InstallParentPath = 'C:\VeeamScripts',
 
-	[String]$InstallParentPath = 'C:\VeeamScripts'
+	[Parameter(ParameterSetName = 'Version', Position = 2)]
+	[Parameter(ParameterSetName = 'Release', Position = 2)]
+	[Parameter(ParameterSetName = 'Branch', Position = 2)]
+	[Switch]$NonInteractive
 )
 
 # Prepare variables
