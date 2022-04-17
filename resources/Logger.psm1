@@ -18,10 +18,10 @@ Function Write-LogMessage {
 
 	# Creates hash table with severities
 	$Severities = @{
-		Error	= 1
-		Warn	= 2
-		Info	= 3
-		Debug	= 4
+		Error = 1
+		Warn  = 2
+		Info  = 3
+		Debug = 4
 	}
 
 	# Pull config if necessary to correlate logging level

@@ -24,7 +24,7 @@ Function Test-FileIsLocked {
 					$IsLocked = $True
 				}
 				[pscustomobject]@{
-					File = $Item
+					File     = $Item
 					IsLocked = $IsLocked
 				}
 			}
