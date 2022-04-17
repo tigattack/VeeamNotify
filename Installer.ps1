@@ -16,7 +16,7 @@ param (
 	[Parameter(ParameterSetName = 'Version', Position = 1)]
 	[Parameter(ParameterSetName = 'Release', Position = 1)]
 	[Parameter(ParameterSetName = 'Branch', Position = 1)]
-	[Switch]$NonInterative,
+	[Switch]$NonInteractive,
 
 	[String]$InstallPath = 'C:\VeeamScripts'
 )
@@ -70,7 +70,7 @@ foreach ($i in $releases) {
 
 
 # Query download type if not specified
-If (-not $Version -and -not $Release -and -not $Branch -and -not $NonInterative) {
+If (-not $Version -and -not $Release -and -not $Branch -and -not $NonInteractive) {
 
 	# Query download type
 	[System.Management.Automation.Host.ChoiceDescription[]]$downloadQuery_opts = @()
@@ -158,7 +158,7 @@ If ($Branch) {
 	}
 
 	# Query if branch not found
-	If (-not $NonInterative) {
+	If (-not $NonInteractive) {
 		If (-not $branches.name.Contains($Branch)) {
 			$unknownBranchQuery_main = New-Object System.Management.Automation.Host.ChoiceDescription '&Main', "'main' branch of VeeamNotify"
 			$unknownBranchQuery_dev = New-Object System.Management.Automation.Host.ChoiceDescription '&Dev', "'dev' branch of VeeamNotify"
@@ -284,7 +284,7 @@ Write-Output "Renaming directory and tidying up...`n"
 Rename-Item -Path "$InstallPath\$project-$releaseName" -NewName "$project"
 Remove-Item -Path "$env:TEMP\$project-$releaseName.zip"
 
-If (-not $NonInterative) {
+If (-not $NonInteractive) {
 	# Get config
 	$config = Get-Content "$InstallPath\$project\config\conf.json" -Raw | ConvertFrom-Json
 
