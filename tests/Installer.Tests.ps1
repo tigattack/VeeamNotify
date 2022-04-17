@@ -41,34 +41,28 @@ Describe 'Installer.ps1' {
 		$releases = Invoke-RestMethod -Uri "https://api.github.com/repos/tigattack/$project/releases" -Method Get
 	}
 
-	Context 'NonInteractive Version Install' {
-		It 'Should install from specific version' -Skip:(-not $releases) {
-			# Run installer
-			. $installerPath -Version 'v1.0' @installerParams
+	It 'Install from specific version' -Skip:(-not $releases) {
+		# Run installer
+		. $installerPath -Version 'v1.0' @installerParams
 
-			# Check for expected files
-			Invoke-Command -ScriptBlock $expectedFilesCheck
-		}
+		# Check for expected files
+		Invoke-Command -ScriptBlock $expectedFilesCheck
 	}
 
-	Context 'NonInteractive Latest Install' {
-		It 'Should install from latest release' -Skip:(-not $releases) {
-			# Run installer
-			. $installerPath -Latest Release @installerParams
+	It 'Install from latest release' -Skip:(-not $releases) {
+		# Run installer
+		. $installerPath -Latest Release @installerParams
 
-			# Check for expected files
-			Invoke-Command -ScriptBlock $expectedFilesCheck
-		}
+		# Check for expected files
+		Invoke-Command -ScriptBlock $expectedFilesCheck
 	}
 
-	Context 'NonInteractive Branch Install' {
-		It 'Should install from branch' {
-			# Run installer
-			. $installerPath -Branch dev @installerParams
+	It 'Install from branch' {
+		# Run installer
+		. $installerPath -Branch dev @installerParams
 
-			# Check for expected files
-			Invoke-Command -ScriptBlock $expectedFilesCheck
-		}
+		# Check for expected files
+		Invoke-Command -ScriptBlock $expectedFilesCheck
 	}
 
 	AfterAll {
