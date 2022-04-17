@@ -1,17 +1,5 @@
 #Requires -RunAsAdministrator
 
-<#
-TODO:
-Offer to install the following:
-latest prerelease
-latest stable
-a branch
-
-Add params for every interactive prompt to allow automation of install
-
-#>
-
-# Support for passing a parameter to CLI to install using branch
 [CmdletBinding(DefaultParameterSetName='None')]
 param (
 	[Parameter(ParameterSetName = 'Version', Position = 0, Mandatory = $true)]
@@ -51,6 +39,107 @@ if (Test-Path $rootPath\$project) {
 	$installedVersion = Get-Content -Raw "$rootPath\$project\resources\version.txt"
 	Write-Output "$project ($installedVersion) is already installed. This script cannot update an existing installation."
 	Write-Output 'Please manually update or delete/rename the existing installation and retry.'
+}
+
+
+# Get releases from GitHub
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+try {
+	$releases = Invoke-RestMethod -Uri "https://api.github.com/repos/tigattack/$project/releases" -Method Get
+}
+catch {
+	$versionStatusCode = $_.Exception.Response.StatusCode.value__
+	Write-Warning "Failed to query GitHub for the latest version. Please check your internet connection and try again.`nStatus code: $versionStatusCode"
+	exit 1
+}
+
+# Parse latest release and latest prerelease
+foreach ($i in $releases) {
+	if ($i.prerelease) {
+		$latestPrerelease = $i.tag_name
+		break
+	}
+}
+foreach ($i in $releases) {
+	if (-not $i.prerelease) {
+		$latestStable = $i.tag_name
+		break
+	}
+}
+
+
+# Query download type if not specified
+If (-not $Version -and -not $Release -and -not $Branch -and -not $NonInterative) {
+
+	# Query download type
+	[System.Management.Automation.Host.ChoiceDescription[]]$downloadQuery_opts = @()
+	If ($releases) {
+		$downloadQuery_opts += New-Object System.Management.Automation.Host.ChoiceDescription '&Release', "Download the latest release or prerelease. You will be prompted if there's a choice between the two."
+		$downloadQuery_message = "Please select how you would like to download $project."
+	}
+	Else {
+		"Please select how you would like to download $project. Note that there are currently no releases or prereleases available."
+	}
+	$downloadQuery_opts += New-Object System.Management.Automation.Host.ChoiceDescription '&Version', 'Download a specific version.'
+	$downloadQuery_opts += New-Object System.Management.Automation.Host.ChoiceDescription '&Branch', 'Download a branch.'
+	$downloadQuery_result = $host.UI.PromptForChoice(
+		'Download type',
+		$downloadQuery_message,
+		$downloadQuery_opts,
+		0
+	)
+
+	# Set download type
+	Switch ($downloadQuery_result) {
+		0 {
+			If ($latestStable -and $latestPrerelease) {
+				# Query release stream
+				$releasePrompt = $true
+				# Query release stream
+				$versionQuery_stable = New-Object System.Management.Automation.Host.ChoiceDescription 'Latest &stable', "Latest stable: $latestStable."
+				$versionQuery_prerelease = New-Object System.Management.Automation.Host.ChoiceDescription 'Latest &prerelease', "Latest prelease: $latestPrerelease."
+				$versionQuery_result = $host.UI.PromptForChoice(
+					'Release Selection',
+					"Which release type would you like to install?`nEnter '?' to see versions.",
+					@(
+						$versionQuery_stable,
+						$versionQuery_prerelease),
+					0
+				)
+
+				Switch ($versionQuery_result) {
+					0 {
+						$Release = 'Latest'
+					}
+					1 {
+						$Release = 'Prerelease'
+					}
+				}
+			}
+			ElseIf ($latestStable) {
+				$Release = 'Latest'
+			}
+			ElseIf ($latestPrerelease) {
+				Write-Output "`nNOTICE: You chose release. Currently there are only prereleases available.`nContinuing with prerelease installation in 5 seconds."
+				Start-Sleep -Seconds 5
+				$Release = 'Prerelease'
+			}
+		}
+		1 {
+			$Version = ($host.UI.Prompt(
+					'Version Selection',
+					"You've chosen to install a specific version; please enter the version you would like to install.",
+					'Version'
+				)).Version
+		}
+		2 {
+			$Branch = ($host.UI.Prompt(
+					'Branch Selection',
+					"You've chosen to install a branch; please enter the branch name.",
+					'Branch'
+				)).Branch
+		}
+	}
 }
 
 # Download branch if specified
@@ -110,37 +199,6 @@ If ($Branch) {
 
 # Otherwise work with versions
 Else {
-	# Get latest release from GitHub
-	[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-	try {
-		$releases = Invoke-RestMethod -Uri "https://api.github.com/repos/tigattack/$project/releases" -Method Get
-	}
-	catch {
-		$versionStatusCode = $_.Exception.Response.StatusCode.value__
-		Write-Warning "Failed to query GitHub for the latest version. Please check your internet connection and try again.`nStatus code: $versionStatusCode"
-		exit 1
-	}
-
-	# Parse latest release and latest prerelease
-	foreach ($i in $releases) {
-		if ($i.prerelease) {
-			$latestPrerelease = $i.tag_name
-			break
-		}
-	}
-	foreach ($i in $releases) {
-		if (-not $i.prerelease) {
-			$latestStable = $i.tag_name
-			break
-		}
-	}
-
-	# If no releases found, exit with notice
-	If (-not $releases) {
-		Write-Output "`nNo releases were found. Please re-run this script with the '-Branch <branch-name>' parameter."
-		Write-Output 'NOTE: If you decide to install from a branch, please know you may be more likely to experience issues.'
-		exit
-	}
 
 	# Define release to use
 	If ($Release) {
@@ -156,22 +214,13 @@ Else {
 	ElseIf ($Version) {
 		$releaseName = $Version
 	}
-	Else {
-		$releasePrompt = $true
-		# Query release stream
-		$versionQuery_stable = New-Object System.Management.Automation.Host.ChoiceDescription 'Latest &stable', "Latest stable version $latestStable"
-		$versionQuery_prerelease = New-Object System.Management.Automation.Host.ChoiceDescription 'Latest &prerelease', "Latest prelease version $latestPrerelease"
-		$versionQuery_opts = [System.Management.Automation.Host.ChoiceDescription[]]($versionQuery_stable, $versionQuery_prerelease)
-		$versionQuery_result = $host.UI.PromptForChoice('Release Selection', "Which release type would you like to install?`nEnter '?' to see versions.", $versionQuery_opts, 0)
 
-		If ($versionQuery_result -eq 0) {
-			$releaseName = $latestStable
-		}
-		Else {
-			$releaseName = $latestPrerelease
-		}
+	# If no releases found, exit with notice
+	If (-not $releases) {
+		Write-Output "`nNo releases were found. Please re-run this script with the '-Branch <branch-name>' parameter."
+		Write-Output 'NOTE: If you decide to install from a branch, please know you may be more likely to experience issues.'
+		exit
 	}
-
 	# If release not found, exit with notice
 	If ($Version -and (-not $releases.tag_names -contains $Version)) {
 		Write-Warning "The specified release could not found. Valid releases are:`n$($releases.tag_name)"
