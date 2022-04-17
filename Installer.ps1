@@ -18,7 +18,7 @@ param (
 	[Parameter(ParameterSetName = 'Branch', Position = 1)]
 	[Switch]$NonInteractive,
 
-	[String]$InstallPath = 'C:\VeeamScripts'
+	[String]$InstallParentPath = 'C:\VeeamScripts'
 )
 
 # Prepare variables
@@ -36,8 +36,8 @@ Write-Output @'
 '@
 
 # Check if this project is already installed and if so, exit
-if (Test-Path $InstallPath\$project) {
-	$installedVersion = Get-Content -Raw "$InstallPath\$project\resources\version.txt"
+if (Test-Path $InstallParentPath\$project) {
+	$installedVersion = Get-Content -Raw "$InstallParentPath\$project\resources\version.txt"
 	Write-Output "$project ($installedVersion) is already installed. This script cannot update an existing installation."
 	Write-Output 'Please manually update or delete/rename the existing installation and retry.'
 }
@@ -275,17 +275,17 @@ catch {
 }
 
 # Extract release to destination path
-Write-Output "Extracting files to '$InstallPath'..."
-Expand-Archive -Path "$env:TEMP\$project-$releaseName.zip" -DestinationPath "$InstallPath"
+Write-Output "Extracting files to '$InstallParentPath'..."
+Expand-Archive -Path "$env:TEMP\$project-$releaseName.zip" -DestinationPath "$InstallParentPath"
 
 # Rename destination and tidy up
 Write-Output "Renaming directory and tidying up...`n"
-Rename-Item -Path "$InstallPath\$project-$releaseName" -NewName "$project"
+Rename-Item -Path "$InstallParentPath\$project-$releaseName" -NewName "$project"
 Remove-Item -Path "$env:TEMP\$project-$releaseName.zip"
 
 If (-not $NonInteractive) {
 	# Get config
-	$config = Get-Content "$InstallPath\$project\config\conf.json" -Raw | ConvertFrom-Json
+	$config = Get-Content "$InstallParentPath\$project\config\conf.json" -Raw | ConvertFrom-Json
 
 	# Prompt user with config options
 	$servicePrompt_discord = New-Object System.Management.Automation.Host.ChoiceDescription '&Discord', 'Send notifications to Discord.'
@@ -369,11 +369,11 @@ If (-not $NonInteractive) {
 	# Write config
 	Try {
 		Write-Output "`nSetting configuration..."
-		ConvertTo-Json $config | Set-Content "$InstallPath\$project\config\conf.json"
-		Write-Output "`nConfiguration set successfully. Configuration can be found in `"$InstallPath\$project\config\conf.json`"."
+		ConvertTo-Json $config | Set-Content "$InstallParentPath\$project\config\conf.json"
+		Write-Output "`nConfiguration set successfully. Configuration can be found in `"$InstallParentPath\$project\config\conf.json`"."
 	}
 	catch {
-		Write-Warning "Failed to write configuration file at `"$InstallPath\$project\config\conf.json`". Please open the file and complete configuration manually."
+		Write-Warning "Failed to write configuration file at `"$InstallParentPath\$project\config\conf.json`". Please open the file and complete configuration manually."
 	}
 }
 Else {
@@ -399,7 +399,7 @@ If (-not $NonInteractive) {
 
 	If ($configPrompt_result -eq 0) {
 		Write-Output "`nRunning configuration deployment script...`n"
-		& "$InstallPath\$project\resources\DeployVeeamConfiguration.ps1 -InstallPath $InstallPath"
+		& "$InstallParentPath\$project\resources\DeployVeeamConfiguration.ps1 -InstallParentPath $InstallParentPath"
 	}
 	else {
 		Write-Output 'Exiting.'
