@@ -7,7 +7,7 @@ Describe 'Installer.ps1' {
 		$installDir = New-Item -Path (Join-Path -Path $PSScriptRoot -ChildPath 'test-install') -Type Directory -Force
 
 		# Get installer path
-		$installerPath = Get-ChildItem -Path (Split-Path -Path $PSScriptRoot -Parent) -Filter 'Installer.ps1'
+		$installerPath = (Get-ChildItem -Path (Split-Path -Path $PSScriptRoot -Parent) -Filter 'Installer.ps1').FullName
 
 		# Define installer params
 		$installerParams = @{
@@ -43,7 +43,7 @@ Describe 'Installer.ps1' {
 
 	It 'Install from specific version' -Skip:(-not $releases) {
 		# Run installer
-		. $installerPath -Version 'v1.0' @installerParams
+		& $installerPath -Version 'v1.0' @installerParams
 
 		# Check for expected files
 		Invoke-Command -ScriptBlock $expectedFilesCheck
@@ -51,7 +51,7 @@ Describe 'Installer.ps1' {
 
 	It 'Install from latest release' -Skip:(-not $releases) {
 		# Run installer
-		. $installerPath -Latest Release @installerParams
+		& $installerPath -Latest Release @installerParams
 
 		# Check for expected files
 		Invoke-Command -ScriptBlock $expectedFilesCheck
@@ -59,7 +59,7 @@ Describe 'Installer.ps1' {
 
 	It 'Install from branch' {
 		# Run installer
-		. $installerPath -Branch dev @installerParams
+		& $installerPath -Branch dev @installerParams
 
 		# Check for expected files
 		Invoke-Command -ScriptBlock $expectedFilesCheck
