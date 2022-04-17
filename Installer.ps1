@@ -163,8 +163,16 @@ If ($Branch) {
 			$unknownBranchQuery_main = New-Object System.Management.Automation.Host.ChoiceDescription '&Main', "'main' branch of VeeamNotify"
 			$unknownBranchQuery_dev = New-Object System.Management.Automation.Host.ChoiceDescription '&Dev', "'dev' branch of VeeamNotify"
 			$unknownBranchQuery_other = New-Object System.Management.Automation.Host.ChoiceDescription '&Other', 'Another branch of VeeamNotify'
-			$unknownBranchQuery_opts = [System.Management.Automation.Host.ChoiceDescription[]]($unknownBranchQuery_main, $unknownBranchQuery_dev, $unknownBranchQuery_other)
-			$unknownBranchQuery_result = $host.UI.PromptForChoice('Branch Selection', "Branch '$Branch' not found. Which branch would you like to install?", $unknownBranchQuery_opts, 0)
+			$unknownBranchQuery_result = $host.UI.PromptForChoice(
+				'Branch Selection',
+				"Branch '$Branch' not found. Which branch would you like to install?",
+				@(
+					$unknownBranchQuery_main,
+					$unknownBranchQuery_dev,
+					$unknownBranchQuery_other
+				),
+				0
+			)
 
 			Switch ($unknownBranchQuery_result) {
 				0 {
@@ -176,7 +184,12 @@ If ($Branch) {
 				2 {
 					$branchPrompt = 'Branch'
 					do {
-						$Branch = ($host.UI.Prompt('Branch Name', "You've chosen to install a different branch. Please enter the branch name.", $branchPrompt)).$branchPrompt
+						$Branch = ($host.UI.Prompt(
+								'Branch Name',
+								"You've chosen to install a different branch. Please enter the branch name.",
+								$branchPrompt
+							)).$branchPrompt
+
 						If (-not $branches.name.Contains($Branch)) {
 							Write-Warning "Branch '$Branch' not found. Please try again."
 						}
@@ -279,8 +292,16 @@ If (-not $NonInterative) {
 	$servicePrompt_discord = New-Object System.Management.Automation.Host.ChoiceDescription '&Discord', 'Send notifications to Discord.'
 	$servicePrompt_slack = New-Object System.Management.Automation.Host.ChoiceDescription '&Slack', 'Send notifications to Slack.'
 	$servicePrompt_teams = New-Object System.Management.Automation.Host.ChoiceDescription '&Teams', 'Send notifications to Teams.'
-	$servicePrompt_opts = [System.Management.Automation.Host.ChoiceDescription[]]($servicePrompt_discord, $servicePrompt_slack, $servicePrompt_teams)
-	$servicePrompt_result = $host.UI.PromptForChoice('Notification Service', 'Which service do you wish to send notifications to?', $servicePrompt_opts, -1)
+	$servicePrompt_result = $host.UI.PromptForChoice(
+		'Notification Service',
+		'Which service do you wish to send notifications to?',
+		@(
+			$servicePrompt_discord,
+			$servicePrompt_slack,
+			$servicePrompt_teams
+		),
+		-1
+	)
 
 	Switch ($servicePrompt_result) {
 		0 {
@@ -298,9 +319,17 @@ If (-not $NonInterative) {
 	$mentionPreference_warn = New-Object System.Management.Automation.Host.ChoiceDescription '&Warning', 'Mention me when a session finishes in a warning state.'
 	$mentionPreference_fail = New-Object System.Management.Automation.Host.ChoiceDescription '&Failure', 'Mention me when a session finishes in a failed state.'
 	$mentionPreference_warnfail = New-Object System.Management.Automation.Host.ChoiceDescription '&Both', 'Notify me when a session finishes in either a warning or a failed state.'
-	$mentionPreference_opts = [System.Management.Automation.Host.ChoiceDescription[]]($mentionPreference_no, $mentionPreference_warn, $mentionPreference_fail, $mentionPreference_warnfail)
-	$mentionPreference_message = 'Do you wish to be mentioned/tagged when a session finishes in one of the following states?'
-	$mentionPreference_result = $host.UI.PromptForChoice('Mention Preference', $mentionPreference_message, $mentionPreference_opts, 2)
+	$mentionPreference_result = $host.UI.PromptForChoice(
+		'Mention Preference',
+		'Do you wish to be mentioned/tagged when a session finishes in one of the following states?',
+		@(
+			$mentionPreference_no,
+			$mentionPreference_warn,
+			$mentionPreference_fail,
+			$mentionPreference_warnfail
+		),
+		2
+	)
 
 	If ($mentionPreference_result -ne 0) {
 		Switch ($servicePrompt_result) {
@@ -357,6 +386,14 @@ Write-Output "`nInstallation complete!`n"
 # Run configuration deployment script.
 $configPrompt_yes = New-Object System.Management.Automation.Host.ChoiceDescription '&Yes', 'Execute configuration deployment tool.'
 $configPrompt_no = New-Object System.Management.Automation.Host.ChoiceDescription '&No', 'Skip configuration deployment tool.'
+$configPrompt_result = $host.UI.PromptForChoice(
+	'Configuration Deployment Tool',
+	"Would you like to to run the VeeamNotify configuration deployment tool?`nNone of your job configurations will be modified without confirmation.",
+	@(
+		$configPrompt_yes,
+		$configPrompt_no
+	),
+	0
 )
 
 If ($configPrompt_result -eq 0) {
