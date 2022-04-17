@@ -80,6 +80,9 @@ If ($Branch) {
 				$branchPrompt = 'Branch'
 				do {
 					$Branch = ($host.UI.Prompt('Branch Name', "You've chosen to install a different branch. Please enter the branch name.", $branchPrompt)).$branchPrompt
+					If (-not $branches.name.Contains($Branch)) {
+						Write-Warning "Branch '$Branch' not found. Please try again.`n"
+					}
 				}
 				until ($branches.name.Contains($Branch))
 			}
