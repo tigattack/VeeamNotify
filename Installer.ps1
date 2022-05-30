@@ -401,7 +401,7 @@ If (-not $NonInteractive) {
 
 	If ($configPrompt_result -eq 0) {
 		Write-Output "`nRunning configuration deployment script...`n"
-		& "$InstallParentPath\$project\resources\DeployVeeamConfiguration.ps1 -InstallParentPath $InstallParentPath"
+		Start-Process -FilePath "$InstallParentPath\$project\resources\DeployVeeamConfiguration.ps1" -ArgumentList "-InstallParentPath $InstallParentPath" -NoNewWindow
 	}
 	else {
 		Write-Output 'Exiting.'
