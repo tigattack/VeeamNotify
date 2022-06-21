@@ -250,6 +250,10 @@ Else {
 	# Define download URL
 	$downloadUrl = "https://github.com/tigattack/$project/releases/download/$releaseName/$project-$releaseName.zip"
 }
+# Set visual releaseName to not cause confusion vs input
+$VisualReleaseName = $releaseName
+# Sanitize releaseName for OutFile
+$releaseName = $releaseName -replace '[\W]', '-'
 
 # Download project from GitHub
 $DownloadParams = @{
@@ -257,7 +261,7 @@ $DownloadParams = @{
 	OutFile = "$env:TEMP\$project-$releaseName.zip"
 }
 Try {
-	Write-Output "`nDownloading $project $releaseName from GitHub..."
+	Write-Output "`nDownloading $project $VisualReleaseName from GitHub..."
 	Invoke-WebRequest @DownloadParams
 }
 catch {
