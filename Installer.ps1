@@ -34,15 +34,13 @@ Write-Output @'
 #        VeeamNotify Installer        #
 #                                     #
 #######################################
-
-
 '@
 
 # Check if this project is already installed and if so, exit
 if (Test-Path "$InstallParentPath\$project") {
 	$installedVersion = (Get-Content -Raw "$InstallParentPath\$project\resources\version.txt").Trim()
-	Write-Output "$project ($installedVersion) is already installed. This script cannot update an existing installation."
-	Write-Output 'Please manually update or delete/rename the existing installation and retry.'
+	Write-Output "`n$project ($installedVersion) is already installed. This script cannot update an existing installation."
+	Write-Output "Please manually update or delete/rename the existing installation and retry.`n`n"
 	exit
 }
 
@@ -332,6 +330,7 @@ Else {
 Remove-Item -Path "$env:TEMP\$outFile.zip"
 
 If (-not $NonInteractive) {
+	Write-Output "`nBeginning configuration..."
 	# Get config
 	$config = Get-Content "$InstallParentPath\$project\config\conf.json" -Raw | ConvertFrom-Json
 
@@ -381,14 +380,14 @@ If (-not $NonInteractive) {
 	If ($mentionPreference_result -ne 0) {
 		Switch ($servicePrompt_result) {
 			0 {
-				$config.services.discord.user_id = Read-Host -Prompt 'Please enter your Discord user ID'
+				$config.services.discord.user_id = Read-Host -Prompt "`nPlease enter your Discord user ID"
 			}
 			1 {
-				$config.services.slack.user_id = Read-Host -Prompt 'Please enter your Slack member ID'
+				$config.services.slack.user_id = Read-Host -Prompt "`nPlease enter your Slack member ID"
 			}
 			2 {
-				$config.services.teams.user_id = Read-Host -Prompt 'Please enter your Teams email address'
-				Write-Output "Teams also requires a name to be specified for mentions.`nIf you do not specify anything, your username (from your email address) will be used."
+				$config.services.teams.user_id = Read-Host -Prompt "`nPlease enter your Teams email address"
+				Write-Output "`nTeams also requires a name to be specified for mentions.`nIf you do not specify anything, your username (from your email address) will be used."
 				$config.services.teams.user_name = Read-Host -Prompt 'Please enter your name on Teams (e.g. John Smith)'
 			}
 		}
@@ -423,14 +422,6 @@ If (-not $NonInteractive) {
 	catch {
 		Write-Warning "Failed to write configuration file at `"$InstallParentPath\$project\config\conf.json`". Please open the file and complete configuration manually."
 	}
-}
-Else {
-	Write-Output "`nWill not prompt for service and mention configuration in non-interactive mode.`n"
-}
-
-Write-Output "`nInstallation complete!`n"
-
-If (-not $NonInteractive) {
 
 	# Query for configuration deployment script.
 	$configPrompt_yes = New-Object System.Management.Automation.Host.ChoiceDescription '&Yes', 'Execute configuration deployment tool.'
@@ -457,8 +448,7 @@ If (-not $NonInteractive) {
 }
 
 Else {
-	Write-Output "`nWill not prompt to run Veeam configuration deployment script in non-interactive mode.`n"
-
-	Write-Output 'Exiting.'
-	exit
+	Write-Output "`nWill not prompt for VeeamNotify configuration, or to run Veeam configuration deployment script in non-interactive mode.`n"
 }
+
+Write-Output "`nInstallation complete!`n"
