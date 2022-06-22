@@ -426,7 +426,7 @@ If (-not $NonInteractive) {
 	# Query for configuration deployment script.
 	$configPrompt_yes = New-Object System.Management.Automation.Host.ChoiceDescription '&Yes', 'Execute configuration deployment tool.'
 	$configPrompt_no = New-Object System.Management.Automation.Host.ChoiceDescription '&No', 'Skip configuration deployment tool.'
-	$configPrompt_result = $host.UI.PromptForChoice(
+	$host.UI.PromptForChoice(
 		'Configuration Deployment Tool',
 		"Would you like to to run the VeeamNotify configuration deployment tool?`nNone of your job configurations will be modified without confirmation.",
 		@(
@@ -434,19 +434,14 @@ If (-not $NonInteractive) {
 			$configPrompt_no
 		),
 		0
-	)
+	) | ForEach-Object {
+		If ($_ -eq 0) {
+			Write-Output "`nRunning configuration deployment script...`n"
+			Start-Process -FilePath "$InstallParentPath\$project\resources\DeployVeeamConfiguration.ps1" -ArgumentList "-InstallParentPath $InstallParentPath" -NoNewWindow
+		}
+	}
 
-	If ($configPrompt_result -eq 0) {
-		Write-Output "`nRunning configuration deployment script...`n"
-		Start-Process -FilePath "$InstallParentPath\$project\resources\DeployVeeamConfiguration.ps1" -ArgumentList "-InstallParentPath $InstallParentPath" -NoNewWindow
-	}
-	else {
-		Write-Output 'Exiting.'
-		Start-Sleep -Seconds 5
-		exit
-	}
 }
-
 Else {
 	Write-Output "`nWill not prompt for VeeamNotify configuration, or to run Veeam configuration deployment script in non-interactive mode.`n"
 }
