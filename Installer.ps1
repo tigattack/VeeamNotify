@@ -39,7 +39,7 @@ Write-Output @'
 '@
 
 # Check if this project is already installed and if so, exit
-if (Test-Path $InstallParentPath\$project) {
+if (Test-Path "$InstallParentPath\$project") {
 	$installedVersion = Get-Content -Raw "$InstallParentPath\$project\resources\version.txt"
 	Write-Output "$project ($installedVersion) is already installed. This script cannot update an existing installation."
 	Write-Output 'Please manually update or delete/rename the existing installation and retry.'
@@ -78,12 +78,12 @@ If (-not $Version -and -not $Latest -and -not $Branch -and -not $NonInteractive)
 	# Query download type
 	[System.Management.Automation.Host.ChoiceDescription[]]$downloadQuery_opts = @()
 	If ($releases) {
-		$downloadQuery_opts += New-Object System.Management.Automation.Host.ChoiceDescription '&Release', "Download the latest release or prerelease. You will be prompted if there's a choice between the two."
 		$downloadQuery_message = "Please select how you would like to download $project."
 	}
 	Else {
-		"Please select how you would like to download $project. Note that there are currently no releases or prereleases available."
+		$downloadQuery_message = "Please select how you would like to download $project. NOTE: there are currently no releases or prereleases available."
 	}
+	$downloadQuery_opts += New-Object System.Management.Automation.Host.ChoiceDescription '&Release', "Download the latest release or prerelease. You will be prompted if there's a choice between the two."
 	$downloadQuery_opts += New-Object System.Management.Automation.Host.ChoiceDescription '&Version', 'Download a specific version.'
 	$downloadQuery_opts += New-Object System.Management.Automation.Host.ChoiceDescription '&Branch', 'Download a branch.'
 	$downloadQuery_result = $host.UI.PromptForChoice(
@@ -94,8 +94,26 @@ If (-not $Version -and -not $Latest -and -not $Branch -and -not $NonInteractive)
 	)
 
 	# Set download type
-	Switch ($downloadQuery_result) {
-		0 {
+	If ($releases) {
+		Switch ($downloadQuery_result) {
+			0 { $downloadType = 'release' }
+			1 { $downloadType = 'version' }
+			2 { $downloadType = 'branch' }
+		}
+	}
+	Else {
+		Switch ($downloadQuery_result) {
+			0 { $downloadType = 'version' }
+			1 { $downloadType = 'branch' }
+		}
+	}
+
+	# Set download type
+	Switch ($downloadType) {
+		'release' {
+			If (-not $releases) {
+				Write-Output "`nThere are currently no releases available. Please"
+			}
 			If ($latestStable -and $latestPrerelease) {
 				# Query release stream
 				$releasePrompt = $true
@@ -129,14 +147,14 @@ If (-not $Version -and -not $Latest -and -not $Branch -and -not $NonInteractive)
 				$Latest = 'Prerelease'
 			}
 		}
-		1 {
+		'version' {
 			$Version = ($host.UI.Prompt(
 					'Version Selection',
 					"You've chosen to install a specific version; please enter the version you would like to install.",
 					'Version'
 				)).Version
 		}
-		2 {
+		'branch' {
 			$Branch = ($host.UI.Prompt(
 					'Branch Selection',
 					"You've chosen to install a branch; please enter the branch name.",
@@ -210,7 +228,7 @@ If ($Branch) {
 	$releaseName = $Branch
 
 	# Define download URL
-	$downloadUrl = "https://github.com/tigattack/$project/archive/refs/heads/$Branch.zip"
+	$downloadUrl = "https://api.github.com/repos/tigattack/$project/zipball/$Branch"
 }
 
 # Otherwise work with versions
@@ -248,7 +266,11 @@ Else {
 	}
 
 	# Define download URL
-	$downloadUrl = "https://github.com/tigattack/$project/releases/download/$releaseName/$project-$releaseName.zip"
+	$downloadUrl = Invoke-RestMethod "https://api.github.com/repos/tigattack/$project/releases" | ForEach-Object {
+		If ($_.tag_name -eq $releaseName) {
+			$_.assets[0].browser_download_url
+		}
+	}
 }
 # Set visual releaseName to not cause confusion vs input
 $VisualReleaseName = $releaseName
