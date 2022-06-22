@@ -349,15 +349,16 @@ If (-not $NonInteractive) {
 		-1
 	)
 
+	$webhookPrompt = "`nPlease enter your webhook URL"
 	Switch ($servicePrompt_result) {
 		0 {
-			$config.services.discord.webhook = Read-Host -Prompt 'Please enter your webhook URL'
+			$config.services.discord.webhook = Read-Host -Prompt $webhookPrompt
 		}
 		1 {
-			$config.services.slack.webhook = Read-Host -Prompt 'Please enter your webhook URL'
+			$config.services.slack.webhook = Read-Host -Prompt $webhookPrompt
 		}
 		2 {
-			$config.services.teams.webhook = Read-Host -Prompt 'Please enter your webhook URL'
+			$config.services.teams.webhook = Read-Host -Prompt $webhookPrompt
 		}
 	}
 
