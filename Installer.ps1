@@ -275,7 +275,7 @@ Else {
 }
 
 # Sanitise releaseName for OutFile
-$outFile = "$env:TEMP\$project-$($releaseName -replace '[\W]','-')"
+$outFile = "$project-$($releaseName -replace '[\W]','-')"
 
 # Download project from GitHub
 $DownloadParams = @{
