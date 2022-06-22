@@ -31,7 +31,7 @@
 	"update": {
 		"notify": true,
 		"auto_update": false,
-		"auto_update_comment": "auto_update will NOT work. Leave as 'false'."
+		"auto_update_comment": "auto_update will NOT work. Leave as 'false'"
 	},
 	"thumbnail": "https://raw.githubusercontent.com/tigattack/VeeamDiscordNotifications/master/asset/thumb01.png"
 }

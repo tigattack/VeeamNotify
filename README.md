@@ -88,7 +88,7 @@ __Do not copy/paste it. It is not valid JSON.__
     "update": {             # Update configuration
 		"notify": true,       # If true, VeeamNotify will notify you if an update is available.
 		"auto_update": false, # DO NOT USE. If true, VeeamNotify will update itself when an update is available.
-		"auto_update_comment": "auto_update will NOT work. Leave as 'false'."
+		"auto_update_comment": "auto_update will NOT work. Leave as 'false'"
 	},
     "thumbnail": "https://some.url/img.jpg",  # Image URL for the thumbnail shown in the report embed.
 }

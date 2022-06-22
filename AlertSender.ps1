@@ -441,7 +441,7 @@ try {
 catch {
 	If (-not $noNotify) {
 		Write-LogMessage -Tag error -Message 'A terminating error occured:'
-		$vbrSessionLogger.UpdateErr($???, '[VeeamNotify] An error occured.', "Please check logs in $($PSScriptRoot)\log")
+		$vbrSessionLogger.UpdateErr($logId_start, '[VeeamNotify] An error occured.', "Please check logs in $($PSScriptRoot)\log")
 		$_
 	}
 }
