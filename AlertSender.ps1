@@ -105,22 +105,14 @@ try {
 
 	# Decide whether to continue
 	# Default to sending notification if unconfigured
-	if (($status -eq 'Failed') -and (-not $config.notifications.on_failure)) {
-		$noNotify = $true
-		Write-LogMessage -Tag 'info' -Message 'Job failed; per configured options, no notification will be sent.'
-
-		# Throw to exit try block, continue to catch and finally blocks.
-		throw
-	}
-	elseif (($status -eq 'Warning') -and (-not $config.notifications.on_warning)) {
-		$noNotify = $true
-		Write-LogMessage -Tag 'info' -Message 'Job warning; per configured options, no notification will be sent.'
-		throw
-	}
-	elseif (($status -eq 'Success') -and (-not $config.notifications.on_success)) {
-		$noNotify = $true
-		Write-LogMessage -Tag 'info' -Message 'Job succeeded; per configured options, no notification will be sent.'
-		throw
+	if (
+		($status -eq 'Failed' -and -not $config.notifications.on_failure) -or
+		($status -eq 'Warning' -and -not $config.notifications.on_warning) -or
+		($status -eq 'Success' -and -not $config.notifications.on_success)
+	) {
+		Write-LogMessage -Tag 'info' -Message "Job $($status.ToLower()); per configured options, no notification will be sent."
+		$vbrSessionLogger.UpdateSuccess($logId_start, "[VeeamNotify] Not configured to send notifications for $($status.ToLower()) status.")
+		exit
 	}
 
 
@@ -439,11 +431,9 @@ try {
 	}
 }
 catch {
-	If (-not $noNotify) {
-		Write-LogMessage -Tag error -Message 'A terminating error occured:'
-		$vbrSessionLogger.UpdateErr($logId_start, '[VeeamNotify] An error occured.', "Please check logs in $($PSScriptRoot)\log")
-		$_
-	}
+	Write-LogMessage -Tag error -Message 'A terminating error occured:'
+	$vbrSessionLogger.UpdateErr($logId_start, '[VeeamNotify] An error occured.', "Please check logs in $($PSScriptRoot)\log")
+	$_
 }
 finally {
 	# Stop logging.
