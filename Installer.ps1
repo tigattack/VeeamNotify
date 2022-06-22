@@ -270,18 +270,17 @@ Else {
 		}
 	}
 }
-# Set visual releaseName to not cause confusion vs input
-$VisualReleaseName = $releaseName
-# Sanitize releaseName for OutFile
-$releaseName = $releaseName -replace '[\W]', '-'
+
+# Sanitise releaseName for OutFile
+$outFile = "$env:TEMP\$project-$($releaseName -replace '[\W]','-')"
 
 # Download project from GitHub
 $DownloadParams = @{
 	Uri     = $downloadUrl
-	OutFile = "$env:TEMP\$project-$releaseName.zip"
+	OutFile = "$env:TEMP\$outFile.zip"
 }
 Try {
-	Write-Output "`nDownloading $project $VisualReleaseName from GitHub..."
+	Write-Output "`nDownloading $project $releaseName from GitHub..."
 	Invoke-WebRequest @DownloadParams
 }
 catch {
@@ -293,7 +292,7 @@ catch {
 # Unblock downloaded ZIP
 try {
 	Write-Output 'Unblocking ZIP...'
-	Unblock-File -Path "$env:TEMP\$project-$releaseName.zip"
+	Unblock-File -Path "$env:TEMP\$outFile.zip"
 }
 catch {
 	Write-Warning 'Failed to unblock downloaded files. You will need to run the following commands manually once installation is complete:'
@@ -302,12 +301,12 @@ catch {
 
 # Extract release to destination path
 Write-Output "Extracting files to '$InstallParentPath'..."
-Expand-Archive -Path "$env:TEMP\$project-$releaseName.zip" -DestinationPath "$InstallParentPath"
+Expand-Archive -Path "$env:TEMP\$outFile.zip" -DestinationPath "$InstallParentPath"
 
 # Rename destination and tidy up
 Write-Output "Renaming directory and tidying up...`n"
-Rename-Item -Path "$InstallParentPath\$project-$releaseName" -NewName "$project"
-Remove-Item -Path "$env:TEMP\$project-$releaseName.zip"
+Rename-Item -Path "$InstallParentPath\$outFile" -NewName "$project"
+Remove-Item -Path "$env:TEMP\$outFile.zip"
 
 If (-not $NonInteractive) {
 	# Get config
