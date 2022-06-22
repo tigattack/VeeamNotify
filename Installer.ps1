@@ -40,9 +40,10 @@ Write-Output @'
 
 # Check if this project is already installed and if so, exit
 if (Test-Path "$InstallParentPath\$project") {
-	$installedVersion = Get-Content -Raw "$InstallParentPath\$project\resources\version.txt"
+	$installedVersion = (Get-Content -Raw "$InstallParentPath\$project\resources\version.txt").Trim()
 	Write-Output "$project ($installedVersion) is already installed. This script cannot update an existing installation."
 	Write-Output 'Please manually update or delete/rename the existing installation and retry.'
+	exit
 }
 
 
