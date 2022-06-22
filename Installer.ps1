@@ -180,7 +180,7 @@ If (-not $Version -and
 If ($Branch) {
 
 	# Throw if branch not found
-	If (-not $branches.name.Contains($Branch)) {
+	If (-not $branches.Contains($Branch)) {
 
 		throw "Branch '$Branch' not found. Will not prompt for branch in non-interactive mode."
 	}
