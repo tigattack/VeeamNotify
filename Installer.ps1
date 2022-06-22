@@ -86,7 +86,7 @@ If (-not $Version -and
 		$downloadQuery_opts += New-Object System.Management.Automation.Host.ChoiceDescription '&Release', "Download the latest release or prerelease. You will be prompted if there's a choice between the two."
 	}
 	Else {
-		$downloadQuery_message = "Please select how you would like to download $project.`Note there are currently no releases or prereleases available."
+		$downloadQuery_message = "Please select how you would like to download $project.`nNote there are currently no releases or prereleases available."
 	}
 	$downloadQuery_opts += New-Object System.Management.Automation.Host.ChoiceDescription '&Version', 'Download a specific version.'
 	$downloadQuery_opts += New-Object System.Management.Automation.Host.ChoiceDescription '&Branch', 'Download a branch.'
