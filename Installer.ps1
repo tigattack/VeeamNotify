@@ -307,8 +307,19 @@ Write-Output "Extracting files to '$InstallParentPath'..."
 Expand-Archive -Path "$env:TEMP\$outFile.zip" -DestinationPath "$InstallParentPath"
 
 # Rename destination and tidy up
-Write-Output "Renaming directory and tidying up...`n"
-Rename-Item -Path "$InstallParentPath\$outFile" -NewName "$project"
+Write-Output 'Renaming directory and tidying up...'
+If (Test-Path "$InstallParentPath\$outFile") {
+	Rename-Item -Path "$InstallParentPath\$outFile" -NewName "$project"
+}
+Else {
+	# Necessary to handle branch downloads, which come as a ZIP containing a directory named similarly to "tigattack-VeeamNotify-2100906".
+	# Look for a directory less than 5 minutes old which matches the example name stated above.
+	(Get-ChildItem C:\VeeamScripts\ | Where-Object {
+		$_.LastWriteTime -gt (Get-Date).AddMinutes(-5) -and
+		$_.Name -match "tigattack-$project-.*" -and
+		$_.PsIsContainer
+	})[0] | Rename-Item -NewName "$project"
+}
 Remove-Item -Path "$env:TEMP\$outFile.zip"
 
 If (-not $NonInteractive) {
