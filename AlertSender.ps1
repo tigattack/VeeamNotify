@@ -371,7 +371,7 @@ try {
 				}
 
 				Try {
-					New-Payload -Service $service.Name -Parameters $payloadParams | Send-Payload -Uri $service.Value.webhook
+					New-Payload -Service $service.Name -Parameters $payloadParams | Send-Payload -Uri $service.Value.webhook | Out-Null
 
 					Write-LogMessage -Tag 'INFO' -Message "Notification sent to $serviceName successfully."
 					$vbrSessionLogger.UpdateSuccess($logId_service, "[VeeamNotify] Sent notification to $($serviceName).")
