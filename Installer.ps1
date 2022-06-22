@@ -143,9 +143,17 @@ If (-not $Version -and
 				$Latest = 'Release'
 			}
 			ElseIf ($latestPrerelease) {
-				Write-Output "`nNOTICE: You chose release. Currently there are only prereleases available.`nContinuing with prerelease installation in 5 seconds."
-				Start-Sleep -Seconds 5
-				$Latest = 'Prerelease'
+				$prereleaseQuery_yes = New-Object System.Management.Automation.Host.ChoiceDescription '&Yes', 'Install the latest prerelease.'
+				$prereleaseQuery_no = New-Object System.Management.Automation.Host.ChoiceDescription '&No', 'Cancel installation.'
+				$host.UI.PromptForChoice(
+					'Do you wish to install the latest prerelease?',
+					'You chose release, but the only available releases are prereleases.',
+					@($prereleaseQuery_yes, $prereleaseQuery_no),
+					0
+				) | ForEach-Object {
+					If ($_ -eq 0) { $Latest = 'Prerelease' }
+					Else { exit }
+				}
 			}
 		}
 		'version' {
