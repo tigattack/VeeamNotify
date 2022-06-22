@@ -28,7 +28,12 @@ jobs:
 
       - name: Create release asset
         run: |
-          zip -r VeeamNotify-${{ steps.tag.outputs.result }}.zip . -x '.*/*' '.*' '*/.gitkeep' 'asset/*' 'tests/*' 'README.md'
+          shopt -s extglob
+          name="VeeamNotify-${{ steps.tag.outputs.result }}"
+          mkdir "$name"
+          cp -rv !($name) $name/
+          zip -r "$name.zip" "./$name" -x "./$name/.*/*" "./$name/.*" "./$name/*/.gitkeep" "./$name/asset/*" "./$name/tests/*" "./$name/README.md"
+          rm -r "$name"
 
       - name: Publish release
         uses: softprops/action-gh-release@v1
