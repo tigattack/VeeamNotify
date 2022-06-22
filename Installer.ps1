@@ -45,10 +45,11 @@ if (Test-Path "$InstallParentPath\$project") {
 }
 
 
-# Get releases from GitHub
+# Get releases and branches from GitHub
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 try {
 	$releases = Invoke-RestMethod -Uri "https://api.github.com/repos/tigattack/$project/releases" -Method Get
+	$branches = (Invoke-RestMethod -Uri "https://api.github.com/repos/tigattack/$project/branches" -Method Get).name
 }
 catch {
 	$versionStatusCode = $_.Exception.Response.StatusCode.value__
@@ -149,18 +150,28 @@ If (-not $Version -and
 			}
 		}
 		1 {
-			$Version = ($host.UI.Prompt(
-					'Version Selection',
-					"You've chosen to install a specific version; please enter the version you would like to install.",
-					'Version'
-				)).Version
+			do {
+				$Version = ($host.UI.Prompt(
+						'Version Selection',
+						"Please enter the version you wish to install.`nAvailable versions:`n $(foreach ($tag in $releases.tag_name) {"$tag`n"})",
+						'Version'
+					)).Version
+				If ($releases.tag_name -notcontains $Version) { Write-Output "`nInvalid version, please try again." }
+			} until (
+				$releases.tag_name -contains $Version
+			)
 		}
 		2 {
-			$Branch = ($host.UI.Prompt(
-					'Branch Selection',
-					"You've chosen to install a branch; please enter the branch name.",
-					'Branch'
-				)).Branch
+			do {
+				$Branch = ($host.UI.Prompt(
+						'Branch Selection',
+						"Please enter the name of the branch you wish to install.`nAvailable branches:`n $(foreach ($branch in $branches) {"$branch`n"})",
+						'Branch'
+					)).Branch
+				If ($branches -notcontains $Branch) { Write-Output "`nInvalid branch name, please try again." }
+			} until (
+				$branches -contains $Branch
+			)
 		}
 	}
 }
@@ -168,61 +179,10 @@ If (-not $Version -and
 # Download branch if specified
 If ($Branch) {
 
-	# Get branches from GitHub
-	[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-	try {
-		$branches = Invoke-RestMethod -Uri "https://api.github.com/repos/tigattack/$project/branches" -Method Get
-	}
-	catch {
-		$versionStatusCode = $_.Exception.Response.StatusCode.value__
-		Write-Warning "Failed to query GitHub for $project branches."
-		throw "HTTP status code: $versionStatusCode"
-	}
-
-	# Query if branch not found
+	# Throw if branch not found
 	If (-not $branches.name.Contains($Branch)) {
-		If (-not $NonInteractive) {
-			$unknownBranchQuery_main = New-Object System.Management.Automation.Host.ChoiceDescription '&Main', "'main' branch of VeeamNotify"
-			$unknownBranchQuery_dev = New-Object System.Management.Automation.Host.ChoiceDescription '&Dev', "'dev' branch of VeeamNotify"
-			$unknownBranchQuery_other = New-Object System.Management.Automation.Host.ChoiceDescription '&Other', 'Another branch of VeeamNotify'
-			$unknownBranchQuery_result = $host.UI.PromptForChoice(
-				'Branch Selection',
-				"Branch '$Branch' not found. Which branch would you like to install?",
-				@(
-					$unknownBranchQuery_main,
-					$unknownBranchQuery_dev,
-					$unknownBranchQuery_other
-				),
-				0
-			)
 
-			Switch ($unknownBranchQuery_result) {
-				0 {
-					$Branch = 'main'
-				}
-				1 {
-					$Branch = 'dev'
-				}
-				2 {
-					$branchPrompt = 'Branch'
-					do {
-						$Branch = ($host.UI.Prompt(
-								'Branch Name',
-								"You've chosen to install a different branch. Please enter the branch name.",
-								$branchPrompt
-							)).$branchPrompt
-
-						If (-not $branches.name.Contains($Branch)) {
-							Write-Warning "Branch '$Branch' not found. Please try again."
-						}
-					}
-					until ($branches.name.Contains($Branch))
-				}
-			}
-		}
-		Else {
-			throw "Branch '$Branch' not found. Will not prompt for branch in non-interactive mode."
-		}
+		throw "Branch '$Branch' not found. Will not prompt for branch in non-interactive mode."
 	}
 
 	# Set $releaseName to branch name
@@ -250,17 +210,6 @@ Else {
 		$releaseName = $Version
 	}
 
-	# If no releases found, exit with notice
-	If (-not $releases) {
-		Write-Output "`nNo releases were found. Please re-run this script with the '-Branch <branch-name>' parameter."
-		Write-Output 'NOTE: If you decide to install from a branch, please know you may be more likely to experience issues.'
-		exit
-	}
-	# If release not found, exit with notice
-	If ($Version -and (-not $releases.tag_names -contains $Version)) {
-		Write-Warning "The specified release could not found. Valid releases are:`n$($releases.tag_name)"
-		exit
-	}
 	If (($Latest -or $releasePrompt) -and (-not $releaseName)) {
 		Write-Warning 'A release of the specified type could not found.'
 		exit
