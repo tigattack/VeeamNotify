@@ -4,7 +4,8 @@
 		'PSReviewUnusedParameter', # Required due to PowerShell/PSScriptAnalyzer#1472.
 		'PSAvoidLongLines',
 		'PSUseSingularNouns',
-		'PSUseShouldProcessForStateChangingFunctions'
+		'PSUseShouldProcessForStateChangingFunctions',
+		'PSUseDeclaredVarsMoreThanAssignments' # Buggy - https://github.com/PowerShell/PSScriptAnalyzer/issues/1641
 	)
 	Rules = @{
 		PSAvoidUsingDoubleQuotesForConstantString   = @{
