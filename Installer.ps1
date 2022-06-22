@@ -288,6 +288,7 @@ $DownloadParams = @{
 	Uri     = $downloadUrl
 	OutFile = "$env:TEMP\$outFile.zip"
 }
+
 Try {
 	Write-Output "`nDownloading $project $releaseName from GitHub..."
 	Invoke-WebRequest @DownloadParams
