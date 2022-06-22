@@ -76,15 +76,15 @@ foreach ($i in $releases) {
 # Query download type if not specified
 If (-not $Version -and -not $Latest -and -not $Branch -and -not $NonInteractive) {
 
-	# Query download type
+	# Query download type / release stream
 	[System.Management.Automation.Host.ChoiceDescription[]]$downloadQuery_opts = @()
 	If ($releases) {
 		$downloadQuery_message = "Please select how you would like to download $project."
+		$downloadQuery_opts += New-Object System.Management.Automation.Host.ChoiceDescription '&Release', "Download the latest release or prerelease. You will be prompted if there's a choice between the two."
 	}
 	Else {
-		$downloadQuery_message = "Please select how you would like to download $project. NOTE: there are currently no releases or prereleases available."
+		$downloadQuery_message = "Please select how you would like to download $project.`Note there are currently no releases or prereleases available."
 	}
-	$downloadQuery_opts += New-Object System.Management.Automation.Host.ChoiceDescription '&Release', "Download the latest release or prerelease. You will be prompted if there's a choice between the two."
 	$downloadQuery_opts += New-Object System.Management.Automation.Host.ChoiceDescription '&Version', 'Download a specific version.'
 	$downloadQuery_opts += New-Object System.Management.Automation.Host.ChoiceDescription '&Branch', 'Download a branch.'
 	$downloadQuery_result = $host.UI.PromptForChoice(
@@ -112,9 +112,6 @@ If (-not $Version -and -not $Latest -and -not $Branch -and -not $NonInteractive)
 	# Set download type
 	Switch ($downloadType) {
 		'release' {
-			If (-not $releases) {
-				Write-Output "`nThere are currently no releases available. Please"
-			}
 			If ($latestStable -and $latestPrerelease) {
 				# Query release stream
 				$releasePrompt = $true
