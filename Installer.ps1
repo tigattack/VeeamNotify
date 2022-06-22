@@ -78,41 +78,35 @@ If (-not $Version -and
 	-not $NonInteractive) {
 
 	# Query download type / release stream
-	[System.Management.Automation.Host.ChoiceDescription[]]$downloadQuery_opts = @()
 	If ($releases) {
-		$downloadQuery_message = "Please select how you would like to download $project."
+		[System.Management.Automation.Host.ChoiceDescription[]]$downloadQuery_opts = @()
 		$downloadQuery_opts += New-Object System.Management.Automation.Host.ChoiceDescription '&Release', "Download the latest release or prerelease. You will be prompted if there's a choice between the two."
+		$downloadQuery_opts += New-Object System.Management.Automation.Host.ChoiceDescription '&Version', 'Download a specific version.'
+		$downloadQuery_opts += New-Object System.Management.Automation.Host.ChoiceDescription '&Branch', 'Download a branch.'
+		$downloadQuery_result = $host.UI.PromptForChoice(
+			'Download type',
+			"Please select how you would like to download $project.",
+			$downloadQuery_opts,
+			0
+		)
 	}
 	Else {
-		$downloadQuery_message = "Please select how you would like to download $project.`nNote there are currently no releases or prereleases available."
-	}
-	$downloadQuery_opts += New-Object System.Management.Automation.Host.ChoiceDescription '&Version', 'Download a specific version.'
-	$downloadQuery_opts += New-Object System.Management.Automation.Host.ChoiceDescription '&Branch', 'Download a branch.'
-	$downloadQuery_result = $host.UI.PromptForChoice(
-		'Download type',
-		$downloadQuery_message,
-		$downloadQuery_opts,
-		0
-	)
-
-	# Set download type
-	If ($releases) {
-		Switch ($downloadQuery_result) {
-			0 { $downloadType = 'release' }
-			1 { $downloadType = 'version' }
-			2 { $downloadType = 'branch' }
-		}
-	}
-	Else {
-		Switch ($downloadQuery_result) {
-			0 { $downloadType = 'version' }
-			1 { $downloadType = 'branch' }
+		$branchQuery_yes = New-Object System.Management.Automation.Host.ChoiceDescription '&Yes', 'Install from a branch.'
+		$branchQuery_no = New-Object System.Management.Automation.Host.ChoiceDescription '&No', 'Cancel installation.'
+		$host.UI.PromptForChoice(
+			'Would you like to install from a branch?',
+			"There are currently no releases or prereleases available for $project.",
+			@($branchQuery_yes, $branchQuery_no),
+			0
+		) | ForEach-Object {
+			If ($_ -eq 0) { $downloadQuery_result = 2 }
+			Else { exit }
 		}
 	}
 
 	# Set download type
-	Switch ($downloadType) {
-		'release' {
+	Switch ($downloadQuery_result) {
+		0 {
 			If ($latestStable -and $latestPrerelease) {
 				# Query release stream
 				$releasePrompt = $true
@@ -154,14 +148,14 @@ If (-not $Version -and
 				}
 			}
 		}
-		'version' {
+		1 {
 			$Version = ($host.UI.Prompt(
 					'Version Selection',
 					"You've chosen to install a specific version; please enter the version you would like to install.",
 					'Version'
 				)).Version
 		}
-		'branch' {
+		2 {
 			$Branch = ($host.UI.Prompt(
 					'Branch Selection',
 					"You've chosen to install a branch; please enter the branch name.",
