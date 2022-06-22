@@ -378,7 +378,7 @@ try {
 				}
 				Catch {
 					Write-LogMessage -Tag 'WARN' -Message "Unable to send $serviceName notification: $_"
-					$vbrSessionLogger.UpdateErr($logId_service, "[VeeamNotify] $serviceName notification could not be sent.", "Please check logs in $($PSScriptRoot)\log")
+					$vbrSessionLogger.UpdateErr($logId_service, "[VeeamNotify] $serviceName notification could not be sent.", "Please check the log: $Logfile")
 				}
 			}
 			Else {
@@ -391,7 +391,7 @@ try {
 	}
 	Catch {
 		Write-LogMessage -Tag 'WARN' -Message "Unable to send notification(s): $_"
-		$vbrSessionLogger.UpdateErr($logId_notification, '[VeeamNotify] An error was encountered sending notification(s).', "Please check logs in $($PSScriptRoot)\log")
+		$vbrSessionLogger.UpdateErr($logId_notification, '[VeeamNotify] An error was encountered sending notification(s).', "Please check the log: $Logfile")
 	}
 
 	# Clean up old log files if configured
@@ -432,7 +432,7 @@ try {
 }
 catch {
 	Write-LogMessage -Tag error -Message 'A terminating error occured:'
-	$vbrSessionLogger.UpdateErr($logId_start, '[VeeamNotify] An error occured.', "Please check logs in $($PSScriptRoot)\log")
+	$vbrSessionLogger.UpdateErr($logId_start, '[VeeamNotify] An error occured.', "Please check the log: $Logfile")
 	$_
 }
 finally {
