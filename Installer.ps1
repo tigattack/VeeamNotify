@@ -54,7 +54,7 @@ try {
 }
 catch {
 	$versionStatusCode = $_.Exception.Response.StatusCode.value__
-	Write-Warning "Failed to query GitHub for $project releases. Please check your internet connection and try again."
+	Write-Warning "Failed to query GitHub for $project releases."
 	throw "HTTP status code: $versionStatusCode"
 }
 
@@ -74,7 +74,10 @@ foreach ($i in $releases) {
 
 
 # Query download type if not specified
-If (-not $Version -and -not $Latest -and -not $Branch -and -not $NonInteractive) {
+If (-not $Version -and
+	-not $Latest -and
+	-not $Branch -and
+	-not $NonInteractive) {
 
 	# Query download type / release stream
 	[System.Management.Automation.Host.ChoiceDescription[]]$downloadQuery_opts = @()
@@ -172,7 +175,7 @@ If ($Branch) {
 	}
 	catch {
 		$versionStatusCode = $_.Exception.Response.StatusCode.value__
-		Write-Warning "Failed to query GitHub for $project branches. Please check your internet connection and try again."
+		Write-Warning "Failed to query GitHub for $project branches."
 		throw "HTTP status code: $versionStatusCode"
 	}
 
@@ -285,7 +288,7 @@ Try {
 }
 catch {
 	$downloadStatusCode = $_.Exception.Response.StatusCode.value__
-	Write-Warning "Failed to download $project $releaseName. Please check your internet connection and try again."
+	Write-Warning "Failed to download $project $releaseName."
 	throw "HTTP status code: $downloadStatusCode"
 }
 
