@@ -39,10 +39,11 @@ Write-Output @'
 '@
 
 # Check if this project is already installed and if so, exit
-if (Test-Path $InstallParentPath\$project) {
-	$installedVersion = Get-Content -Raw "$InstallParentPath\$project\resources\version.txt"
+if (Test-Path "$InstallParentPath\$project") {
+	$installedVersion = (Get-Content -Raw "$InstallParentPath\$project\resources\version.txt").Trim()
 	Write-Output "$project ($installedVersion) is already installed. This script cannot update an existing installation."
 	Write-Output 'Please manually update or delete/rename the existing installation and retry.'
+	exit
 }
 
 
@@ -53,7 +54,7 @@ try {
 }
 catch {
 	$versionStatusCode = $_.Exception.Response.StatusCode.value__
-	Write-Warning "Failed to query GitHub for $project releases. Please check your internet connection and try again."
+	Write-Warning "Failed to query GitHub for $project releases."
 	throw "HTTP status code: $versionStatusCode"
 }
 
@@ -73,16 +74,19 @@ foreach ($i in $releases) {
 
 
 # Query download type if not specified
-If (-not $Version -and -not $Latest -and -not $Branch -and -not $NonInteractive) {
+If (-not $Version -and
+	-not $Latest -and
+	-not $Branch -and
+	-not $NonInteractive) {
 
-	# Query download type
+	# Query download type / release stream
 	[System.Management.Automation.Host.ChoiceDescription[]]$downloadQuery_opts = @()
 	If ($releases) {
-		$downloadQuery_opts += New-Object System.Management.Automation.Host.ChoiceDescription '&Release', "Download the latest release or prerelease. You will be prompted if there's a choice between the two."
 		$downloadQuery_message = "Please select how you would like to download $project."
+		$downloadQuery_opts += New-Object System.Management.Automation.Host.ChoiceDescription '&Release', "Download the latest release or prerelease. You will be prompted if there's a choice between the two."
 	}
 	Else {
-		"Please select how you would like to download $project. Note that there are currently no releases or prereleases available."
+		$downloadQuery_message = "Please select how you would like to download $project.`nNote there are currently no releases or prereleases available."
 	}
 	$downloadQuery_opts += New-Object System.Management.Automation.Host.ChoiceDescription '&Version', 'Download a specific version.'
 	$downloadQuery_opts += New-Object System.Management.Automation.Host.ChoiceDescription '&Branch', 'Download a branch.'
@@ -94,8 +98,23 @@ If (-not $Version -and -not $Latest -and -not $Branch -and -not $NonInteractive)
 	)
 
 	# Set download type
-	Switch ($downloadQuery_result) {
-		0 {
+	If ($releases) {
+		Switch ($downloadQuery_result) {
+			0 { $downloadType = 'release' }
+			1 { $downloadType = 'version' }
+			2 { $downloadType = 'branch' }
+		}
+	}
+	Else {
+		Switch ($downloadQuery_result) {
+			0 { $downloadType = 'version' }
+			1 { $downloadType = 'branch' }
+		}
+	}
+
+	# Set download type
+	Switch ($downloadType) {
+		'release' {
 			If ($latestStable -and $latestPrerelease) {
 				# Query release stream
 				$releasePrompt = $true
@@ -129,14 +148,14 @@ If (-not $Version -and -not $Latest -and -not $Branch -and -not $NonInteractive)
 				$Latest = 'Prerelease'
 			}
 		}
-		1 {
+		'version' {
 			$Version = ($host.UI.Prompt(
 					'Version Selection',
 					"You've chosen to install a specific version; please enter the version you would like to install.",
 					'Version'
 				)).Version
 		}
-		2 {
+		'branch' {
 			$Branch = ($host.UI.Prompt(
 					'Branch Selection',
 					"You've chosen to install a branch; please enter the branch name.",
@@ -156,7 +175,7 @@ If ($Branch) {
 	}
 	catch {
 		$versionStatusCode = $_.Exception.Response.StatusCode.value__
-		Write-Warning "Failed to query GitHub for $project branches. Please check your internet connection and try again."
+		Write-Warning "Failed to query GitHub for $project branches."
 		throw "HTTP status code: $versionStatusCode"
 	}
 
@@ -210,7 +229,7 @@ If ($Branch) {
 	$releaseName = $Branch
 
 	# Define download URL
-	$downloadUrl = "https://github.com/tigattack/$project/archive/refs/heads/$Branch.zip"
+	$downloadUrl = "https://api.github.com/repos/tigattack/$project/zipball/$Branch"
 }
 
 # Otherwise work with versions
@@ -248,13 +267,20 @@ Else {
 	}
 
 	# Define download URL
-	$downloadUrl = "https://github.com/tigattack/$project/releases/download/$releaseName/$project-$releaseName.zip"
+	$downloadUrl = Invoke-RestMethod "https://api.github.com/repos/tigattack/$project/releases" | ForEach-Object {
+		If ($_.tag_name -eq $releaseName) {
+			$_.assets[0].browser_download_url
+		}
+	}
 }
+
+# Sanitise releaseName for OutFile
+$outFile = "$project-$($releaseName -replace '[\W]','-')"
 
 # Download project from GitHub
 $DownloadParams = @{
 	Uri     = $downloadUrl
-	OutFile = "$env:TEMP\$project-$releaseName.zip"
+	OutFile = "$env:TEMP\$outFile.zip"
 }
 Try {
 	Write-Output "`nDownloading $project $releaseName from GitHub..."
@@ -262,14 +288,14 @@ Try {
 }
 catch {
 	$downloadStatusCode = $_.Exception.Response.StatusCode.value__
-	Write-Warning "Failed to download $project $releaseName. Please check your internet connection and try again."
+	Write-Warning "Failed to download $project $releaseName."
 	throw "HTTP status code: $downloadStatusCode"
 }
 
 # Unblock downloaded ZIP
 try {
 	Write-Output 'Unblocking ZIP...'
-	Unblock-File -Path "$env:TEMP\$project-$releaseName.zip"
+	Unblock-File -Path "$env:TEMP\$outFile.zip"
 }
 catch {
 	Write-Warning 'Failed to unblock downloaded files. You will need to run the following commands manually once installation is complete:'
@@ -278,12 +304,24 @@ catch {
 
 # Extract release to destination path
 Write-Output "Extracting files to '$InstallParentPath'..."
-Expand-Archive -Path "$env:TEMP\$project-$releaseName.zip" -DestinationPath "$InstallParentPath"
+Expand-Archive -Path "$env:TEMP\$outFile.zip" -DestinationPath "$InstallParentPath" -Force
 
 # Rename destination and tidy up
-Write-Output "Renaming directory and tidying up...`n"
-Rename-Item -Path "$InstallParentPath\$project-$releaseName" -NewName "$project"
-Remove-Item -Path "$env:TEMP\$project-$releaseName.zip"
+Write-Output 'Renaming directory and tidying up...'
+If (Test-Path "$InstallParentPath\$outFile") {
+	Rename-Item -Path "$InstallParentPath\$outFile" -NewName "$project"
+}
+Else {
+	# Necessary to handle branch downloads, which come as a ZIP containing a directory named similarly to "tigattack-VeeamNotify-2100906".
+	# Look for a directory less than 5 minutes old which matches the example name stated above.
+	(Get-ChildItem $InstallParentPath | Where-Object {
+		$_.LastWriteTime -gt (Get-Date).AddMinutes(-5) -and
+		$_.Name -match "tigattack-$project-.*" -and
+		$_.PsIsContainer
+	})[0] | Rename-Item -NewName "$project"
+}
+
+Remove-Item -Path "$env:TEMP\$outFile.zip"
 
 If (-not $NonInteractive) {
 	# Get config
