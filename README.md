@@ -4,7 +4,7 @@
 
 Send Veeam Backup & Replication session summary notifications to Discord, Microsoft Teams, and Slack, detailing session result and statistics and optionally alerting you via mention when a job finishes in a warning or failed state.
 
-<a href="https://github.com/tigattack/VeeamDiscordNotifications/blob/master/asset/embeds.png"><img src="https://github.com/tigattack/VeeamDiscordNotifications/blob/dev/asset/embeds-small.png?raw=true" alt="Notification Example" width="90%"/></a>
+<img src="https://github.com/tigattack/VeeamNotify/blob/dev/asset/discord.png?raw=true" width="30%"></img> <img src="https://github.com/tigattack/VeeamNotify/blob/dev/asset/slack.png?raw=true" width="30%"></img> <img src="https://github.com/tigattack/VeeamNotify/blob/dev/asset/teams.png?raw=true" width="30%"></img> 
 
 ## Installing
 
