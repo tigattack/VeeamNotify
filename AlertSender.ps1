@@ -14,17 +14,14 @@ Function Get-Bottleneck {
 		$Logger
 	)
 
-	$bottleneck = ($Logger.GetLog() | `
-				Select-Object -ExpandProperty UpdatedRecords | `
-				Where-Object {$_.Title -match 'Primary bottleneck:.*'} | `
-				Select-Object -ExpandProperty Title) `
-		-replace 'Primary bottleneck:',''
+	$bottleneck = (($Logger.GetLog() | `
+					Select-Object -ExpandProperty UpdatedRecords | `
+					Where-Object {$_.Title -match 'Primary bottleneck:.*'} | `
+					Select-Object -ExpandProperty Title) `
+			-replace 'Primary bottleneck:','').Trim()
 
 	If ($bottleneck.Length -eq 0) {
-		$bottleneck = 'Unknown'
-	}
-	Else {
-		$bottleneck = $bottleneck.Trim()
+		$bottleneck = 'Undetermined'
 	}
 
 	return $bottleneck
