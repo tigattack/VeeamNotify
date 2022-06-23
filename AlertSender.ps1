@@ -440,11 +440,3 @@ finally {
 		Stop-Logging
 	}
 }
-
-# Somehow get status of payload dispatch (hence refactor of service switch above, could use a boolean var per service to indicate success/failure) ideally overall status if possible, and then...
-# if success:
-# $vbrSessionLogger.UpdateSuccess($logId_start, '[VeeamNotify] Script completed successfully.')
-# if error:
-# $vbrSessionLogger.UpdateErr($logId_start, '[VeeamNotify] Script failed.', 'Please check logs at C:\VeeamScripts\VeeamNotify\log\')
-# stretch, if warning:
-# $vbrSessionLogger.UpdateWarning($logId_start, '[VeeamNotify] Script completed with warnings.', 'Please check logs at C:\VeeamScripts\VeeamNotify\log\')
