@@ -111,7 +111,7 @@ try {
 		($status -eq 'Success' -and -not $config.notifications.on_success)
 	) {
 		Write-LogMessage -Tag 'info' -Message "Job $($status.ToLower()); per configured options, no notification will be sent."
-		$vbrSessionLogger.UpdateSuccess($logId_start, "[VeeamNotify] Not configured to send notifications for $($status.ToLower()) status.")
+		$vbrSessionLogger.UpdateSuccess($logId_start, "[VeeamNotify] Not configured to send notifications for $($status.ToLower()) status.") | Out-Null
 		exit
 	}
 
@@ -207,7 +207,7 @@ try {
 	}
 
 	# Update Veeam session log.
-	$vbrSessionLogger.UpdateSuccess($logId_start, '[VeeamNotify] Gathered session details.')
+	$vbrSessionLogger.UpdateSuccess($logId_start, '[VeeamNotify] Gathered session details.') | Out-Null
 	$logId_notification = $vbrSessionLogger.AddLog('[VeeamNotify] Preparing to send notification(s)...')
 
 
@@ -374,11 +374,11 @@ try {
 					New-Payload -Service $service.Name -Parameters $payloadParams | Send-Payload -Uri $service.Value.webhook | Out-Null
 
 					Write-LogMessage -Tag 'INFO' -Message "Notification sent to $serviceName successfully."
-					$vbrSessionLogger.UpdateSuccess($logId_service, "[VeeamNotify] Sent notification to $($serviceName).")
+					$vbrSessionLogger.UpdateSuccess($logId_service, "[VeeamNotify] Sent notification to $($serviceName).") | Out-Null
 				}
 				Catch {
 					Write-LogMessage -Tag 'WARN' -Message "Unable to send $serviceName notification: $_"
-					$vbrSessionLogger.UpdateErr($logId_service, "[VeeamNotify] $serviceName notification could not be sent.", "Please check the log: $Logfile")
+					$vbrSessionLogger.UpdateErr($logId_service, "[VeeamNotify] $serviceName notification could not be sent.", "Please check the log: $Logfile") | Out-Null
 				}
 			}
 			Else {
@@ -387,11 +387,11 @@ try {
 		}
 
 		# Update Veeam session log.
-		$vbrSessionLogger.UpdateSuccess($logId_notification, '[VeeamNotify] Notification(s) sent successfully.')
+		$vbrSessionLogger.UpdateSuccess($logId_notification, '[VeeamNotify] Notification(s) sent successfully.') | Out-Null
 	}
 	Catch {
 		Write-LogMessage -Tag 'WARN' -Message "Unable to send notification(s): $_"
-		$vbrSessionLogger.UpdateErr($logId_notification, '[VeeamNotify] An error was encountered sending notification(s).', "Please check the log: $Logfile")
+		$vbrSessionLogger.UpdateErr($logId_notification, '[VeeamNotify] An error was encountered sending notification(s).', "Please check the log: $Logfile") | Out-Null
 	}
 
 	# Clean up old log files if configured
@@ -413,7 +413,7 @@ try {
 
 		# Add Veeam session log entry.
 		If ($Config.update.notify) {
-			$vbrSessionLogger.AddWarning("[VeeamNotify] A new version is available: $($updateStatus.LatestStable). Currently running: $($updateStatus.CurrentVersion)")
+			$vbrSessionLogger.AddWarning("[VeeamNotify] A new version is available: $($updateStatus.LatestStable). Currently running: $($updateStatus.CurrentVersion)") | Out-Null
 		}
 
 		# Trigger update if configured to do so.
@@ -431,7 +431,7 @@ try {
 }
 catch {
 	Write-LogMessage -Tag error -Message 'A terminating error occured:'
-	$vbrSessionLogger.UpdateErr($logId_start, '[VeeamNotify] An error occured.', "Please check the log: $Logfile")
+	$vbrSessionLogger.UpdateErr($logId_start, '[VeeamNotify] An error occured.', "Please check the log: $Logfile") | Out-Null
 	$_
 }
 finally {

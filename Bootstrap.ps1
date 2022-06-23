@@ -87,7 +87,7 @@ $newLogfile = "$PSScriptRoot\log\$($date)-$($logJobName).log"
 $powershellArguments = "-file $PSScriptRoot\AlertSender.ps1", "-JobName `"$jobName`"", "-Id `"$sessionId`"","-JobType `"$($job.JobType)`"", `
 	"-Config `"$($configRaw)`"", "-Logfile `"$newLogfile`""
 
-$vbrSessionLogger.UpdateSuccess($vbrLogEntry, '[VeeamNotify] Parsed job & session information.')
+$vbrSessionLogger.UpdateSuccess($vbrLogEntry, '[VeeamNotify] Parsed job & session information.') | Out-Null
 
 # Start a new new script in a new process with some of the information gathered here.
 # This allows Veeam to finish the current session faster and allows us gather information from the completed job.
@@ -96,11 +96,11 @@ Try {
 	$vbrLogEntry = $vbrSessionLogger.AddLog('[VeeamNotify] Launching Alert Sender...')
 	Start-Process -FilePath 'powershell' -Verb runAs -ArgumentList $powershellArguments -WindowStyle hidden -ErrorAction Stop
 	Write-LogMessage -Tag 'INFO' -Message 'AlertSender.ps1 launched successfully.'
-	$vbrSessionLogger.UpdateSuccess($vbrLogEntry, '[VeeamNotify] Launched Alert Sender.')
+	$vbrSessionLogger.UpdateSuccess($vbrLogEntry, '[VeeamNotify] Launched Alert Sender.') | Out-Null
 }
 Catch {
 	Write-LogMessage -Tag 'ERROR' -Message "Failed to launch AlertSender.ps1: $_"
-	$vbrSessionLogger.UpdateErr($vbrLogEntry, '[VeeamNotify] Failed to launch Alert Sender.', "Please check the log: $newLogfile")
+	$vbrSessionLogger.UpdateErr($vbrLogEntry, '[VeeamNotify] Failed to launch Alert Sender.', "Please check the log: $newLogfile") | Out-Null
 	exit 1
 }
 
