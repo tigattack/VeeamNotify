@@ -97,27 +97,22 @@ try {
 		Exit 1
 	}
 
+	# Add Veeam session log entry.
+	$logId_start = $vbrSessionLogger.AddLog('[VeeamNotify] Gathering session details...')
+
 	## Gather generic session info.
 	[String]$status = $session.Result
 
 	# Decide whether to continue
 	# Default to sending notification if unconfigured
-	if (($status -eq 'Failed') -and (-not $config.notifications.on_failure)) {
-		$noNotify = $true
-		Write-LogMessage -Tag 'info' -Message 'Job failed; per configured options, no notification will be sent.'
-
-		# Throw to exit try block, continue to catch and finally blocks.
-		throw
-	}
-	elseif (($status -eq 'Warning') -and (-not $config.notifications.on_warning)) {
-		$noNotify = $true
-		Write-LogMessage -Tag 'info' -Message 'Job warning; per configured options, no notification will be sent.'
-		throw
-	}
-	elseif (($status -eq 'Success') -and (-not $config.notifications.on_success)) {
-		$noNotify = $true
-		Write-LogMessage -Tag 'info' -Message 'Job succeeded; per configured options, no notification will be sent.'
-		throw
+	if (
+		($status -eq 'Failed' -and -not $config.notifications.on_failure) -or
+		($status -eq 'Warning' -and -not $config.notifications.on_warning) -or
+		($status -eq 'Success' -and -not $config.notifications.on_success)
+	) {
+		Write-LogMessage -Tag 'info' -Message "Job $($status.ToLower()); per configured options, no notification will be sent."
+		$vbrSessionLogger.UpdateSuccess($logId_start, "[VeeamNotify] Not configured to send notifications for $($status.ToLower()) status.") | Out-Null
+		exit
 	}
 
 
@@ -210,6 +205,10 @@ try {
 			$speedRound = 'Unknown'
 		}
 	}
+
+	# Update Veeam session log.
+	$vbrSessionLogger.UpdateSuccess($logId_start, '[VeeamNotify] Gathered session details.') | Out-Null
+	$logId_notification = $vbrSessionLogger.AddLog('[VeeamNotify] Preparing to send notification(s)...')
 
 
 	# Job timings
@@ -344,23 +343,55 @@ try {
 
 
 	# Build embed and send iiiit.
-	$Config.services.PSObject.Properties | ForEach-Object {
-		$service = $_
-		If ($service.Value.webhook.StartsWith('https')) {
-			Write-LogMessage -Tag 'INFO' -Message "Sending notification to $($service.Name)."
+	Try {
+		$Config.services.PSObject.Properties | ForEach-Object {
 
-			# Add user information for mention if relevant.
-			If ($mention) {
-				$payloadParams.UserId = $service.Value.user_id
+			# Create variable from current pipeline object to simplify usability.
+			$service = $_
 
-				# Get username if Teams
-				If ($service.Value.user_name -and $service.Value.user_name -ne 'Your Name') {
-					$payloadParams.UserName = $service.Value.user_name
+			# Create variable for service name in TitleCase format.
+			$textInfo = (Get-Culture).TextInfo
+			$serviceName = $textInfo.ToTitleCase($service.Name)
+
+			If ($service.Value.webhook.StartsWith('https')) {
+				Write-LogMessage -Tag 'INFO' -Message "Sending notification to $($serviceName)."
+				$logId_service = $vbrSessionLogger.AddLog("[VeeamNotify] Sending notification to $($serviceName)...")
+
+				# Add user information for mention if relevant.
+				Write-LogMessage -Tag 'DEBUG' -Message 'Determining if user should be mentioned.'
+				If ($mention) {
+					Write-LogMessage -Tag 'DEBUG' -Message 'Getting user ID for mention.'
+					$payloadParams.UserId = $service.Value.user_id
+
+					# Get username if Teams
+					If ($service.Value.user_name -and $service.Value.user_name -ne 'Your Name') {
+						Write-LogMessage -Tag 'DEBUG' -Message 'Getting Teams user name for mention.'
+						$payloadParams.UserName = $service.Value.user_name
+					}
+				}
+
+				Try {
+					New-Payload -Service $service.Name -Parameters $payloadParams | Send-Payload -Uri $service.Value.webhook | Out-Null
+
+					Write-LogMessage -Tag 'INFO' -Message "Notification sent to $serviceName successfully."
+					$vbrSessionLogger.UpdateSuccess($logId_service, "[VeeamNotify] Sent notification to $($serviceName).") | Out-Null
+				}
+				Catch {
+					Write-LogMessage -Tag 'WARN' -Message "Unable to send $serviceName notification: $_"
+					$vbrSessionLogger.UpdateErr($logId_service, "[VeeamNotify] $serviceName notification could not be sent.", "Please check the log: $Logfile") | Out-Null
 				}
 			}
-
-			New-Payload -Service $service.Name -Parameters $payloadParams | Send-Payload -Uri $service.Value.webhook
+			Else {
+				Write-LogMessage -Tag 'Debug' -Message "$serviceName is unconfigured (invalid URL). Skipping $serviceName notification."
+			}
 		}
+
+		# Update Veeam session log.
+		$vbrSessionLogger.UpdateSuccess($logId_notification, '[VeeamNotify] Notification(s) sent successfully.') | Out-Null
+	}
+	Catch {
+		Write-LogMessage -Tag 'WARN' -Message "Unable to send notification(s): $_"
+		$vbrSessionLogger.UpdateErr($logId_notification, '[VeeamNotify] An error was encountered sending notification(s).', "Please check the log: $Logfile") | Out-Null
 	}
 
 	# Clean up old log files if configured
@@ -380,6 +411,11 @@ try {
 	# If newer version available...
 	If ($updateStatus.Status -eq 'Behind') {
 
+		# Add Veeam session log entry.
+		If ($Config.update.notify) {
+			$vbrSessionLogger.AddWarning("[VeeamNotify] A new version is available: $($updateStatus.LatestStable). Currently running: $($updateStatus.CurrentVersion)") | Out-Null
+		}
+
 		# Trigger update if configured to do so.
 		If ($Config.update.auto_update) {
 
@@ -394,10 +430,9 @@ try {
 	}
 }
 catch {
-	If (-not $noNotify) {
-		Write-LogMessage -Tag error -Message 'A terminating error occured:'
-		$_
-	}
+	Write-LogMessage -Tag error -Message 'A terminating error occured:'
+	$vbrSessionLogger.UpdateErr($logId_start, '[VeeamNotify] An error occured.', "Please check the log: $Logfile") | Out-Null
+	$_
 }
 finally {
 	# Stop logging.
@@ -405,3 +440,11 @@ finally {
 		Stop-Logging
 	}
 }
+
+# Somehow get status of payload dispatch (hence refactor of service switch above, could use a boolean var per service to indicate success/failure) ideally overall status if possible, and then...
+# if success:
+# $vbrSessionLogger.UpdateSuccess($logId_start, '[VeeamNotify] Script completed successfully.')
+# if error:
+# $vbrSessionLogger.UpdateErr($logId_start, '[VeeamNotify] Script failed.', 'Please check logs at C:\VeeamScripts\VeeamNotify\log\')
+# stretch, if warning:
+# $vbrSessionLogger.UpdateWarning($logId_start, '[VeeamNotify] Script completed with warnings.', 'Please check logs at C:\VeeamScripts\VeeamNotify\log\')
