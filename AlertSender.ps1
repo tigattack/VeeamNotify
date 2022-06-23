@@ -286,7 +286,7 @@ try {
 			$footerMessage = "tigattack's VeeamNotify $($updateStatus.CurrentVersion) - Pre-release."
 		}
 		Default {
-			$footerMessage = "tigattack's VeeamNotify $($updateStatus.CurrentVersion)."
+			$footerMessage = "tigattack's VeeamNotify $($updateStatus.CurrentVersion)"
 		}
 	}
 
