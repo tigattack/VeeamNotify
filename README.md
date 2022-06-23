@@ -12,16 +12,26 @@ Requirements:
 * Veeam Backup & Replication 11 or higher.
 * PowerShell 5.1 or higher.
 
-* Option 1 - Install script. This option will also optionally configure any supported Veeam jobs to work with VeeamNotify.
-  1. Download [Installer.ps1](Installer.ps1).
-  2. Open PowerShell (as Administrator) on your Veeam server.
-  3. Run the following commands:
-      ```powershell
-      PS> Set-ExecutionPolicy -Scope Process -ExecutionPolicy Unrestricted -Force
-      PS> Unblock-File C:\path\to\Installer.ps1
-      PS> C:\path\to\Installer.ps1
-      ```
-      <img src="https://github.com/tigattack/VeeamDiscordNotifications/blob/dev/asset/installer.png?raw=true" alt="Installer Example" width="75%"/>
+* Option 1 - Install script. This option will also optionally configure any supported Veeam jobs to work with VeeamNotify.  
+📝 NOTE: Please inspect [Installer.ps1](Installer.ps1) prior to running to ensure safety. I already know it's safe, but you should verify the security and contents of any script from the internet you are not familiar with.
+
+  * Option 1a - One-liner:
+    1. Launch PowerShell as Administrator on your Veeam server.
+    2. Run the following command:
+        ```powershell
+        Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/tigattack/VeeamNotify/main/Installer.ps1'))
+        ```
+
+  * Option 1b - Manual:
+    1. Download [Installer.ps1](Installer.ps1).
+    2. Open PowerShell (as Administrator) on your Veeam server.
+    3. Run the following commands:
+        ```powershell
+        PS> Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
+        PS> Unblock-File C:\path\to\Installer.ps1
+        PS> C:\path\to\Installer.ps1
+        ```
+        <img src="https://github.com/tigattack/VeeamDiscordNotifications/blob/dev/asset/installer.png?raw=true" alt="Installer Example" width="75%"/>
 
 * Option 2 - Manual install
   * Follow the [setup instructions](https://blog.tiga.tech/veeam-b-r-notifications-in-discord/).
