@@ -21,7 +21,7 @@ function New-Payload {
 			New-TeamsPayload @Parameters
 		}
 		Default {
-			Write-LogMessage -Tag 'Error' -Message "Unknown service: $Service"
+			Write-LogMessage -Tag 'ERROR' -Message "Unknown service: $Service"
 		}
 	}
 }

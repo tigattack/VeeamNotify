@@ -382,7 +382,7 @@ try {
 				}
 			}
 			Else {
-				Write-LogMessage -Tag 'Debug' -Message "$serviceName is unconfigured (invalid URL). Skipping $serviceName notification."
+				Write-LogMessage -Tag 'DEBUG' -Message "$serviceName is unconfigured (invalid URL). Skipping $serviceName notification."
 			}
 		}
 
@@ -430,7 +430,7 @@ try {
 	}
 }
 catch {
-	Write-LogMessage -Tag error -Message 'A terminating error occured:'
+	Write-LogMessage -Tag 'ERROR' -Message 'A terminating error occured:'
 	$vbrSessionLogger.UpdateErr($logId_start, '[VeeamNotify] An error occured.', "Please check the log: $Logfile") | Out-Null
 	$_
 }
