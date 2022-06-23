@@ -384,11 +384,14 @@ try {
 		}
 
 		# Update Veeam session log.
-		$vbrSessionLogger.UpdateSuccess($logId_notification, '[VeeamNotify] Notification(s) sent successfully.') | Out-Null
+		$vbrSessionLogger.AddSuccess('[VeeamNotify] Notification(s) sent successfully.') | Out-Null
 	}
 	Catch {
 		Write-LogMessage -Tag 'WARN' -Message "Unable to send notification(s): $_"
-		$vbrSessionLogger.UpdateErr($logId_notification, '[VeeamNotify] An error was encountered sending notification(s).', "Please check the log: $Logfile") | Out-Null
+		$vbrSessionLogger.AddErr('[VeeamNotify] An error occured while sending notification(s).', "Please check the log: $Logfile") | Out-Null
+	}
+	Finally {
+		$vbrSessionLogger.RemoveRecord($logId_notification) | Out-Null
 	}
 
 	# Clean up old log files if configured
