@@ -4,16 +4,17 @@
 		'PSReviewUnusedParameter', # Required due to PowerShell/PSScriptAnalyzer#1472.
 		'PSAvoidLongLines',
 		'PSUseSingularNouns',
-		'PSUseShouldProcessForStateChangingFunctions'
+		'PSUseShouldProcessForStateChangingFunctions',
+		'PSUseDeclaredVarsMoreThanAssignments' # Buggy - https://github.com/PowerShell/PSScriptAnalyzer/issues/1641
 	)
-	Rules = @{
-		PSAvoidUsingDoubleQuotesForConstantString   = @{
+	Rules        = @{
+		PSAvoidUsingDoubleQuotesForConstantString = @{
 			Enable = $true
 		}
-		PSAvoidUsingPositionalParameters            = @{
+		PSAvoidUsingPositionalParameters          = @{
 			Enable = $true
 		}
-		PSUseCompatibleCommands                     = @{
+		PSUseCompatibleCommands                   = @{
 			Enable         = $true
 			# PowerShell platforms we want to check compatibility with
 			TargetProfiles = @(
@@ -28,7 +29,7 @@
 				#'win-4_x64_10.0.18362.0_7.0.0_x64_3.1.2_core' # PowerShell 7.0 on Windows 10
 			)
 		}
-		PSUseCompatibleSyntax                       = @{
+		PSUseCompatibleSyntax                     = @{
 			Enable         = $true
 			# PowerShell versions we want to check compatibility with
 			TargetVersions = @(
@@ -37,33 +38,33 @@
 				#'7.1'
 			)
 		}
-		PSPlaceCloseBrace                           = @{
+		PSPlaceCloseBrace                         = @{
 			Enable             = $true
 			NoEmptyLineBefore  = $false
 			IgnoreOneLineBlock = $true
 			NewLineAfter       = $true
 		}
-		PSPlaceOpenBrace                            = @{
+		PSPlaceOpenBrace                          = @{
 			Enable             = $true
 			OnSameLine         = $true
 			NewLineAfter       = $true
 			IgnoreOneLineBlock = $true
 		}
-		PSUseConsistentIndentation                  = @{
+		PSUseConsistentIndentation                = @{
 			Enable              = $true
 			IndentationSize     = 4
 			PipelineIndentation = 'IncreaseIndentationForFirstPipeline'
 			Kind                = 'tab'
 		}
-		PSAvoidLongLines                            = @{
+		PSAvoidLongLines                          = @{
 			Enable            = $true
 			MaximumLineLength = 155
 		}
-		PSAlignAssignmentStatement                  = @{
+		PSAlignAssignmentStatement                = @{
 			Enable         = $true
 			CheckHashtable = $true
 		}
-		PSUseCorrectCasing                          = @{
+		PSUseCorrectCasing                        = @{
 			Enable = $true
 		}
 	}

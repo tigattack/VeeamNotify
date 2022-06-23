@@ -34,23 +34,22 @@ Write-Output @'
 #        VeeamNotify Installer        #
 #                                     #
 #######################################
-
-
 '@
 
 # Check if this project is already installed and if so, exit
 if (Test-Path "$InstallParentPath\$project") {
 	$installedVersion = (Get-Content -Raw "$InstallParentPath\$project\resources\version.txt").Trim()
-	Write-Output "$project ($installedVersion) is already installed. This script cannot update an existing installation."
-	Write-Output 'Please manually update or delete/rename the existing installation and retry.'
+	Write-Output "`n$project ($installedVersion) is already installed. This script cannot update an existing installation."
+	Write-Output "Please manually update or delete/rename the existing installation and retry.`n`n"
 	exit
 }
 
 
-# Get releases from GitHub
+# Get releases and branches from GitHub
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 try {
 	$releases = Invoke-RestMethod -Uri "https://api.github.com/repos/tigattack/$project/releases" -Method Get
+	$branches = (Invoke-RestMethod -Uri "https://api.github.com/repos/tigattack/$project/branches" -Method Get).name
 }
 catch {
 	$versionStatusCode = $_.Exception.Response.StatusCode.value__
@@ -80,41 +79,35 @@ If (-not $Version -and
 	-not $NonInteractive) {
 
 	# Query download type / release stream
-	[System.Management.Automation.Host.ChoiceDescription[]]$downloadQuery_opts = @()
 	If ($releases) {
-		$downloadQuery_message = "Please select how you would like to download $project."
+		[System.Management.Automation.Host.ChoiceDescription[]]$downloadQuery_opts = @()
 		$downloadQuery_opts += New-Object System.Management.Automation.Host.ChoiceDescription '&Release', "Download the latest release or prerelease. You will be prompted if there's a choice between the two."
+		$downloadQuery_opts += New-Object System.Management.Automation.Host.ChoiceDescription '&Version', 'Download a specific version.'
+		$downloadQuery_opts += New-Object System.Management.Automation.Host.ChoiceDescription '&Branch', 'Download a branch.'
+		$downloadQuery_result = $host.UI.PromptForChoice(
+			'Download type',
+			"Please select how you would like to download $project.",
+			$downloadQuery_opts,
+			0
+		)
 	}
 	Else {
-		$downloadQuery_message = "Please select how you would like to download $project.`nNote there are currently no releases or prereleases available."
-	}
-	$downloadQuery_opts += New-Object System.Management.Automation.Host.ChoiceDescription '&Version', 'Download a specific version.'
-	$downloadQuery_opts += New-Object System.Management.Automation.Host.ChoiceDescription '&Branch', 'Download a branch.'
-	$downloadQuery_result = $host.UI.PromptForChoice(
-		'Download type',
-		$downloadQuery_message,
-		$downloadQuery_opts,
-		0
-	)
-
-	# Set download type
-	If ($releases) {
-		Switch ($downloadQuery_result) {
-			0 { $downloadType = 'release' }
-			1 { $downloadType = 'version' }
-			2 { $downloadType = 'branch' }
-		}
-	}
-	Else {
-		Switch ($downloadQuery_result) {
-			0 { $downloadType = 'version' }
-			1 { $downloadType = 'branch' }
+		$branchQuery_yes = New-Object System.Management.Automation.Host.ChoiceDescription '&Yes', 'Install from a branch.'
+		$branchQuery_no = New-Object System.Management.Automation.Host.ChoiceDescription '&No', 'Cancel installation.'
+		$host.UI.PromptForChoice(
+			'Would you like to install from a branch?',
+			"There are currently no releases or prereleases available for $project.",
+			@($branchQuery_yes, $branchQuery_no),
+			0
+		) | ForEach-Object {
+			If ($_ -eq 0) { $downloadQuery_result = 2 }
+			Else { exit }
 		}
 	}
 
 	# Set download type
-	Switch ($downloadType) {
-		'release' {
+	Switch ($downloadQuery_result) {
+		0 {
 			If ($latestStable -and $latestPrerelease) {
 				# Query release stream
 				$releasePrompt = $true
@@ -143,24 +136,42 @@ If (-not $Version -and
 				$Latest = 'Release'
 			}
 			ElseIf ($latestPrerelease) {
-				Write-Output "`nNOTICE: You chose release. Currently there are only prereleases available.`nContinuing with prerelease installation in 5 seconds."
-				Start-Sleep -Seconds 5
-				$Latest = 'Prerelease'
+				$prereleaseQuery_yes = New-Object System.Management.Automation.Host.ChoiceDescription '&Yes', 'Install the latest prerelease.'
+				$prereleaseQuery_no = New-Object System.Management.Automation.Host.ChoiceDescription '&No', 'Cancel installation.'
+				$host.UI.PromptForChoice(
+					'Do you wish to install the latest prerelease?',
+					'You chose release, but the only available releases are prereleases.',
+					@($prereleaseQuery_yes, $prereleaseQuery_no),
+					0
+				) | ForEach-Object {
+					If ($_ -eq 0) { $Latest = 'Prerelease' }
+					Else { exit }
+				}
 			}
 		}
-		'version' {
-			$Version = ($host.UI.Prompt(
-					'Version Selection',
-					"You've chosen to install a specific version; please enter the version you would like to install.",
-					'Version'
-				)).Version
+		1 {
+			do {
+				$Version = ($host.UI.Prompt(
+						'Version Selection',
+						"Please enter the version you wish to install.`nAvailable versions:`n $(foreach ($tag in $releases.tag_name) {"$tag`n"})",
+						'Version'
+					)).Version
+				If ($releases.tag_name -notcontains $Version) { Write-Output "`nInvalid version, please try again." }
+			} until (
+				$releases.tag_name -contains $Version
+			)
 		}
-		'branch' {
-			$Branch = ($host.UI.Prompt(
-					'Branch Selection',
-					"You've chosen to install a branch; please enter the branch name.",
-					'Branch'
-				)).Branch
+		2 {
+			do {
+				$Branch = ($host.UI.Prompt(
+						'Branch Selection',
+						"Please enter the name of the branch you wish to install.`nAvailable branches:`n $(foreach ($branch in $branches) {"$branch`n"})",
+						'Branch'
+					)).Branch
+				If ($branches -notcontains $Branch) { Write-Output "`nInvalid branch name, please try again." }
+			} until (
+				$branches -contains $Branch
+			)
 		}
 	}
 }
@@ -168,61 +179,10 @@ If (-not $Version -and
 # Download branch if specified
 If ($Branch) {
 
-	# Get branches from GitHub
-	[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-	try {
-		$branches = Invoke-RestMethod -Uri "https://api.github.com/repos/tigattack/$project/branches" -Method Get
-	}
-	catch {
-		$versionStatusCode = $_.Exception.Response.StatusCode.value__
-		Write-Warning "Failed to query GitHub for $project branches."
-		throw "HTTP status code: $versionStatusCode"
-	}
+	# Throw if branch not found
+	If (-not $branches.Contains($Branch)) {
 
-	# Query if branch not found
-	If (-not $branches.name.Contains($Branch)) {
-		If (-not $NonInteractive) {
-			$unknownBranchQuery_main = New-Object System.Management.Automation.Host.ChoiceDescription '&Main', "'main' branch of VeeamNotify"
-			$unknownBranchQuery_dev = New-Object System.Management.Automation.Host.ChoiceDescription '&Dev', "'dev' branch of VeeamNotify"
-			$unknownBranchQuery_other = New-Object System.Management.Automation.Host.ChoiceDescription '&Other', 'Another branch of VeeamNotify'
-			$unknownBranchQuery_result = $host.UI.PromptForChoice(
-				'Branch Selection',
-				"Branch '$Branch' not found. Which branch would you like to install?",
-				@(
-					$unknownBranchQuery_main,
-					$unknownBranchQuery_dev,
-					$unknownBranchQuery_other
-				),
-				0
-			)
-
-			Switch ($unknownBranchQuery_result) {
-				0 {
-					$Branch = 'main'
-				}
-				1 {
-					$Branch = 'dev'
-				}
-				2 {
-					$branchPrompt = 'Branch'
-					do {
-						$Branch = ($host.UI.Prompt(
-								'Branch Name',
-								"You've chosen to install a different branch. Please enter the branch name.",
-								$branchPrompt
-							)).$branchPrompt
-
-						If (-not $branches.name.Contains($Branch)) {
-							Write-Warning "Branch '$Branch' not found. Please try again."
-						}
-					}
-					until ($branches.name.Contains($Branch))
-				}
-			}
-		}
-		Else {
-			throw "Branch '$Branch' not found. Will not prompt for branch in non-interactive mode."
-		}
+		throw "Branch '$Branch' not found. Will not prompt for branch in non-interactive mode."
 	}
 
 	# Set $releaseName to branch name
@@ -250,17 +210,6 @@ Else {
 		$releaseName = $Version
 	}
 
-	# If no releases found, exit with notice
-	If (-not $releases) {
-		Write-Output "`nNo releases were found. Please re-run this script with the '-Branch <branch-name>' parameter."
-		Write-Output 'NOTE: If you decide to install from a branch, please know you may be more likely to experience issues.'
-		exit
-	}
-	# If release not found, exit with notice
-	If ($Version -and (-not $releases.tag_names -contains $Version)) {
-		Write-Warning "The specified release could not found. Valid releases are:`n$($releases.tag_name)"
-		exit
-	}
 	If (($Latest -or $releasePrompt) -and (-not $releaseName)) {
 		Write-Warning 'A release of the specified type could not found.'
 		exit
@@ -282,6 +231,7 @@ $DownloadParams = @{
 	Uri     = $downloadUrl
 	OutFile = "$env:TEMP\$outFile.zip"
 }
+
 Try {
 	Write-Output "`nDownloading $project $releaseName from GitHub..."
 	Invoke-WebRequest @DownloadParams
@@ -324,6 +274,7 @@ Else {
 Remove-Item -Path "$env:TEMP\$outFile.zip"
 
 If (-not $NonInteractive) {
+	Write-Output "`nBeginning configuration..."
 	# Get config
 	$config = Get-Content "$InstallParentPath\$project\config\conf.json" -Raw | ConvertFrom-Json
 
@@ -342,15 +293,16 @@ If (-not $NonInteractive) {
 		-1
 	)
 
+	$webhookPrompt = "`nPlease enter your webhook URL"
 	Switch ($servicePrompt_result) {
 		0 {
-			$config.services.discord.webhook = Read-Host -Prompt 'Please enter your webhook URL'
+			$config.services.discord.webhook = Read-Host -Prompt $webhookPrompt
 		}
 		1 {
-			$config.services.slack.webhook = Read-Host -Prompt 'Please enter your webhook URL'
+			$config.services.slack.webhook = Read-Host -Prompt $webhookPrompt
 		}
 		2 {
-			$config.services.teams.webhook = Read-Host -Prompt 'Please enter your webhook URL'
+			$config.services.teams.webhook = Read-Host -Prompt $webhookPrompt
 		}
 	}
 
@@ -373,14 +325,14 @@ If (-not $NonInteractive) {
 	If ($mentionPreference_result -ne 0) {
 		Switch ($servicePrompt_result) {
 			0 {
-				$config.services.discord.user_id = Read-Host -Prompt 'Please enter your Discord user ID'
+				$config.services.discord.user_id = Read-Host -Prompt "`nPlease enter your Discord user ID"
 			}
 			1 {
-				$config.services.slack.user_id = Read-Host -Prompt 'Please enter your Slack member ID'
+				$config.services.slack.user_id = Read-Host -Prompt "`nPlease enter your Slack member ID"
 			}
 			2 {
-				$config.services.teams.user_id = Read-Host -Prompt 'Please enter your Teams email address'
-				Write-Output "Teams also requires a name to be specified for mentions.`nIf you do not specify anything, your username (from your email address) will be used."
+				$config.services.teams.user_id = Read-Host -Prompt "`nPlease enter your Teams email address"
+				Write-Output "`nTeams also requires a name to be specified for mentions.`nIf you do not specify anything, your username (from your email address) will be used."
 				$config.services.teams.user_name = Read-Host -Prompt 'Please enter your name on Teams (e.g. John Smith)'
 			}
 		}
@@ -415,19 +367,11 @@ If (-not $NonInteractive) {
 	catch {
 		Write-Warning "Failed to write configuration file at `"$InstallParentPath\$project\config\conf.json`". Please open the file and complete configuration manually."
 	}
-}
-Else {
-	Write-Output "`nWill not prompt for service and mention configuration in non-interactive mode.`n"
-}
-
-Write-Output "`nInstallation complete!`n"
-
-If (-not $NonInteractive) {
 
 	# Query for configuration deployment script.
 	$configPrompt_yes = New-Object System.Management.Automation.Host.ChoiceDescription '&Yes', 'Execute configuration deployment tool.'
 	$configPrompt_no = New-Object System.Management.Automation.Host.ChoiceDescription '&No', 'Skip configuration deployment tool.'
-	$configPrompt_result = $host.UI.PromptForChoice(
+	$host.UI.PromptForChoice(
 		'Configuration Deployment Tool',
 		"Would you like to to run the VeeamNotify configuration deployment tool?`nNone of your job configurations will be modified without confirmation.",
 		@(
@@ -435,22 +379,16 @@ If (-not $NonInteractive) {
 			$configPrompt_no
 		),
 		0
-	)
+	) | ForEach-Object {
+		If ($_ -eq 0) {
+			Write-Output "`nRunning configuration deployment script...`n"
+			Start-Process -FilePath 'powershell' -ArgumentList "-File $InstallParentPath\$project\resources\DeployVeeamConfiguration.ps1 -InstallParentPath $InstallParentPath" -NoNewWindow
+		}
+	}
 
-	If ($configPrompt_result -eq 0) {
-		Write-Output "`nRunning configuration deployment script...`n"
-		Start-Process -FilePath "$InstallParentPath\$project\resources\DeployVeeamConfiguration.ps1" -ArgumentList "-InstallParentPath $InstallParentPath" -NoNewWindow
-	}
-	else {
-		Write-Output 'Exiting.'
-		Start-Sleep -Seconds 5
-		exit
-	}
 }
-
 Else {
-	Write-Output "`nWill not prompt to run Veeam configuration deployment script in non-interactive mode.`n"
-
-	Write-Output 'Exiting.'
-	exit
+	Write-Output "`nWill not prompt for VeeamNotify configuration, or to run Veeam configuration deployment script in non-interactive mode.`n"
 }
+
+Write-Output "`nInstallation complete!`n"
