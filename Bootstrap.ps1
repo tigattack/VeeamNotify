@@ -57,16 +57,19 @@ $sessionId = ([regex]::Matches($parentCmd, $idRegex)).Value[1]
 Write-LogMessage -Tag 'INFO' -Message 'Getting VBR job details'
 $job = Get-VBRJob -WarningAction SilentlyContinue | Where-Object {$_.Id.Guid -eq $jobId}
 
+# Get the session information and name.
+Write-LogMessage -Tag 'INFO' -Message 'Getting VBR session information'
+$sessionInfo = Get-VBRSessionInfo -SessionId $sessionId -JobType $job.JobType
+$jobName = $sessionInfo.JobName
+$vbrSessionLogger = $sessionInfo.Session.Logger
+
+$vbrLogEntry = $vbrSessionLogger.AddLog('[VeeamNotify] Parsing job & session information...')
+
 # Quit if job type is not supported.
 If ($job.JobType -notin $supportedTypes) {
 	Write-LogMessage -Tag 'ERROR' -Message "Job type '$($job.JobType)' is not supported."
 	Exit 1
 }
-
-# Get the session information and name.
-Write-LogMessage -Tag 'INFO' -Message 'Getting VBR session information'
-$sessionInfo = Get-VBRSessionInfo -SessionID $sessionId -JobType $job.JobType
-$jobName = $sessionInfo.JobName
 
 Write-LogMessage -Tag 'INFO' -Message "Bootstrap script for Veeam job '$jobName' (job $jobId session $sessionId) - Session & job detection complete."
 
@@ -84,15 +87,20 @@ $newLogfile = "$PSScriptRoot\log\$($date)-$($logJobName).log"
 $powershellArguments = "-file $PSScriptRoot\AlertSender.ps1", "-JobName `"$jobName`"", "-Id `"$sessionId`"","-JobType `"$($job.JobType)`"", `
 	"-Config `"$($configRaw)`"", "-Logfile `"$newLogfile`""
 
+$vbrSessionLogger.UpdateSuccess($vbrLogEntry, '[VeeamNotify] Parsed job & session information.')
+
 # Start a new new script in a new process with some of the information gathered here.
 # This allows Veeam to finish the current session faster and allows us gather information from the completed job.
 Try {
 	Write-LogMessage -Tag 'INFO' -Message 'Launching AlertSender.ps1...'
+	$vbrLogEntry = $vbrSessionLogger.AddLog('[VeeamNotify] Launching Alert Sender...')
 	Start-Process -FilePath 'powershell' -Verb runAs -ArgumentList $powershellArguments -WindowStyle hidden -ErrorAction Stop
 	Write-LogMessage -Tag 'INFO' -Message 'AlertSender.ps1 launched successfully.'
+	$vbrSessionLogger.UpdateSuccess($vbrLogEntry, '[VeeamNotify] Launched Alert Sender.')
 }
 Catch {
 	Write-LogMessage -Tag 'ERROR' -Message "Failed to launch AlertSender.ps1: $_"
+	$vbrSessionLogger.UpdateErr($vbrLogEntry, '[VeeamNotify] Failed to launch Alert Sender.', "Please check the log: $newLogfile")
 	exit 1
 }
 
