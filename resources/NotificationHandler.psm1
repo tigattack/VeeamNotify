@@ -163,11 +163,6 @@ function New-DiscordPayload {
 				value  = $Duration
 				inline = 'true'
 			}
-			[PSCustomObject]@{
-				name   = 'Notice'
-				value  = "Further Agent session details are missing due to limitations in Veeam's PowerShell module."
-				inline = 'false'
-			}
 		)
 	}
 
@@ -422,21 +417,6 @@ function New-TeamsPayload {
 					}
 				)
 			}
-			@{ type = 'ColumnSet'; columns = @(
-					@{ type = 'Column'; width = 'stretch'; items = @(
-							@{
-								type  = 'FactSet'
-								facts = @(
-									@{
-										title = 'Notice'
-										value = "Further Agent session details are missing due to limitations in Veeam's PowerShell module."
-									}
-								)
-							}
-						)
-					}
-				)
-			}
 		)
 	}
 
@@ -646,19 +626,6 @@ function New-SlackPayload {
 			fields = $fieldArray
 		}
 	)
-
-	# Add agent notice if applicable.
-	if ($JobType.EndsWith('Agent Backup')) {
-		$payload.blocks += @(
-			@{
-				type = 'section'
-				text = @{
-					type = 'mrkdwn'
-					text = "*Notice*`nFurther Agent session details are missing due to limitations in Veeam's PowerShell module."
-				}
-			}
-		)
-	}
 
 	# Add footer to payload object.
 	$payload.blocks += @(
