@@ -377,7 +377,7 @@ try {
 					$vbrSessionLogger.UpdateSuccess($logId_service, "[VeeamNotify] Sent notification to $($serviceName).") | Out-Null
 				}
 				Catch {
-					Write-LogMessage -Tag 'WARN' -Message "Unable to send $serviceName notification: $_"
+					Write-LogMessage -Tag 'ERROR' -Message "Unable to send $serviceName notification: $_"
 					$vbrSessionLogger.UpdateErr($logId_service, "[VeeamNotify] $serviceName notification could not be sent.", "Please check the log: $Logfile") | Out-Null
 				}
 			}
