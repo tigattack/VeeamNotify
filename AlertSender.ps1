@@ -413,7 +413,6 @@ try {
 
 		# Add Veeam session log entry.
 		If ($Config.update.notify) {
-			# TODO: does this result in the job showing with warning state in the UI? 'AddSuccess' instead if so.
 			$vbrSessionLogger.AddWarning("[VeeamNotify] A new version is available: $($updateStatus.LatestStable). Currently running: $($updateStatus.CurrentVersion)")
 		}
 
