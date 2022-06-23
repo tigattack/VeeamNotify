@@ -1,7 +1,5 @@
 # VeeamNotify
 
-# WORK IN PROGRESS
-
 Send Veeam Backup & Replication session summary notifications to Discord, Microsoft Teams, and Slack, detailing session result and statistics and optionally alerting you via mention when a job finishes in a warning or failed state.
 
 <img src="https://github.com/tigattack/VeeamNotify/blob/dev/asset/discord.png?raw=true" width="30%"></img> <img src="https://github.com/tigattack/VeeamNotify/blob/dev/asset/slack.png?raw=true" width="30%"></img> <img src="https://github.com/tigattack/VeeamNotify/blob/dev/asset/teams.png?raw=true" width="30%"></img> 
@@ -12,29 +10,7 @@ Requirements:
 * Veeam Backup & Replication 11 or higher.
 * PowerShell 5.1 or higher.
 
-* Option 1 - Install script. This option will also optionally configure any supported Veeam jobs to work with VeeamNotify.  
-📝 NOTE: Please inspect [Installer.ps1](Installer.ps1) prior to running to ensure safety. I already know it's safe, but you should verify the security and contents of any script from the internet you are not familiar with.
-
-  * Option 1a - One-liner:
-    1. Launch PowerShell as Administrator on your Veeam server.
-    2. Run the following command:
-        ```powershell
-        Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/tigattack/VeeamNotify/main/Installer.ps1'))
-        ```
-
-  * Option 1b - Manual:
-    1. Download [Installer.ps1](Installer.ps1).
-    2. Open PowerShell (as Administrator) on your Veeam server.
-    3. Run the following commands:
-        ```powershell
-        PS> Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
-        PS> Unblock-File C:\path\to\Installer.ps1
-        PS> C:\path\to\Installer.ps1
-        ```
-        <img src="https://github.com/tigattack/VeeamDiscordNotifications/blob/dev/asset/installer.png?raw=true" alt="Installer Example" width="75%"/>
-
-* Option 2 - Manual install
-  * Follow the [setup instructions](https://blog.tiga.tech/veeam-b-r-notifications-in-discord/).
+Please see the [How to Install](https://github.com/tigattack/VeeamNotify/wiki/%F0%9F%94%A7-How-to-Install) wiki page.
 
 ## Supported Job Types
 
