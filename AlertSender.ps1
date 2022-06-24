@@ -1,7 +1,5 @@
 # Define parameters
 param(
-	[String]$Service,
-	[String]$ServiceUrl,
 	[String]$jobName,
 	[String]$id,
 	[String]$jobType,
