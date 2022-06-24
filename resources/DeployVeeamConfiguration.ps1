@@ -55,7 +55,7 @@ $backupChoice_result = $host.UI.PromptForChoice('Veeam Configuration Backup', $b
 
 If ($backupChoice_result -eq 0) {
 	# Run backup
-	Write-Output 'Creating backup, please wait...'
+	Write-Output "`nCreating backup, please wait..."
 	($backupResult = Start-VBRConfigurationBackupJob) | Out-Null
 	if ($backupResult.Result -ne 'Failed') {
 		Write-Output 'Backup completed successfully.'
@@ -278,6 +278,9 @@ elseif ($configChoice_result -eq 2) {
 	Write-Output 'Skipping VeeamNotify configuration deployment for all jobs.'
 }
 
-Write-Output "`n`Finished. Exiting."
-Start-Sleep 10
+If ($MyInvocation.ScriptName -notlike '*Installer.ps1') {
+	Write-Output "`n`Finished. Exiting."
+	Start-Sleep 10
+}
+
 exit
