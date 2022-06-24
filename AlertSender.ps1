@@ -358,7 +358,7 @@ try {
 
 					# Send the actual ping.
 					Try {
-						Send-Payload -Ping -Uri $config.services.ping.webhook
+						Send-Payload -Ping -Uri $config.services.ping.webhook | Out-Null
 						Write-LogMessage -Tag 'INFO' -Message 'HTTP Ping sent successfully.'
 						$vbrSessionLogger.UpdateSuccess($logId_service, '[VeeamNotify] HTTP Ping sent successfully.') | Out-Null
 					}
