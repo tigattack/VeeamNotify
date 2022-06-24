@@ -36,49 +36,7 @@ As much relevant information as I've been able to discover from such backup sess
 
 Default configuration can be found in `C:\VeeamScripts\VeeamNotify\config\conf.json`
 
-An example configuration can be found below with highlighted comments.
-
-__Do not copy/paste it. It is not valid JSON.__
-
-```json
-{
-    "services": {                       # Service definitions.
-        "discord": {                      # Discord service.
-            "webhook": "DiscordWebhook",    # Discord webhook.
-            "user_id": "123456789"          # Discord user id. Required only if any of the mention conditions are true.
-        },
-        "slack": {                        # Slack service.
-            "webhook": "SlackWebhook",      # Slack webhook.
-            "user_id": "A1B2C3D4E5"         # Slack user id. Required only if any of the mention conditions are true.
-        },
-        "teams": {                        # Teams service.
-            "webhook": "TeamsWebhook",      # Teams webhook.
-            "user_id": "user@domain.tld",   # Teams user id. Required only if any of the mention conditions are true.
-            "user_name": "Your Name"        # Teams user name. Required only if any of the mention conditions are true.
-        }
-    },
-    "mentions": {           # Mention definitions. All options require user_id (and user_name if Teams) above.
-        "on_failure": false,  # If true, you will be mentioned when a job finishes in a failed state. 
-        "on_warning": false   # If true, you will be mentioned when a job finishes in a warning state.
-    },
-    "notify": {             # Notify definitions.
-        "on_success": true,   # If true, a notification will be sent if the job finishes in a Successful state. 
-        "on_failure": true,   # If true, a notification will be sent if the job finishes in a Failed state. 
-        "on_warning": true    # If true, a notification will be sent if the job finishes in a Warning state.
-    },
-    "logging": {            # Logging configuration.
-        "enabled": true,      # If true, VeeamNotify will log to a session-specific file in C:\VeeamScripts\VeeamNotify\logs\
-        "level": "info",      # Logging level. Possibly values: error, warn, info, debug.
-        "max_age_days": 7     # Max age of log files. Set to 0 to disable log expiry.
-    },
-    "update": {             # Update configuration
-		"notify": true,       # If true, VeeamNotify will notify you if an update is available.
-		"auto_update": false, # DO NOT USE. If true, VeeamNotify will update itself when an update is available.
-		"auto_update_comment": "auto_update will NOT work. Leave as 'false'"
-	},
-    "thumbnail": "https://some.url/img.jpg",  # Image URL for the thumbnail shown in the report embed.
-}
-```
+Details and examples can be found in the [Configuration Options](https://github.com/tigattack/VeeamNotify/wiki/%E2%9A%99%EF%B8%8F-Configuration-Options) wiki page.
 
 ---
 
