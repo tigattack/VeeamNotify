@@ -211,6 +211,7 @@ try {
 	$vbrSessionLogger.UpdateSuccess($logId_start, '[VeeamNotify] Gathered session details.') | Out-Null
 	$logId_notification = $vbrSessionLogger.AddLog('[VeeamNotify] Preparing to send notification(s)...')
 
+
 	# Job timings
 
 	## Calculate difference between job start and end time.
@@ -350,9 +351,11 @@ try {
 
 			# Create variable from current pipeline object to simplify usability.
 			$service = $_
+
 			# Create variable for service name in TitleCase format.
 			$textInfo = (Get-Culture).TextInfo
 			$serviceName = $textInfo.ToTitleCase($service.Name)
+
 			if ($service.Value.webhook -ne $null) {
 				if ($service.Value.webhook.StartsWith('https')) {
 					# Firstly check if service is ping, as the fields are different.
