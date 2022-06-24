@@ -23,7 +23,7 @@ jobs:
       - name: Create release asset
         run: |
           shopt -s extglob
-          name="VeeamNotify-${{ steps.tag.outputs.result }}"
+          name="VeeamNotify-${{ steps.get_tag.outputs.result }}"
           mkdir "$name"
           cp -rv !($name) $name/
           zip -r "$name.zip" "./$name" -x "./$name/.*/*" "./$name/.*" "./$name/*/.gitkeep" "./$name/asset/*" "./$name/tests/*" "./$name/README.md"
@@ -33,5 +33,5 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           generate_release_notes: true
-          files: VeeamNotify-${{ steps.tag.outputs.result }}.zip
-          name: "Release ${{ steps.tag.outputs.result }}"
+          files: VeeamNotify-${{ steps.get_tag.outputs.result }}.zip
+          name: "Release ${{ steps.get_tag.outputs.result }}"
