@@ -6,13 +6,13 @@ VeeamNotify is a replacement for [VeeamDiscordNotifications](https://github.com/
 
 <img src="https://github.com/tigattack/VeeamNotify/blob/dev/asset/discord.png?raw=true" width="30%"></img> <img src="https://github.com/tigattack/VeeamNotify/blob/dev/asset/slack.png?raw=true" width="30%"></img> <img src="https://github.com/tigattack/VeeamNotify/blob/dev/asset/teams.png?raw=true" width="30%"></img>
 
-## Installing
+## Supported Notification Services
 
-Requirements:
-* Veeam Backup & Replication 11 or higher.
-* PowerShell 5.1 or higher.
+* Discord
+* Slack
+* Microsoft Teams
 
-Please see the [How to Install](https://github.com/tigattack/VeeamNotify/wiki/%F0%9F%94%A7-How-to-Install) wiki page.
+Please create a [feature request](https://github.com/tigattack/VeeamNotify/issues/new?assignees=tigattack&labels=enhancement&template=feature_request.yml&title=[FEAT]+New+service:+) if your preferred service isn't listed here.
 
 ## Supported Job Types
 
@@ -32,7 +32,15 @@ You can read about the difference between these two Agent job types [here](https
 Unfortunately, even Agent backup sessions managed by the backup server, while supported, are limited in data output.  
 As much relevant information as I've been able to discover from such backup sessions is included in the notifications, but I welcome any suggestions for improvement in this area.
 
-## Configuration options
+## Installation
+
+Requirements:
+* Veeam Backup & Replication 11 or higher.
+* PowerShell 5.1 or higher.
+
+Please see the [How to Install](https://github.com/tigattack/VeeamNotify/wiki/%F0%9F%94%A7-How-to-Install) wiki page.
+
+## Configuration
 
 Default configuration can be found in `C:\VeeamScripts\VeeamNotify\config\conf.json`
 
