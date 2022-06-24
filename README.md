@@ -14,22 +14,28 @@ VeeamNotify is a replacement for [VeeamDiscordNotifications](https://github.com/
 
 Please create a [feature request](https://github.com/tigattack/VeeamNotify/issues/new?assignees=tigattack&labels=enhancement&template=feature_request.yml&title=[FEAT]+New+service:+) if your preferred service isn't listed here.
 
-## Supported Job Types
+## Supported Veeam Job Types
 
 * VM Backup
 * VM Replication
 * Windows & Linux Agent Backup jobs*
 
-\* Due to limitations in Veeam, only some types of Agent jobs are supported.
+### *Agent job support
 
-**Supported** jobs are known as "Agent Backup" or "Managed by backup server". **Unsupported** jobs are known as "Agent policy" or "Managed by agent".
+Due to limitations in Veeam, only some types of Agent jobs are supported.
 
-<img src="asset/agenttypes.png" width="75%"></img>  
+**Supported** jobs are known as "Agent Backup" or "Managed by backup server". **Unsupported** jobs are known as "Agent policy" or "Managed by agent". See the spoilered illustration below if this isn't clear to you.
+
+<details>
+<summary>Illustrated screenshot showing an example of supported types</summary>
+<img src="asset/agenttypes.png" width="75%"></img>
+
 **Note:** Linux Agent Backup jobs are also supported, this image is only an example.
+</details>
 
 You can read about the difference between these two Agent job types [here](https://helpcenter.veeam.com/docs/backup/agents/agent_job_protection_mode.html?ver=110#selecting-job-mode).
 
-Unfortunately, even Agent backup sessions managed by the backup server, while supported, are limited in data output.  
+Unfortunately, even supported Agent jobs return a reduced amount of session information, so you won't see as much detail in the notification (see the example screenshots at the top).  
 As much relevant information as I've been able to discover from such backup sessions is included in the notifications, but I welcome any suggestions for improvement in this area.
 
 ## Installation
