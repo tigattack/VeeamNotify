@@ -347,25 +347,24 @@ try {
 
 			# Create variable from current pipeline object to simplify usability.
 			$service = $_
-			Write-LogMessage -Tag 'INFO' -Message "$($service.Name)"
 			# Create variable for service name in TitleCase format.
 			$textInfo = (Get-Culture).TextInfo
 			$serviceName = $textInfo.ToTitleCase($service.Name)
 			If ($service.Value.webhook.StartsWith('https')) {
 				# Firstly check if service is ping, as the fields are different.
 				If ($service.Name -eq "Ping") {
-					Write-LogMessage -Tag 'INFO' -Message "Sending HTTP Ping.."
-					$logId_service = $vbrSessionLogger.AddLog("[VeeamNotify] Sending HTTP Ping..")
+					Write-LogMessage -Tag 'INFO' -Message 'Sending HTTP Ping..'
+					$logId_service = $vbrSessionLogger.AddLog('[VeeamNotify] Sending HTTP Ping..')
 
 					# Send the actual ping.
 					Try {
 						Send-Payload -Ping -Uri $config.services.ping.webhook
-						Write-LogMessage -Tag 'INFO' -Message "HTTP Ping sent successfully."
-						$vbrSessionLogger.UpdateSuccess($logId_service, "[VeeamNotify] HTTP Ping sent successfully.") | Out-Null
+						Write-LogMessage -Tag 'INFO' -Message 'HTTP Ping sent successfully.'
+						$vbrSessionLogger.UpdateSuccess($logId_service, '[VeeamNotify] HTTP Ping sent successfully.') | Out-Null
 					}
 					Catch {
 						Write-LogMessage -Tag 'ERROR' -Message "Unable to send HTTP Ping: $_"
-						$vbrSessionLogger.UpdateErr($logId_service, "[VeeamNotify] HTTP Ping could not be sent.", "Please check the log: $Logfile") | Out-Null
+						$vbrSessionLogger.UpdateErr($logId_service, '[VeeamNotify] HTTP Ping could not be sent.', "Please check the log: $Logfile") | Out-Null
 					}
 
 				}
@@ -397,7 +396,7 @@ try {
 						Write-LogMessage -Tag 'ERROR' -Message "Unable to send $serviceName notification: $_"
 						$vbrSessionLogger.UpdateErr($logId_service, "[VeeamNotify] $serviceName notification could not be sent.", "Please check the log: $Logfile") | Out-Null
 					}
-			}
+				}
 			}
 			Else {
 				Write-LogMessage -Tag 'DEBUG' -Message "$serviceName is unconfigured (invalid URL). Skipping $serviceName notification."
