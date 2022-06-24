@@ -387,7 +387,7 @@ If (-not $NonInteractive) {
 	) | ForEach-Object {
 		If ($_ -eq 0) {
 			Write-Output "`nRunning configuration deployment script...`n"
-			Start-Process -FilePath 'powershell' -ArgumentList "-File $InstallParentPath\$project\resources\DeployVeeamConfiguration.ps1 -InstallParentPath $InstallParentPath" -NoNewWindow
+			& "$InstallParentPath\$project\resources\DeployVeeamConfiguration.ps1" -InstallParentPath $InstallParentPath
 		}
 	}
 
