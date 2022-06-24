@@ -350,7 +350,6 @@ try {
 
 			# Create variable from current pipeline object to simplify usability.
 			$service = $_
-			Write-LogMessage -Tag 'INFO' -Message "$($service.Name)"
 			# Create variable for service name in TitleCase format.
 			$textInfo = (Get-Culture).TextInfo
 			$serviceName = $textInfo.ToTitleCase($service.Name)
@@ -358,8 +357,8 @@ try {
 				if ($service.Value.webhook.StartsWith('https')) {
 					# Firstly check if service is ping, as the fields are different.
 					if ($service.Name -eq "Ping") {
-						Write-LogMessage -Tag 'INFO' -Message "Sending HTTP Ping.."
-						$logId_service = $vbrSessionLogger.AddLog("[VeeamNotify] Sending HTTP Ping..")
+						Write-LogMessage -Tag 'INFO' -Message 'Sending HTTP Ping..'
+						$logId_service = $vbrSessionLogger.AddLog('[VeeamNotify] Sending HTTP Ping..')
 
 						# Send the actual ping.
 						try {
