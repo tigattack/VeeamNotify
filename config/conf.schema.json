@@ -40,12 +40,21 @@
                             "type": "string"
                         }
                     }
+                },
+                "ping": {
+                    "type": "object",
+                    "properties": {
+                        "webhook": {
+                            "type" :"string"
+                        }  
+                    }
                 }
             },
             "required": [
                 "discord",
                 "slack",
-                "teams"
+                "teams",
+                "ping"
             ]
         },
         "mentions": {

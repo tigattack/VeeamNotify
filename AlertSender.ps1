@@ -1,5 +1,7 @@
 # Define parameters
 Param(
+	[String]$Service,
+	[String]$ServiceUrl,
 	[String]$jobName,
 	[String]$id,
 	[String]$jobType,
@@ -210,7 +212,6 @@ try {
 	$vbrSessionLogger.UpdateSuccess($logId_start, '[VeeamNotify] Gathered session details.') | Out-Null
 	$logId_notification = $vbrSessionLogger.AddLog('[VeeamNotify] Preparing to send notification(s)...')
 
-
 	# Job timings
 
 	## Calculate difference between job start and end time.
@@ -341,45 +342,64 @@ try {
 		}
 	}
 
-
 	# Build embed and send iiiit.
 	Try {
 		$Config.services.PSObject.Properties | ForEach-Object {
 
+
 			# Create variable from current pipeline object to simplify usability.
 			$service = $_
-
+			Write-LogMessage -Tag 'INFO' -Message "$($service.Name)"
 			# Create variable for service name in TitleCase format.
 			$textInfo = (Get-Culture).TextInfo
 			$serviceName = $textInfo.ToTitleCase($service.Name)
-
 			If ($service.Value.webhook.StartsWith('https')) {
-				Write-LogMessage -Tag 'INFO' -Message "Sending notification to $($serviceName)."
-				$logId_service = $vbrSessionLogger.AddLog("[VeeamNotify] Sending notification to $($serviceName)...")
+				# Firstly check if service is ping, as the fields are different.
+				If ($service.Name -eq "Ping") {
+					Write-LogMessage -Tag 'INFO' -Message "Sending HTTP Ping.."
+					$logId_service = $vbrSessionLogger.AddLog("[VeeamNotify] Sending HTTP Ping..")
 
-				# Add user information for mention if relevant.
-				Write-LogMessage -Tag 'DEBUG' -Message 'Determining if user should be mentioned.'
-				If ($mention) {
-					Write-LogMessage -Tag 'DEBUG' -Message 'Getting user ID for mention.'
-					$payloadParams.UserId = $service.Value.user_id
-
-					# Get username if Teams
-					If ($service.Value.user_name -and $service.Value.user_name -ne 'Your Name') {
-						Write-LogMessage -Tag 'DEBUG' -Message 'Getting Teams user name for mention.'
-						$payloadParams.UserName = $service.Value.user_name
+					# Send the actual ping.
+					Try {
+						Send-Payload -Ping -Uri $config.services.ping.webhook
+						Write-LogMessage -Tag 'INFO' -Message "HTTP Ping sent successfully."
+						$vbrSessionLogger.UpdateSuccess($logId_service, "[VeeamNotify] HTTP Ping sent successfully.") | Out-Null
 					}
-				}
+					Catch {
+						Write-LogMessage -Tag 'ERROR' -Message "Unable to send HTTP Ping: $_"
+						$vbrSessionLogger.UpdateErr($logId_service, "[VeeamNotify] HTTP Ping could not be sent.", "Please check the log: $Logfile") | Out-Null
+					}
 
-				Try {
-					New-Payload -Service $service.Name -Parameters $payloadParams | Send-Payload -Uri $service.Value.webhook | Out-Null
+				}
+				# Handle all services that aren't ping.
+				else {
+					Write-LogMessage -Tag 'INFO' -Message "Sending notification to $($serviceName)."
+					$logId_service = $vbrSessionLogger.AddLog("[VeeamNotify] Sending notification to $($serviceName)...")
 
-					Write-LogMessage -Tag 'INFO' -Message "Notification sent to $serviceName successfully."
-					$vbrSessionLogger.UpdateSuccess($logId_service, "[VeeamNotify] Sent notification to $($serviceName).") | Out-Null
-				}
-				Catch {
-					Write-LogMessage -Tag 'ERROR' -Message "Unable to send $serviceName notification: $_"
-					$vbrSessionLogger.UpdateErr($logId_service, "[VeeamNotify] $serviceName notification could not be sent.", "Please check the log: $Logfile") | Out-Null
-				}
+					# Add user information for mention if relevant.
+					Write-LogMessage -Tag 'DEBUG' -Message 'Determining if user should be mentioned.'
+					If ($mention) {
+						Write-LogMessage -Tag 'DEBUG' -Message 'Getting user ID for mention.'
+						$payloadParams.UserId = $service.Value.user_id
+
+						# Get username if Teams
+						If ($service.Value.user_name -and $service.Value.user_name -ne 'Your Name') {
+							Write-LogMessage -Tag 'DEBUG' -Message 'Getting Teams user name for mention.'
+							$payloadParams.UserName = $service.Value.user_name
+						}
+					}
+
+					Try {
+						New-Payload -Service $service.Name -Parameters $payloadParams | Send-Payload -Uri $service.Value.webhook | Out-Null
+
+						Write-LogMessage -Tag 'INFO' -Message "Notification sent to $serviceName successfully."
+						$vbrSessionLogger.UpdateSuccess($logId_service, "[VeeamNotify] Sent notification to $($serviceName).") | Out-Null
+					}
+					Catch {
+						Write-LogMessage -Tag 'ERROR' -Message "Unable to send $serviceName notification: $_"
+						$vbrSessionLogger.UpdateErr($logId_service, "[VeeamNotify] $serviceName notification could not be sent.", "Please check the log: $Logfile") | Out-Null
+					}
+			}
 			}
 			Else {
 				Write-LogMessage -Tag 'DEBUG' -Message "$serviceName is unconfigured (invalid URL). Skipping $serviceName notification."
