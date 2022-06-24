@@ -28,7 +28,7 @@ Due to limitations in Veeam, only some types of Agent jobs are supported.
 
 <details>
 <summary>Illustrated screenshot showing an example of supported types</summary>
-<img src="asset/agenttypes.png" width="75%"></img>
+<img src="asset/agent-types.png" width="75%"></img>
 
 **Note:** Linux Agent Backup jobs are also supported, this image is only an example.
 </details>

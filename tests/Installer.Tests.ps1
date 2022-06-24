@@ -65,7 +65,7 @@ Describe 'Installer.ps1' {
 		Invoke-Command -ScriptBlock $expectedFilesCheck
 	}
 
-	AfterAll {
+	AfterEach {
 		# Remove temp install dir
 		Remove-Item -Path $installDir -Recurse -Force
 	}

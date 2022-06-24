@@ -223,8 +223,13 @@ Else {
 	}
 }
 
-# Sanitise releaseName for OutFile
-$outFile = "$project-$($releaseName -replace '[\W]','-')"
+# Sanitise releaseName for OutFile if installing from branch
+If ($Branch) {
+	$outFile = "$project-$($releaseName -replace '[\W]','-')"
+}
+Else {
+	$outFile = "$project-$releaseName"
+}
 
 # Download project from GitHub
 $DownloadParams = @{
@@ -382,7 +387,7 @@ If (-not $NonInteractive) {
 	) | ForEach-Object {
 		If ($_ -eq 0) {
 			Write-Output "`nRunning configuration deployment script...`n"
-			Start-Process -FilePath 'powershell' -ArgumentList "-File $InstallParentPath\$project\resources\DeployVeeamConfiguration.ps1 -InstallParentPath $InstallParentPath" -NoNewWindow
+			& "$InstallParentPath\$project\resources\DeployVeeamConfiguration.ps1" -InstallParentPath $InstallParentPath
 		}
 	}
 
