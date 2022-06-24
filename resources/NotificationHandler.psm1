@@ -773,9 +773,13 @@ function New-TelegramPayload {
 function Send-Payload {
 	[CmdletBinding()]
 	param (
-		[Parameter(ValueFromPipeline,Mandatory=$true)]
+		[Parameter(Mandatory,ParameterSetName='Notification', Position=0, ValueFromPipeline)]
 		$Payload,
-		$Uri,
+		[Parameter(Mandatory,ParameterSetName='Ping', Position=0)]
+		[Switch]$Ping,
+		[Parameter(Mandatory,ParameterSetName='Notification', Position=1)]
+		[Parameter(Mandatory,ParameterSetName='Ping', Position=1, ValueFromPipeline)]
+		[String]$Uri,
 		$JSONPayload = $false
 	)
 

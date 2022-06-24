@@ -16,6 +16,9 @@
         "telegram": {
             "bot_token": "TelegramBotToken",
             "chat_id": "TelegramChatID"
+        },
+        "ping": {
+            "webhook": "PingWebhook"
         }
     },
     "mentions": {
