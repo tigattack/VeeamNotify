@@ -223,8 +223,13 @@ Else {
 	}
 }
 
-# Sanitise releaseName for OutFile
-$outFile = "$project-$($releaseName -replace '[\W]','-')"
+# Sanitise releaseName for OutFile if installing from branch
+If ($Branch) {
+	$outFile = "$project-$($releaseName -replace '[\W]','-')"
+}
+Else {
+	$outFile = "$project-$releaseName"
+}
 
 # Download project from GitHub
 $DownloadParams = @{
