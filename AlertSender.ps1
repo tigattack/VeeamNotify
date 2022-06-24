@@ -352,7 +352,7 @@ try {
 			$serviceName = $textInfo.ToTitleCase($service.Name)
 			If ($service.Value.webhook.StartsWith('https')) {
 				# Firstly check if service is ping, as the fields are different.
-				If ($service.Name -eq "Ping") {
+				If ($service.Name -eq 'Ping') {
 					Write-LogMessage -Tag 'INFO' -Message 'Sending HTTP Ping..'
 					$logId_service = $vbrSessionLogger.AddLog('[VeeamNotify] Sending HTTP Ping..')
 
