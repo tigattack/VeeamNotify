@@ -398,6 +398,7 @@ If (-not $NonInteractive) {
 }
 Else {
 	Write-Output "`nWill not prompt for VeeamNotify configuration, or to run Veeam configuration deployment script in non-interactive mode.`n"
+	Write-Output "`nConfiguration can be found in `"$configPath`"."
 }
 
 Write-Output "`nInstallation complete!`n"
