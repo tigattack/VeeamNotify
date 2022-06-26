@@ -1,5 +1,5 @@
 param(
-	[String]$InstallPath = 'C:\VeeamScripts'
+	[String]$InstallParentPath = 'C:\VeeamScripts'
 )
 <#
 TODO:
@@ -25,7 +25,7 @@ function DeploymentError {
 }
 
 # Post-job script for VeeamNotify
-$newPostScriptCmd = "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -ExecutionPolicy Bypass -File $InstallPath\VeeamNotify\Bootstrap.ps1"
+$newPostScriptCmd = "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -ExecutionPolicy Bypass -File $InstallParentPath\VeeamNotify\Bootstrap.ps1"
 
 # Import Veeam module
 Import-Module Veeam.Backup.PowerShell -DisableNameChecking
