@@ -16,7 +16,7 @@ param (
 	[Parameter(ParameterSetName = 'Version', Position = 1)]
 	[Parameter(ParameterSetName = 'Release', Position = 1)]
 	[Parameter(ParameterSetName = 'Branch', Position = 1)]
-	[String]$InstallParentPath = 'C:\VeeamScripts',
+	[String]$InstallPath = 'C:\VeeamScripts',
 
 	[Parameter(ParameterSetName = 'Version', Position = 2)]
 	[Parameter(ParameterSetName = 'Release', Position = 2)]
@@ -37,8 +37,8 @@ Write-Output @'
 '@
 
 # Check if this project is already installed and if so, exit
-if (Test-Path "$InstallParentPath\$project") {
-	$installedVersion = (Get-Content -Raw "$InstallParentPath\$project\resources\version.txt").Trim()
+if (Test-Path "$InstallPath\$project") {
+	$installedVersion = (Get-Content -Raw "$InstallPath\$project\resources\version.txt").Trim()
 	Write-Output "`n$project ($installedVersion) is already installed. This script cannot update an existing installation."
 	Write-Output "Please manually update or delete/rename the existing installation and retry.`n`n"
 	exit
@@ -254,22 +254,22 @@ try {
 }
 catch {
 	Write-Warning 'Failed to unblock downloaded files. You will need to run the following commands manually once installation is complete:'
-	Write-Output "Get-ChildItem -Path $InstallParentPath -Filter *.ps* -Recurse | Unblock-File"
+	Write-Output "Get-ChildItem -Path $InstallPath -Filter *.ps* -Recurse | Unblock-File"
 }
 
 # Extract release to destination path
-Write-Output "Extracting files to '$InstallParentPath'..."
-Expand-Archive -Path "$env:TEMP\$outFile.zip" -DestinationPath "$InstallParentPath" -Force
+Write-Output "Extracting files to '$InstallPath'..."
+Expand-Archive -Path "$env:TEMP\$outFile.zip" -DestinationPath "$InstallPath" -Force
 
 # Rename destination and tidy up
 Write-Output 'Renaming directory and tidying up...'
-If (Test-Path "$InstallParentPath\$outFile") {
-	Rename-Item -Path "$InstallParentPath\$outFile" -NewName "$project"
+If (Test-Path "$InstallPath\$outFile") {
+	Rename-Item -Path "$InstallPath\$outFile" -NewName "$project"
 }
 Else {
 	# Necessary to handle branch downloads, which come as a ZIP containing a directory named similarly to "tigattack-VeeamNotify-2100906".
 	# Look for a directory less than 5 minutes old which matches the example name stated above.
-	(Get-ChildItem $InstallParentPath | Where-Object {
+	(Get-ChildItem $InstallPath | Where-Object {
 		$_.LastWriteTime -gt (Get-Date).AddMinutes(-5) -and
 		$_.Name -match "tigattack-$project-.*" -and
 		$_.PsIsContainer
@@ -281,7 +281,7 @@ Remove-Item -Path "$env:TEMP\$outFile.zip"
 If (-not $NonInteractive) {
 	Write-Output "`nBeginning configuration..."
 	# Get config
-	$config = Get-Content "$InstallParentPath\$project\config\conf.json" -Raw | ConvertFrom-Json
+	$config = Get-Content "$InstallPath\$project\config\conf.json" -Raw | ConvertFrom-Json
 
 	# Prompt user with config options
 	$servicePrompt_discord = New-Object System.Management.Automation.Host.ChoiceDescription '&Discord', 'Send notifications to Discord.'
@@ -366,11 +366,11 @@ If (-not $NonInteractive) {
 	# Write config
 	Try {
 		Write-Output "`nSetting configuration..."
-		ConvertTo-Json $config | Set-Content "$InstallParentPath\$project\config\conf.json"
-		Write-Output "`nConfiguration set successfully. Configuration can be found in `"$InstallParentPath\$project\config\conf.json`"."
+		ConvertTo-Json $config | Set-Content "$InstallPath\$project\config\conf.json"
+		Write-Output "`nConfiguration set successfully. Configuration can be found in `"$InstallPath\$project\config\conf.json`"."
 	}
 	catch {
-		Write-Warning "Failed to write configuration file at `"$InstallParentPath\$project\config\conf.json`". Please open the file and complete configuration manually."
+		Write-Warning "Failed to write configuration file at `"$InstallPath\$project\config\conf.json`". Please open the file and complete configuration manually."
 	}
 
 	# Query for configuration deployment script.
@@ -387,7 +387,7 @@ If (-not $NonInteractive) {
 	) | ForEach-Object {
 		If ($_ -eq 0) {
 			Write-Output "`nRunning configuration deployment script...`n"
-			& "$InstallParentPath\$project\resources\DeployVeeamConfiguration.ps1" -InstallParentPath $InstallParentPath
+			& "$InstallPath\$project\resources\DeployVeeamConfiguration.ps1" -InstallPath $InstallPath
 		}
 	}
 
