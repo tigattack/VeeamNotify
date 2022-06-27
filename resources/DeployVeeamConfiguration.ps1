@@ -1,11 +1,6 @@
 param(
 	[String]$InstallParentPath = 'C:\VeeamScripts'
 )
-<#
-TODO:
-Refactor; much of both foreach loops is repeated, need more functions.
-Sort by name L43
-#>
 
 # Function to be used when an error is encountered
 function DeploymentError {
@@ -41,7 +36,7 @@ Import-Module Veeam.Backup.PowerShell -DisableNameChecking
 # Get all supported jobs
 $backupJobs = Get-VBRJob -WarningAction SilentlyContinue | Where-Object {
 	$_.JobType -in 'Backup', 'Replica', 'EpAgentBackup'
-}
+} | Sort-Object -Property Name, Type
 
 # Make sure we found some jobs
 if ($backupJobs.Count -eq 0) {
@@ -51,7 +46,7 @@ if ($backupJobs.Count -eq 0) {
 }
 else {
 	Write-Output "Found $($backupJobs.count) supported jobs:"
-	Format-Table -InputObject $backupJobs -Property Name, @{Name = 'Type'; Expression = { $_.TypeToString } } -AutoSize
+	$backupJobs | Format-Table -Property Name, @{Name = 'Type'; Expression = { $_.TypeToString } } -AutoSize
 }
 
 # Query config backup
