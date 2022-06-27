@@ -14,18 +14,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Update Pester
-        shell: powershell
-        run: |
-          $module = Get-Module -Name Pester
-          $module | Remove-Module -Force
-          $module | Update-Module -Force
-          Import-Module -Name Pester -Force -PassThru
-
       - name: Run Pester
         shell: powershell
         run: |
-          Import-Module -Name Pester
+          Get-Module -Name 'Pester' -ListAvailable | Sort-Object -Property 'Version' -Descending | Select-Object -First 1 | Import-Module
           $pesterConfig = Get-Content .\tests\PesterPreference.ps1 -Raw | Invoke-Expression
           Invoke-Pester -Configuration $pesterConfig
 

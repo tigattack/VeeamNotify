@@ -1,18 +1,13 @@
 param(
-	[String]$InstallPath = 'C:\VeeamScripts'
+	[String]$InstallParentPath = 'C:\VeeamScripts'
 )
-<#
-TODO:
-Refactor; much of both foreach loops is repeated, need more functions.
-Sort by name L43
-#>
 
 # Function to be used when an error is encountered
 function DeploymentError {
 	$issues = 'https://github.com/tigattack/VeeamNotify/issues'
 
-	Write-Output "An error occured: $($_.ScriptStackTrace)"
-	Write-Output "Please raise an issue at $issues"
+	Write-Output "An error occured $($_.ScriptStackTrace.Split("`n")[0]): $($_.Exception.Message)"
+	Write-Output "`nPlease raise an issue at $issues"
 
 	$launchIssuesPrompt_yes = New-Object System.Management.Automation.Host.ChoiceDescription '&Yes', 'Open a new issue'
 	$launchIssuesPrompt_no = New-Object System.Management.Automation.Host.ChoiceDescription '&No', 'Do nothing'
@@ -25,7 +20,15 @@ function DeploymentError {
 }
 
 # Post-job script for VeeamNotify
-$newPostScriptCmd = "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -ExecutionPolicy Bypass -File $InstallPath\VeeamNotify\Bootstrap.ps1"
+# Get PowerShell path
+try {
+	$powershellExePath = (Get-Command -Name 'powershell.exe' -ErrorAction Stop).Path
+}
+catch {
+	DeploymentError
+}
+
+$newPostScriptCmd = "$powershellExePath -ExecutionPolicy Bypass -File $(Join-Path -Path "$InstallParentPath" -ChildPath 'VeeamNotify\Bootstrap.ps1')"
 
 # Import Veeam module
 Import-Module Veeam.Backup.PowerShell -DisableNameChecking
@@ -33,7 +36,7 @@ Import-Module Veeam.Backup.PowerShell -DisableNameChecking
 # Get all supported jobs
 $backupJobs = Get-VBRJob -WarningAction SilentlyContinue | Where-Object {
 	$_.JobType -in 'Backup', 'Replica', 'EpAgentBackup'
-}
+} | Sort-Object -Property Name, Type
 
 # Make sure we found some jobs
 if ($backupJobs.Count -eq 0) {
@@ -43,7 +46,7 @@ if ($backupJobs.Count -eq 0) {
 }
 else {
 	Write-Output "Found $($backupJobs.count) supported jobs:"
-	Format-Table -InputObject $backupJobs -Property Name, @{Name = 'Type'; Expression = { $_.TypeToString } } -AutoSize
+	$backupJobs | Format-Table -Property Name, @{Name = 'Type'; Expression = { $_.TypeToString } } -AutoSize
 }
 
 # Query config backup

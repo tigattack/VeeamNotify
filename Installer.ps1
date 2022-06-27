@@ -280,8 +280,12 @@ Remove-Item -Path "$env:TEMP\$outFile.zip"
 
 If (-not $NonInteractive) {
 	Write-Output "`nBeginning configuration..."
+
+	# Join config path
+	$configPath = Join-Path -Path $InstallParentPath -ChildPath $project | Join-Path -ChildPath 'config\conf.json'
+
 	# Get config
-	$config = Get-Content "$InstallParentPath\$project\config\conf.json" -Raw | ConvertFrom-Json
+	$config = Get-Content "$configPath" -Raw | ConvertFrom-Json
 
 	# Prompt user with config options
 	$servicePrompt_discord = New-Object System.Management.Automation.Host.ChoiceDescription '&Discord', 'Send notifications to Discord.'
@@ -366,11 +370,11 @@ If (-not $NonInteractive) {
 	# Write config
 	Try {
 		Write-Output "`nSetting configuration..."
-		ConvertTo-Json $config | Set-Content "$InstallParentPath\$project\config\conf.json"
-		Write-Output "`nConfiguration set successfully. Configuration can be found in `"$InstallParentPath\$project\config\conf.json`"."
+		ConvertTo-Json $config | Set-Content "$configPath"
+		Write-Output "`nConfiguration set successfully. Configuration can be found in `"$configPath`"."
 	}
 	catch {
-		Write-Warning "Failed to write configuration file at `"$InstallParentPath\$project\config\conf.json`". Please open the file and complete configuration manually."
+		Write-Warning "Failed to write configuration file at `"$configPath`". Please open the file and complete configuration manually."
 	}
 
 	# Query for configuration deployment script.
@@ -394,6 +398,7 @@ If (-not $NonInteractive) {
 }
 Else {
 	Write-Output "`nWill not prompt for VeeamNotify configuration, or to run Veeam configuration deployment script in non-interactive mode.`n"
+	Write-Output "`nConfiguration can be found in `"$configPath`"."
 }
 
 Write-Output "`nInstallation complete!`n"
