@@ -11,8 +11,8 @@ Sort by name L43
 function DeploymentError {
 	$issues = 'https://github.com/tigattack/VeeamNotify/issues'
 
-	Write-Output "An error occured: $($_.ScriptStackTrace)"
-	Write-Output "Please raise an issue at $issues"
+	Write-Output "An error occured $($_.ScriptStackTrace.Split("`n")[0]): $($_.Exception.Message)"
+	Write-Output "`nPlease raise an issue at $issues"
 
 	$launchIssuesPrompt_yes = New-Object System.Management.Automation.Host.ChoiceDescription '&Yes', 'Open a new issue'
 	$launchIssuesPrompt_no = New-Object System.Management.Automation.Host.ChoiceDescription '&No', 'Do nothing'
