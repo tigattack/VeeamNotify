@@ -17,6 +17,7 @@ function DeploymentError {
 	if ($launchIssuesPrompt_result -eq 1) {
 		Start-Process "$issues/new?assignees=tigattack&labels=bug&template=bug_report.yml&title=[BUG]+Veeam%20configuration%20deployment%20error"
 	}
+	exit 1
 }
 
 # Post-job script for VeeamNotify
