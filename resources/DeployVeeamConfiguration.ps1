@@ -25,7 +25,15 @@ function DeploymentError {
 }
 
 # Post-job script for VeeamNotify
-$newPostScriptCmd = "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -ExecutionPolicy Bypass -File $InstallParentPath\VeeamNotify\Bootstrap.ps1"
+# Get PowerShell path
+try {
+	$powershellExePath = (Get-Command -Name 'powershell.exe' -ErrorAction Stop).Path
+}
+catch {
+	DeploymentError
+}
+
+$newPostScriptCmd = "$powershellExePath -ExecutionPolicy Bypass -File $(Join-Path -Path "$InstallParentPath" -ChildPath 'VeeamNotify\Bootstrap.ps1')"
 
 # Import Veeam module
 Import-Module Veeam.Backup.PowerShell -DisableNameChecking
