@@ -30,6 +30,8 @@ catch {
 
 $newPostScriptCmd = "$powershellExePath -ExecutionPolicy Bypass -File $(Join-Path -Path "$InstallParentPath" -ChildPath 'VeeamNotify\Bootstrap.ps1')"
 
+Write-Output "Importing Veeam module and discovering supported jobs, please wait...`n"
+
 # Import Veeam module
 Import-Module Veeam.Backup.PowerShell -DisableNameChecking
 
