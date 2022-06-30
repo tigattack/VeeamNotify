@@ -363,15 +363,24 @@ try {
 					Write-LogMessage -Tag 'DEBUG' -Message 'Getting user ID for mention.'
 					$payloadParams.UserId = $service.Value.user_id
 
-					# Get username if Teams
+					# Set username if exists
 					If ($service.Value.user_name -and $service.Value.user_name -ne 'Your Name') {
-						Write-LogMessage -Tag 'DEBUG' -Message 'Getting Teams user name for mention.'
+						Write-LogMessage -Tag 'DEBUG' -Message 'Setting user name for mention.'
 						$payloadParams.UserName = $service.Value.user_name
 					}
 				}
 
+				# Generate URI if service is telegram
+				If ($service.Name -eq 'telegram') {
+					$uri = "https://api.telegram.org/bot$($service.token)/sendMessage?chat_id=$($service.chat_id)&parse_mode=MarkdownV2&text=MSG_PLACEHOLDER"
+				}
+				# Otherwise set it to the value of the webhook key
+				Else {
+					$uri = $service.Value.webhook
+				}
+
 				Try {
-					New-Payload -Service $service.Name -Parameters $payloadParams | Send-Payload -Uri $service.Value.webhook | Out-Null
+					New-Payload -Service $service.Name -Parameters $payloadParams | Send-Payload -Uri $uri | Out-Null
 
 					Write-LogMessage -Tag 'INFO' -Message "Notification sent to $serviceName successfully."
 					$vbrSessionLogger.UpdateSuccess($logId_service, "[VeeamNotify] Sent notification to $($serviceName).") | Out-Null
