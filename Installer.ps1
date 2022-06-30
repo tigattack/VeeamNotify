@@ -1,13 +1,51 @@
+<#
+	.SYNOPSIS
+	Installer script for VeeamNotify.
+	.DESCRIPTION
+	Installs VeeamNotify from one of the following:
+		1) Latest release;
+		2) Latest prerelease;
+		3) Specific version;
+		4) A named branch.
+	This script can also optionally launch a deployment script to apply the VeeamNotify configuration to all or selected Veeam jobs. You will be prompted for this after installation.
+	.PARAMETER Latest
+	Choose between "Release" or "Prerelease" to install the latest release or prerelease.
+	.PARAMETER Version
+	Specify a version to install (e.g. 'v1.0').
+	.PARAMETER Branch
+	Specify a branch name to install from. Useful for testing.
+	.PARAMETER NonInteractive
+	Switch for noninteractive installation. No prompts to choose versions or configurations will appear when specified, and one of the above parameters must also be specified.
+	.PARAMETER InstallParentPath
+	Path to Telegraf destination directory. Defaults to 'C:\VeeamScripts'.
+	.INPUTS
+	None.
+	.OUTPUTS
+	None.
+	.EXAMPLE
+	PS> Installer.ps1
+	.EXAMPLE
+	PS> Installer.ps1 -Latest release
+	.EXAMPLE
+	PS> Installer.ps1 -Version 'v1.0' -NonInteractive
+	.NOTES
+	Authors: tigattack, philenst
+	.LINK
+	https://github.com/tigattack/VeeamNotify/wiki
+#>
+
 #Requires -RunAsAdministrator
 
 [CmdletBinding(DefaultParameterSetName='None')]
-param (
+param(
 	[Parameter(ParameterSetName = 'Version', Position = 0, Mandatory = $true)]
-	[ValidatePattern('^v(\d+\.)?(\d+\.)?(\*|\d+)$')]
+	# Built-in parameter validation disabled - See https://github.com/tigattack/VeeamNotify/issues/50
+	# [ValidatePattern('^v(\d+\.)?(\d+\.)?(\*|\d+)$')]
 	[String]$Version,
 
 	[Parameter(ParameterSetName = 'Release', Position = 0, Mandatory = $true)]
-	[ValidateSet('Release', 'Prerelease')]
+	# Built-in parameter validation disabled - See https://github.com/tigattack/VeeamNotify/issues/50
+	# [ValidateSet('Release', 'Prerelease')]
 	[String]$Latest,
 
 	[Parameter(ParameterSetName = 'Branch', Position = 0, Mandatory = $true)]
@@ -44,6 +82,14 @@ if (Test-Path "$InstallParentPath\$project") {
 	exit
 }
 
+If ($Version -and $Version -notmatch '^v(\d+\.)?(\d+\.)?(\*|\d+)$') {
+	Write-Warning "Version parameter value '$Version' does not match the version naming structure."
+	exit 1
+}
+If ($Latest -and $Latest -notin 'Release', 'Prerelease') {
+	Write-Warning "Latest parameter value must be one of 'Release' or 'Prelease'."
+	exit 1
+}
 
 # Get releases and branches from GitHub
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
