@@ -12,6 +12,9 @@
             "webhook": "TeamsWebhook",
             "user_id": "user@domain.tld",
             "user_name": "Your Name"
+        },
+        "ping": {
+            "webhook": "PingWebhook"
         }
     },
     "mentions": {
