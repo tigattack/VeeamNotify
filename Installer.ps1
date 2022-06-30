@@ -1,13 +1,15 @@
 #Requires -RunAsAdministrator
 
 [CmdletBinding(DefaultParameterSetName='None')]
-param (
+param(
 	[Parameter(ParameterSetName = 'Version', Position = 0, Mandatory = $true)]
-	[ValidatePattern('^v(\d+\.)?(\d+\.)?(\*|\d+)$')]
+	# Built-in parameter validation disabled - See https://github.com/tigattack/VeeamNotify/issues/50
+	# [ValidatePattern('^v(\d+\.)?(\d+\.)?(\*|\d+)$')]
 	[String]$Version,
 
 	[Parameter(ParameterSetName = 'Release', Position = 0, Mandatory = $true)]
-	[ValidateSet('Release', 'Prerelease')]
+	# Built-in parameter validation disabled - See https://github.com/tigattack/VeeamNotify/issues/50
+	# [ValidateSet('Release', 'Prerelease')]
 	[String]$Latest,
 
 	[Parameter(ParameterSetName = 'Branch', Position = 0, Mandatory = $true)]
@@ -44,6 +46,14 @@ if (Test-Path "$InstallParentPath\$project") {
 	exit
 }
 
+If ($Version -and $Version -notmatch '^v(\d+\.)?(\d+\.)?(\*|\d+)$') {
+	Write-Warning "Version parameter value '$Version' does not match the version naming structure."
+	exit 1
+}
+If ($Latest -and $Latest -notin 'Release', 'Prerelease') {
+	Write-Warning "Latest parameter value must be one of 'Release' or 'Prelease'."
+	exit 1
+}
 
 # Get releases and branches from GitHub
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
