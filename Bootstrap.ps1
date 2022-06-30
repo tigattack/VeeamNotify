@@ -101,9 +101,10 @@ $vbrSessionLogger.UpdateSuccess($vbrLogEntry, '[VeeamNotify] Parsed job & sessio
 # Start a new new script in a new process with some of the information gathered here.
 # This allows Veeam to finish the current session faster and allows us gather information from the completed job.
 try {
+	$powershellExePath = (Get-Command -Name 'powershell.exe' -ErrorAction Stop).Path
 	Write-LogMessage -Tag 'INFO' -Message 'Launching AlertSender.ps1...'
 	$vbrLogEntry = $vbrSessionLogger.AddLog('[VeeamNotify] Launching Alert Sender...')
-	Start-Process -FilePath 'powershell' -Verb runAs -ArgumentList $powershellArguments -WindowStyle hidden -ErrorAction Stop
+	Start-Process -FilePath "$powershellExePath" -Verb runAs -ArgumentList $powershellArguments -WindowStyle hidden -ErrorAction Stop
 	Write-LogMessage -Tag 'INFO' -Message 'AlertSender.ps1 launched successfully.'
 	$vbrSessionLogger.UpdateSuccess($vbrLogEntry, '[VeeamNotify] Launched Alert Sender.') | Out-Null
 }
