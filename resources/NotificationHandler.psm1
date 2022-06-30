@@ -20,6 +20,9 @@ function New-Payload {
 		'Teams' {
 			New-TeamsPayload @Parameters
 		}
+		'Telegram' {
+			New-TelegramPayload @Parameters
+		}
 		Default {
 			Write-LogMessage -Tag 'ERROR' -Message "Unknown service: $Service"
 		}
@@ -678,6 +681,107 @@ function New-SlackPayload {
 
 	return $payload
 }
+
+function New-TelegramPayload {
+	[CmdletBinding()]
+	[OutputType([string])]
+	param (
+		[string]$JobName,
+		[string]$JobType,
+		[string]$Status,
+		[string]$DataSize,
+		[string]$TransferSize,
+		[string]$ProcessedSize,
+		[int]$DedupRatio,
+		[int]$CompressRatio,
+		[string]$Speed,
+		[string]$Bottleneck,
+		[string]$Duration,
+		[DateTime]$StartTime,
+		[DateTime]$EndTime,
+		[boolean]$Mention,
+		[string]$UserId,
+		[string]$FooterMessage,
+		[boolean]$UpdateNotification,
+		[string]$LatestVersion
+	)
+
+	# Mention user if configured to do so.
+	# Must be done at early stage to ensure this section is at the top of the embed object.
+	If ($mention) {
+		$message =  "[$UserName](tg://user?id=$UserId) Job $($Status.ToLower())!`n"
+	}
+	else {
+		$message = ''
+	}
+
+	# Build payload object.
+	$message += "*$JobName*`n`n*Session result:* $Status ☑️`n*Job type:* $JobType`n`n"
+
+	# Set timestamps
+	$timestampStart = $(Get-Date $StartTime -UFormat '%d %B %Y %R').ToString()
+	$timestampEnd = $(Get-Date $EndTime -UFormat '%d %B %Y %R').ToString()
+
+	# Build blocks object.
+	if (-not ($JobType.EndsWith('Agent Backup'))) {
+		$message += @"
+*Backup Size:* $DataSize
+*Transferred Data:* $TransferSize
+*Dedup Ratio:* $DedupRatio
+*Compression Ratio:* $CompressRatio
+*Processing Rate:* $Speed
+*Bottleneck:* $Bottleneck
+*Start Time:* $timestampStart
+*End Time:* $timestampEnd
+*Duration:* $Duration
+"@
+	}
+
+	elseif ($JobType.EndsWith('Agent Backup')) {
+		$message += @"
+*Processed Size:* $ProcessedSize
+*Transferred Data:* $TransferSize
+*Processing Rate:* $Speed
+*Bottleneck:* $Bottleneck
+*Start Time:* $timestampStart
+*End Time:* $timestampEnd
+*Duration:* $Duration
+"@
+	}
+
+	# Add footer to payload object.
+	$message += "`n`n$FooterMessage"
+
+	# Add update notice if relevant and configured to do so.
+	If ($UpdateNotification) {
+		# Add block to payload.
+		$message += "`nA new version of VeeamNotify is available! See release [*$LatestVersion* on GitHub](https://github.com/tigattack/VeeamNotify/releases/$LatestVersion)."
+	}
+
+	# https://core.telegram.org/bots/api#markdownv2-style
+	$escapes = '_', '[', ']', '(', ')', '~', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!'
+
+	foreach ($char in $escapes) {
+		$message = $message.Replace("$char", "\$char")
+	}
+
+	return $message
+}
+
+# $message = New-TelegramPayload @jobData
+
+# # Build post parameters
+# $postParams = @{
+# 	Uri         = "https://api.telegram.org/bot$($token)/sendMessage"
+# 	Body 		= @{ chat_id = "$chatId"; parse_mode = 'MarkdownV2'; text = $message }
+# 	Method      = 'Post'
+# 	ContentType = 'application/x-www-form-urlencoded'
+# 	ErrorAction = 'Continue'
+# }
+
+# # Post payload
+# [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+# Invoke-RestMethod @postParams
 
 function Send-Payload {
 	[CmdletBinding()]
