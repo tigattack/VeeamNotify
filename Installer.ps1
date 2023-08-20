@@ -75,11 +75,17 @@ Write-Output @'
 '@
 
 # Check if this project is already installed and if so, exit
-if (Test-Path "$InstallParentPath\$project") {
+if (Test-Path "$InstallParentPath\$project\resources\version.txt") {
 	$installedVersion = (Get-Content -Raw "$InstallParentPath\$project\resources\version.txt").Trim()
 	Write-Output "`n$project ($installedVersion) is already installed. This script cannot update an existing installation."
 	Write-Output "Please manually update or delete/rename the existing installation and retry.`n`n"
-	exit
+	exit 1
+}
+elseif ((Test-Path "$InstallParentPath\$project") -and (Get-ChildItem "$InstallParentPath\$project").Count -gt 0) {
+	"`nThe install path ($InstallParentPath\$project) already exists with children, " `
+		+ "but an existing installation couldn't be detected (looking for $InstallParentPath\$project\resources\version.txt)." | Write-Output
+	Write-Output "Please remove the install path and retry.`n`n"
+	exit 1
 }
 
 If ($Version -and $Version -notmatch '^v(\d+\.)?(\d+\.)?(\*|\d+)$') {
