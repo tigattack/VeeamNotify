@@ -25,9 +25,9 @@ Function Get-VBRSessionInfo {
 			# Agent job
 			{$_ -eq 'EpAgentBackup'} {
 				# Fetch current session to load .NET module
-                # It appears some of the underlying .NET items are lazy-loaded, so this is necessary
-                # to load in whatever's required to utilise the GetByOriginalSessionId method.
-                # See https://forums.veeam.com/powershell-f26/want-to-capture-running-jobs-by-session-type-i-e-sobr-tiering-t75583.html#p486295
+				# It appears some of the underlying .NET items are lazy-loaded, so this is necessary
+				# to load in whatever's required to utilise the GetByOriginalSessionId method.
+				# See https://forums.veeam.com/powershell-f26/want-to-capture-running-jobs-by-session-type-i-e-sobr-tiering-t75583.html#p486295
 				Get-VBRSession -Id $SessionId | Out-Null
 				# Get the session details.
 				$session = [Veeam.Backup.Core.CBackupSession]::GetByOriginalSessionId($SessionId)
