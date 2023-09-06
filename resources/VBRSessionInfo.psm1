@@ -25,7 +25,7 @@ Function Get-VBRSessionInfo {
 			# Agent job
 			{$_ -eq 'EpAgentBackup'} {
    				# Fetch current session to load .NET module
-       				Get-VBRSession -Id $SessionId | Out-Null
+       			Get-VBRSession -Id $SessionId | Out-Null
 				# Get the session details.
 				$session = [Veeam.Backup.Core.CBackupSession]::GetByOriginalSessionId($SessionId)
 
