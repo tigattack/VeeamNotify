@@ -3,7 +3,7 @@ function New-Payload {
 	[OutputType([System.Collections.Hashtable])]
 	param (
 		[Parameter(Mandatory=$true)]
-		[ValidateSet('Discord', 'Slack', 'Teams')]
+		[ValidateSet('Discord', 'Slack', 'Teams', 'Telegram')]
 		[string]$Service,
 
 		[Parameter(Mandatory=$true)]
@@ -701,6 +701,7 @@ function New-TelegramPayload {
 		[DateTime]$EndTime,
 		[boolean]$Mention,
 		[string]$UserId,
+		[string]$ThumbnailUrl,
 		[string]$FooterMessage,
 		[boolean]$UpdateNotification,
 		[string]$LatestVersion
@@ -716,7 +717,7 @@ function New-TelegramPayload {
 	}
 
 	# Build payload object.
-	$message += "*$JobName*`n`n*Session result:* $Status ☑️`n*Job type:* $JobType`n`n"
+	$message += "*$JobName*`n`n*Session result:* $Status`n*Job type:* $JobType`n`n"
 
 	# Set timestamps
 	$timestampStart = $(Get-Date $StartTime -UFormat '%d %B %Y %R').ToString()

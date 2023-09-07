@@ -40,12 +40,24 @@
                             "type": "string"
                         }
                     }
+                },
+                "telegram": {
+                    "type": "object",
+                    "properties": {
+                        "token": {
+                            "type": "string"
+                        },
+                        "chat_id": {
+                            "type": "string"
+                        }
+                    }
                 }
             },
             "required": [
                 "discord",
                 "slack",
-                "teams"
+                "teams",
+                "telegram"
             ]
         },
         "mentions": {
