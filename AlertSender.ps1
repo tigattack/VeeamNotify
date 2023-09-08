@@ -374,7 +374,7 @@ try {
 					$uri = $service.Value.webhook
 
 					Try {
-						New-Payload -Service $service.Name -Parameters $payloadParams | Send-Payload -Uri $uri | Out-Null
+						New-Payload -Service $service.Name -Parameters $payloadParams | Send-JSONPayload -Uri $uri | Out-Null
 
 						Write-LogMessage -Tag 'INFO' -Message "Notification sent to $serviceName successfully."
 						$vbrSessionLogger.UpdateSuccess($logId_service, "[VeeamNotify] Sent notification to $($serviceName).") | Out-Null
@@ -389,17 +389,12 @@ try {
 				}
 			}
 			else {
+				# Get URI from webhook value
 				If ($service.Name -eq 'telegram') {
-					$payload = New-Payload -Service $service.Name -Parameters $payloadParams
-					# Build post parameters
-					$postParams = @{
-						Uri         = "https://api.telegram.org/bot$($service.Value.token)/sendMessage"
-						Body        = @{ chat_id = "$($service.Value.chat_id)"; parse_mode = 'MarkdownV2'; text = $payload }
-						Method      = 'Post'
-						ContentType = 'application/x-www-form-urlencoded'
-					}
 					Try {
-						Invoke-RestMethod @postParams
+						$payload = New-Payload -Service $service.Name -Parameters $payloadParams
+						Write-LogMessage -Tag 'DEBUG' -Message "$serviceName uri: https://api.telegram.org/bot$($service.Value.token)/sendMessage"
+						Send-Payload -Uri "https://api.telegram.org/bot$($service.Value.token)/sendMessage" -Body @{ chat_id = "$($service.Value.chat_id)"; parse_mode = 'MarkdownV2'; text = $payload }
 
 						Write-LogMessage -Tag 'INFO' -Message "Notification sent to $serviceName successfully."
 						$vbrSessionLogger.UpdateSuccess($logId_service, "[VeeamNotify] Sent notification to $($serviceName).") | Out-Null

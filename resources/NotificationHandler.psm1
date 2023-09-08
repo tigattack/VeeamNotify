@@ -784,7 +784,7 @@ function New-TelegramPayload {
 # [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 # Invoke-RestMethod @postParams
 
-function Send-Payload {
+function Send-JSONPayload {
 	[CmdletBinding()]
 	param (
 		[Parameter(ValueFromPipeline)]
@@ -811,6 +811,38 @@ function Send-Payload {
 		}
 		Catch [System.Net.WebException] {
 			Write-LogMessage -Tag 'ERROR' -Message 'Unable to send webhook. Check your webhook URL or network connection.'
+			throw
+		}
+	}
+}
+
+function Send-Payload {
+	[CmdletBinding()]
+	param (
+		[Parameter(Mandatory=$true)]
+		$Body,
+		$Uri
+	)
+
+	process {
+		# Build post parameters
+		$postParams = @{
+			Uri         = $Uri
+			Body        = $Body
+			Method      = 'Post'
+			ContentType = 'application/x-www-form-urlencoded'
+			ErrorAction = 'Stop'
+		}
+
+		Try {
+			# Post payload
+			$request = Invoke-RestMethod @postParams
+
+			# Return request object
+			return $request
+		}
+		Catch [System.Net.WebException] {
+			Write-LogMessage -Tag 'ERROR' -Message 'Unable to send Payload. Check your Payload or network connection.'
 			throw
 		}
 	}
