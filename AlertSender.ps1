@@ -391,19 +391,23 @@ try {
 			else {
 				# Get URI from webhook value
 				If ($service.Name -eq 'telegram') {
-					Write-LogMessage -Tag 'INFO' -Message "Sending notification to $($serviceName)."
-					$logId_service = $vbrSessionLogger.AddLog("[VeeamNotify] Sending notification to $($serviceName)...")
-					Try {
-						$payload = New-Payload -Service $service.Name -Parameters $payloadParams
-						Write-LogMessage -Tag 'DEBUG' -Message "$serviceName uri: https://api.telegram.org/bot$($service.Value.token)/sendMessage"
-						Send-Payload -Uri "https://api.telegram.org/bot$($service.Value.token)/sendMessage" -Body @{ chat_id = "$($service.Value.chat_id)"; parse_mode = 'MarkdownV2'; text = $payload }
+					if (!($Service.Value.token -eq 'TelegramToken' -or $Service.Value.chat_id -eq 'TelegramChatID')) {
+						Write-LogMessage -Tag 'INFO' -Message "Sending notification to $($serviceName)."
+						$logId_service = $vbrSessionLogger.AddLog("[VeeamNotify] Sending notification to $($serviceName)...")
+						Try {
+							$payload = New-Payload -Service $service.Name -Parameters $payloadParams
+							Send-Payload -Uri "https://api.telegram.org/bot$($service.Value.token)/sendMessage" -Body @{ chat_id = "$($service.Value.chat_id)"; parse_mode = 'MarkdownV2'; text = $payload }
 
-						Write-LogMessage -Tag 'INFO' -Message "Notification sent to $serviceName successfully."
-						$vbrSessionLogger.UpdateSuccess($logId_service, "[VeeamNotify] Sent notification to $($serviceName).") | Out-Null
+							Write-LogMessage -Tag 'INFO' -Message "Notification sent to $serviceName successfully."
+							$vbrSessionLogger.UpdateSuccess($logId_service, "[VeeamNotify] Sent notification to $($serviceName).") | Out-Null
+						}
+						Catch {
+							Write-LogMessage -Tag 'ERROR' -Message "Unable to send $serviceName notification: $_"
+							$vbrSessionLogger.UpdateErr($logId_service, "[VeeamNotify] $serviceName notification could not be sent.", "Please check the log: $Logfile") | Out-Null
+						}
 					}
-					Catch {
-						Write-LogMessage -Tag 'ERROR' -Message "Unable to send $serviceName notification: $_"
-						$vbrSessionLogger.UpdateErr($logId_service, "[VeeamNotify] $serviceName notification could not be sent.", "Please check the log: $Logfile") | Out-Null
+					Else {
+						Write-LogMessage -Tag 'DEBUG' -Message "$serviceName is unconfigured (invalid token or chat_id). Skipping $serviceName notification."
 					}
 				}
 			}

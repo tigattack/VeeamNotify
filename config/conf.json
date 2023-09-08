@@ -14,8 +14,8 @@
             "user_name": "Your Name"
         },
         "telegram": {
-            "token": "",
-            "chat_id": ""
+            "token": "TelegramToken",
+            "chat_id": "TelegramChatID"
         }
     },
     "mentions": {
