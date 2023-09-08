@@ -352,37 +352,63 @@ try {
 			# Create variable for service name in TitleCase format.
 			$textInfo = (Get-Culture).TextInfo
 			$serviceName = $textInfo.ToTitleCase($service.Name)
+			If ($service.Value.webhook -ne $null) {
+				If ($service.Value.webhook.StartsWith('https')) {
+					Write-LogMessage -Tag 'INFO' -Message "Sending notification to $($serviceName)."
+					$logId_service = $vbrSessionLogger.AddLog("[VeeamNotify] Sending notification to $($serviceName)...")
 
-			If ($service.Value.webhook.StartsWith('https')) {
-				Write-LogMessage -Tag 'INFO' -Message "Sending notification to $($serviceName)."
-				$logId_service = $vbrSessionLogger.AddLog("[VeeamNotify] Sending notification to $($serviceName)...")
+					# Add user information for mention if relevant.
+					Write-LogMessage -Tag 'DEBUG' -Message 'Determining if user should be mentioned.'
+					If ($mention) {
+						Write-LogMessage -Tag 'DEBUG' -Message 'Getting user ID for mention.'
+						$payloadParams.UserId = $service.Value.user_id
 
-				# Add user information for mention if relevant.
-				Write-LogMessage -Tag 'DEBUG' -Message 'Determining if user should be mentioned.'
-				If ($mention) {
-					Write-LogMessage -Tag 'DEBUG' -Message 'Getting user ID for mention.'
-					$payloadParams.UserId = $service.Value.user_id
+						# Set username if exists
+						If ($service.Value.user_name -and $service.Value.user_name -ne 'Your Name') {
+							Write-LogMessage -Tag 'DEBUG' -Message 'Setting user name for mention.'
+							$payloadParams.UserName = $service.Value.user_name
+						}
+					}
 
-					# Get username if Teams
-					If ($service.Value.user_name -and $service.Value.user_name -ne 'Your Name') {
-						Write-LogMessage -Tag 'DEBUG' -Message 'Getting Teams user name for mention.'
-						$payloadParams.UserName = $service.Value.user_name
+					# Get URI from webhook value
+					$uri = $service.Value.webhook
+
+					Try {
+						New-Payload -Service $service.Name -Parameters $payloadParams | Send-Payload -Uri $uri | Out-Null
+
+						Write-LogMessage -Tag 'INFO' -Message "Notification sent to $serviceName successfully."
+						$vbrSessionLogger.UpdateSuccess($logId_service, "[VeeamNotify] Sent notification to $($serviceName).") | Out-Null
+					}
+					Catch {
+						Write-LogMessage -Tag 'ERROR' -Message "Unable to send $serviceName notification: $_"
+						$vbrSessionLogger.UpdateErr($logId_service, "[VeeamNotify] $serviceName notification could not be sent.", "Please check the log: $Logfile") | Out-Null
 					}
 				}
-
-				Try {
-					New-Payload -Service $service.Name -Parameters $payloadParams | Send-Payload -Uri $service.Value.webhook | Out-Null
-
-					Write-LogMessage -Tag 'INFO' -Message "Notification sent to $serviceName successfully."
-					$vbrSessionLogger.UpdateSuccess($logId_service, "[VeeamNotify] Sent notification to $($serviceName).") | Out-Null
-				}
-				Catch {
-					Write-LogMessage -Tag 'ERROR' -Message "Unable to send $serviceName notification: $_"
-					$vbrSessionLogger.UpdateErr($logId_service, "[VeeamNotify] $serviceName notification could not be sent.", "Please check the log: $Logfile") | Out-Null
+				Else {
+					Write-LogMessage -Tag 'DEBUG' -Message "$serviceName is unconfigured (invalid URL). Skipping $serviceName notification."
 				}
 			}
-			Else {
-				Write-LogMessage -Tag 'DEBUG' -Message "$serviceName is unconfigured (invalid URL). Skipping $serviceName notification."
+			else {
+				If ($service.Name -eq 'telegram') {
+					$payload = New-Payload -Service $service.Name -Parameters $payloadParams
+					# Build post parameters
+					$postParams = @{
+						Uri         = "https://api.telegram.org/bot$($service.Value.token)/sendMessage"
+						Body        = @{ chat_id = "$($service.Value.chat_id)"; parse_mode = 'MarkdownV2'; text = $payload }
+						Method      = 'Post'
+						ContentType = 'application/x-www-form-urlencoded'
+					}
+					Try {
+						Invoke-RestMethod @postParams
+
+						Write-LogMessage -Tag 'INFO' -Message "Notification sent to $serviceName successfully."
+						$vbrSessionLogger.UpdateSuccess($logId_service, "[VeeamNotify] Sent notification to $($serviceName).") | Out-Null
+					}
+					Catch {
+						Write-LogMessage -Tag 'ERROR' -Message "Unable to send $serviceName notification: $_"
+						$vbrSessionLogger.UpdateErr($logId_service, "[VeeamNotify] $serviceName notification could not be sent.", "Please check the log: $Logfile") | Out-Null
+					}
+				}
 			}
 		}
 
