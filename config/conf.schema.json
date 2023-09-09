@@ -44,7 +44,7 @@
                 "telegram": {
                     "type": "object",
                     "properties": {
-                        "token": {
+                        "bot_token": {
                             "type": "string"
                         },
                         "chat_id": {

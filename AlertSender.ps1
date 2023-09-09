@@ -391,7 +391,7 @@ try {
 			else {
 				# Get URI from webhook value
 				If ($service.Name -eq 'telegram') {
-					if (!($Service.Value.token -eq 'TelegramToken' -or $Service.Value.chat_id -eq 'TelegramChatID')) {
+					if (!($Service.Value.token -eq 'TelegramBotToken' -or $Service.Value.chat_id -eq 'TelegramChatID')) {
 						Write-LogMessage -Tag 'INFO' -Message "Sending notification to $($serviceName)."
 						$logId_service = $vbrSessionLogger.AddLog("[VeeamNotify] Sending notification to $($serviceName)...")
 						Try {
