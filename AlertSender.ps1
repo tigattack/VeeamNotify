@@ -391,12 +391,12 @@ try {
 			else {
 				# Get URI from webhook value
 				If ($service.Name -eq 'telegram') {
-					if (!($Service.Value.token -eq 'TelegramBotToken' -or $Service.Value.chat_id -eq 'TelegramChatID')) {
+					if (!($Service.Value.bot_token -eq 'TelegramBotToken' -or $Service.Value.chat_id -eq 'TelegramChatID')) {
 						Write-LogMessage -Tag 'INFO' -Message "Sending notification to $($serviceName)."
 						$logId_service = $vbrSessionLogger.AddLog("[VeeamNotify] Sending notification to $($serviceName)...")
 						Try {
 							$payload = New-Payload -Service $service.Name -Parameters $payloadParams
-							Send-Payload -Uri "https://api.telegram.org/bot$($service.Value.token)/sendMessage" -Body @{ chat_id = "$($service.Value.chat_id)"; parse_mode = 'MarkdownV2'; text = $payload }
+							Send-Payload -Uri "https://api.telegram.org/bot$($service.Value.bot_token)/sendMessage" -Body @{ chat_id = "$($service.Value.chat_id)"; parse_mode = 'MarkdownV2'; text = $payload }
 
 							Write-LogMessage -Tag 'INFO' -Message "Notification sent to $serviceName successfully."
 							$vbrSessionLogger.UpdateSuccess($logId_service, "[VeeamNotify] Sent notification to $($serviceName).") | Out-Null
@@ -407,7 +407,7 @@ try {
 						}
 					}
 					Else {
-						Write-LogMessage -Tag 'DEBUG' -Message "$serviceName is unconfigured (invalid token or chat_id). Skipping $serviceName notification."
+						Write-LogMessage -Tag 'DEBUG' -Message "$serviceName is unconfigured (invalid bot_token or chat_id). Skipping $serviceName notification."
 					}
 				}
 			}
