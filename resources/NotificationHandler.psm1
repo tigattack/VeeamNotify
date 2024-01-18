@@ -769,20 +769,6 @@ function New-TelegramPayload {
 	return $message
 }
 
-# $message = New-TelegramPayload @jobData
-
-# # Build post parameters
-# $postParams = @{
-# 	Uri         = "https://api.telegram.org/bot$($token)/sendMessage"
-# 	Body 		= @{ chat_id = "$chatId"; parse_mode = 'MarkdownV2'; text = $message }
-# 	Method      = 'Post'
-# 	ContentType = 'application/x-www-form-urlencoded'
-# 	ErrorAction = 'Continue'
-# }
-
-# # Post payload
-# [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-# Invoke-RestMethod @postParams
 
 function Send-JSONPayload {
 	[CmdletBinding()]
