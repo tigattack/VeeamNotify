@@ -12,6 +12,10 @@
             "webhook": "TeamsWebhook",
             "user_id": "user@domain.tld",
             "user_name": "Your Name"
+        },
+        "telegram": {
+            "bot_token": "TelegramBotToken",
+            "chat_id": "TelegramChatID"
         }
     },
     "mentions": {

@@ -11,6 +11,7 @@ VeeamNotify is a replacement for [VeeamDiscordNotifications](https://github.com/
 * Discord
 * Slack
 * Microsoft Teams
+* Telegram
 
 Please create a [feature request](https://github.com/tigattack/VeeamNotify/issues/new?assignees=tigattack&labels=enhancement&template=feature_request.yml&title=[FEAT]+New+service:+) if your preferred service isn't listed here.
 
