@@ -374,7 +374,7 @@ try {
 					$uri = $service.Value.webhook
 
 					Try {
-						New-Payload -Service $service.Name -Parameters $payloadParams | Send-JSONPayload -Uri $uri | Out-Null
+						New-Payload -Service $service.Name -Parameters $payloadParams | Send-Payload -Uri $uri -JSONPayload $true | Out-Null
 
 						Write-LogMessage -Tag 'INFO' -Message "Notification sent to $serviceName successfully."
 						$vbrSessionLogger.UpdateSuccess($logId_service, "[VeeamNotify] Sent notification to $($serviceName).") | Out-Null

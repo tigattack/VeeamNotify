@@ -769,55 +769,33 @@ function New-TelegramPayload {
 	return $message
 }
 
-
-function Send-JSONPayload {
-	[CmdletBinding()]
-	param (
-		[Parameter(ValueFromPipeline)]
-		$Payload,
-		$Uri
-	)
-
-	process {
-		# Build post parameters
-		$postParams = @{
-			Uri         = $Uri
-			Body        = ($Payload | ConvertTo-Json -Depth 11)
-			Method      = 'Post'
-			ContentType = 'application/json'
-			ErrorAction = 'Stop'
-		}
-
-		Try {
-			# Post payload
-			$request = Invoke-RestMethod @postParams
-
-			# Return request object
-			return $request
-		}
-		Catch [System.Net.WebException] {
-			Write-LogMessage -Tag 'ERROR' -Message 'Unable to send webhook. Check your webhook URL or network connection.'
-			throw
-		}
-	}
-}
-
 function Send-Payload {
 	[CmdletBinding()]
 	param (
 		[Parameter(Mandatory=$true)]
-		$Body,
-		$Uri
+		$Payload,
+		$Uri,
+		$JSONPayload = $false
 	)
 
 	process {
 		# Build post parameters
-		$postParams = @{
-			Uri         = $Uri
-			Body        = $Body
-			Method      = 'Post'
-			ContentType = 'application/x-www-form-urlencoded'
-			ErrorAction = 'Stop'
+		if ($JSONPayload) {
+			$postParams = @{
+				Uri         = $Uri
+				Body        = ($Payload | ConvertTo-Json -Depth 11)
+				Method      = 'Post'
+				ContentType = 'application/json'
+				ErrorAction = 'Stop'
+			}
+		}
+		Else {
+			$postParams = @{
+				Body        = $Body
+				Method      = 'Post'
+				ContentType = 'application/x-www-form-urlencoded'
+				ErrorAction = 'Stop'
+			}
 		}
 
 		Try {
