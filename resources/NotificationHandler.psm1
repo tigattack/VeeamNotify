@@ -283,7 +283,7 @@ function New-TeamsPayload {
 						}
 						@{
 							type     = 'TextBlock'
-							text     = "$((Get-Date -UFormat '%d %B %Y %R').ToString())"
+							text     = [System.Web.HttpUtility]::HtmlEncode((Get-Date -UFormat '%d %B %Y %R').ToString())
 							wrap     = $true
 							isSubtle = $true
 							spacing  = 'None'
@@ -354,11 +354,11 @@ function New-TeamsPayload {
 									}
 									@{
 										title = 'Start Time'
-										value = "$timestampStart"
+										value = [System.Web.HttpUtility]::HtmlEncode($timestampStart)
 									}
 									@{
 										title = 'End Time'
-										value = "$timestampEnd"
+										value = [System.Web.HttpUtility]::HtmlEncode($timestampEnd)
 									}
 									@{
 										title = 'Duration'
@@ -404,11 +404,11 @@ function New-TeamsPayload {
 							@{ type = 'FactSet'; facts = @(
 									@{
 										title = 'Start Time'
-										value = "$timestampStart"
+										value = [System.Web.HttpUtility]::HtmlEncode($timestampStart)
 									}
 									@{
 										title = 'End Time'
-										value = "$timestampEnd"
+										value = [System.Web.HttpUtility]::HtmlEncode($timestampEnd)
 									}
 									@{
 										title = 'Duration'
