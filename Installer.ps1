@@ -66,13 +66,14 @@ param(
 $project = 'VeeamNotify'
 $ErrorActionPreference = 'Stop'
 
-Write-Output @'
-#######################################
-#                                     #
-#        VeeamNotify Installer        #
-#                                     #
-#######################################
-'@
+Write-Output "
+__     __                        _   _       _   _  __
+\ \   / /__  ___  __ _ _ __ ___ | \ | | ___ | |_(_)/ _|_   _
+ \ \ / / _ \/ _ \/ _` | '_ ` _ \|  \| |/ _ \| __| | |_| | | |
+  \ V /  __/  __/ (_| | | | | | | |\  | (_) | |_| |  _| |_| |
+   \_/ \___|\___|\__,_|_| |_| |_|_| \_|\___/ \__|_|_|  \__, |
+                                                       |___/
+"
 
 # Check if this project is already installed and if so, exit
 if (Test-Path "$InstallParentPath\$project\resources\version.txt") {
