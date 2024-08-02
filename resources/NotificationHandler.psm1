@@ -772,7 +772,7 @@ function New-TelegramPayload {
 function Send-Payload {
 	[CmdletBinding()]
 	param (
-		[Parameter(Mandatory=$true)]
+		[Parameter(ValueFromPipeline,Mandatory=$true)]
 		$Payload,
 		$Uri,
 		$JSONPayload = $false
