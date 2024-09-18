@@ -120,6 +120,7 @@ function New-DiscordPayload {
 			}
 		)
 	}
+	# TODO look furhter into what detail can be pulled out that is tape specefic, eg tapes used etc
 	elseif ($JobType.EndsWith('Tape Backup')) {
 		$fieldArray = @(
 			[PSCustomObject]@{
