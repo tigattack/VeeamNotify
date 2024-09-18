@@ -8,7 +8,7 @@ $configFile = "$PSScriptRoot\config\conf.json"
 $date = (Get-Date -UFormat %Y-%m-%d_%T).Replace(':','.')
 $logFile = "$PSScriptRoot\log\$($date)_Bootstrap.log"
 $idRegex = '[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}'
-$supportedTypes = 'Backup', 'EpAgentBackup','Replica'
+$supportedTypes = 'Backup', 'EpAgentBackup','Replica','BackupToTape','FileToTape'
 
 # Start logging to file
 Start-Logging -Path $logFile
@@ -56,17 +56,25 @@ $sessionId = ([regex]::Matches($parentCmd, $idRegex)).Value[1]
 # At time of writing, there is no alternative way to discover the job time.
 Write-LogMessage -Tag 'INFO' -Message 'Getting VBR job details'
 $job = Get-VBRJob -WarningAction SilentlyContinue | Where-Object {$_.Id.Guid -eq $jobId}
+if (!$job) {
+	# Can't locate non tape job so check if it's a tape job
+	$job = Get-VBRTapejob -WarningAction SilentlyContinue | Where-Object {$_.Id.Guid -eq $jobId}
+	$JobType = $job.Type
+} else {
+	$JobType = $job.JobType
+}
+
 
 # Get the session information and name.
 Write-LogMessage -Tag 'INFO' -Message 'Getting VBR session information'
-$sessionInfo = Get-VBRSessionInfo -SessionId $sessionId -JobType $job.JobType
+$sessionInfo = Get-VBRSessionInfo -SessionId $sessionId -JobType $JobType
 $jobName = $sessionInfo.JobName
 $vbrSessionLogger = $sessionInfo.Session.Logger
 
 $vbrLogEntry = $vbrSessionLogger.AddLog('[VeeamNotify] Parsing job & session information...')
 
 # Quit if job type is not supported.
-If ($job.JobType -notin $supportedTypes) {
+If ($JobType -notin $supportedTypes) {
 	Write-LogMessage -Tag 'ERROR' -Message "Job type '$($job.JobType)' is not supported."
 	Exit 1
 }
@@ -84,7 +92,7 @@ Else {
 $newLogfile = "$PSScriptRoot\log\$($date)-$($logJobName).log"
 
 # Build argument string for the alert sender script.
-$powershellArguments = "-file $PSScriptRoot\AlertSender.ps1", "-JobName `"$jobName`"", "-Id `"$sessionId`"","-JobType `"$($job.JobType)`"", `
+$powershellArguments = "-file $PSScriptRoot\AlertSender.ps1", "-JobName `"$jobName`"", "-Id `"$sessionId`"","-JobType `"$($JobType)`"", `
 	"-Config `"$($configRaw)`"", "-Logfile `"$newLogfile`""
 
 $vbrSessionLogger.UpdateSuccess($vbrLogEntry, '[VeeamNotify] Parsed job & session information.') | Out-Null

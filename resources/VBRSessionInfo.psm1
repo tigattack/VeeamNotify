@@ -23,7 +23,7 @@ Function Get-VBRSessionInfo {
 			}
 
 			# Agent job
-			{$_ -eq 'EpAgentBackup'} {
+			{$_ -in 'EpAgentBackup','BackupToTape','FileToTape'} {
 				# Fetch current session to load .NET module
 				# It appears some of the underlying .NET items are lazy-loaded, so this is necessary
 				# to load in whatever's required to utilise the GetByOriginalSessionId method.
@@ -33,7 +33,12 @@ Function Get-VBRSessionInfo {
 				$session = [Veeam.Backup.Core.CBackupSession]::GetByOriginalSessionId($SessionId)
 
 				# Copy the job's name to it's own variable.
-				$jobName = $job.Info.Name
+				if ($JobType -eq 'EpAgentBackup') {
+					$jobName = $job.Info.Name
+				}
+				elseif ($JobType -in 'BackupToTape','FileToTape') {
+					$jobName = $job.Name
+				}
 			}
 		}
 

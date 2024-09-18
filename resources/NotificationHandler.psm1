@@ -79,7 +79,88 @@ function New-DiscordPayload {
 	}
 
 	# Build field object.
-	if (-not ($JobType.EndsWith('Agent Backup'))) {
+
+
+	if ($JobType.EndsWith('Agent Backup')) {
+		$fieldArray = @(
+			[PSCustomObject]@{
+				name   = 'Processed Size'
+				value  = $ProcessedSize
+				inline	= 'true'
+			}
+			[PSCustomObject]@{
+				name   = 'Transferred Data'
+				value  = $TransferSize
+				inline	= 'true'
+			}
+			[PSCustomObject]@{
+				name   = 'Processing Rate'
+				value  = $Speed
+				inline	= 'true'
+			}
+			[PSCustomObject]@{
+				name   = 'Bottleneck'
+				value  = $Bottleneck
+				inline = 'true'
+			}
+			[PSCustomObject]@{
+				name   = 'Start Time'
+				value  = $timestampStart
+				inline = 'true'
+			}
+			[PSCustomObject]@{
+				name   = 'End Time'
+				value  = $timestampEnd
+				inline = 'true'
+			}
+			[PSCustomObject]@{
+				name   = 'Duration'
+				value  = $Duration
+				inline = 'true'
+			}
+		)
+	}
+	elseif ($JobType.EndsWith('Tape Backup')) {
+		$fieldArray = @(
+			[PSCustomObject]@{
+				name   = 'Processed Size'
+				value  = $ProcessedSize
+				inline	= 'true'
+			}
+			[PSCustomObject]@{
+				name   = 'Transferred Data'
+				value  = $TransferSize
+				inline	= 'true'
+			}
+			[PSCustomObject]@{
+				name   = 'Processing Rate'
+				value  = $Speed
+				inline	= 'true'
+			}
+			[PSCustomObject]@{
+				name   = 'Bottleneck'
+				value  = $Bottleneck
+				inline = 'true'
+			}
+			[PSCustomObject]@{
+				name   = 'Start Time'
+				value  = $timestampStart
+				inline = 'true'
+			}
+			[PSCustomObject]@{
+				name   = 'End Time'
+				value  = $timestampEnd
+				inline = 'true'
+			}
+			[PSCustomObject]@{
+				name   = 'Duration'
+				value  = $Duration
+				inline = 'true'
+			}
+		)
+	}
+
+	else {
 		$fieldArray = @(
 			[PSCustomObject]@{
 				name   = 'Backup Size'
@@ -105,46 +186,6 @@ function New-DiscordPayload {
 				name   = 'Processing Rate'
 				value  = $Speed
 				inline = 'true'
-			}
-			[PSCustomObject]@{
-				name   = 'Bottleneck'
-				value  = $Bottleneck
-				inline = 'true'
-			}
-			[PSCustomObject]@{
-				name   = 'Start Time'
-				value  = $timestampStart
-				inline = 'true'
-			}
-			[PSCustomObject]@{
-				name   = 'End Time'
-				value  = $timestampEnd
-				inline = 'true'
-			}
-			[PSCustomObject]@{
-				name   = 'Duration'
-				value  = $Duration
-				inline = 'true'
-			}
-		)
-	}
-
-	elseif ($JobType.EndsWith('Agent Backup')) {
-		$fieldArray = @(
-			[PSCustomObject]@{
-				name   = 'Processed Size'
-				value  = $ProcessedSize
-				inline	= 'true'
-			}
-			[PSCustomObject]@{
-				name   = 'Transferred Data'
-				value  = $TransferSize
-				inline	= 'true'
-			}
-			[PSCustomObject]@{
-				name   = 'Processing Rate'
-				value  = $Speed
-				inline	= 'true'
 			}
 			[PSCustomObject]@{
 				name   = 'Bottleneck'
