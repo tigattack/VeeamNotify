@@ -60,7 +60,8 @@ if (!$job) {
 	# Can't locate non tape job so check if it's a tape job
 	$job = Get-VBRTapejob -WarningAction SilentlyContinue | Where-Object {$_.Id.Guid -eq $jobId}
 	$JobType = $job.Type
-} else {
+}
+else {
 	$JobType = $job.JobType
 }
 

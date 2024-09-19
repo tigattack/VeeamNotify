@@ -373,8 +373,8 @@ try {
 						}
 					}
 
-						# Get URI from webhook value
-						$uri = $service.Value.webhook
+					# Get URI from webhook value
+					$uri = $service.Value.webhook
 
 					Try {
 						New-Payload -Service $service.Name -Parameters $payloadParams | Send-Payload -Uri $uri -JSONPayload $true | Out-Null
