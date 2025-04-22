@@ -14,7 +14,7 @@ function Get-UpdateStatus {
 			Write-LogMessage -Tag 'WARN' -Message "Failed to query GitHub for the latest version. Please check your internet connection and try again. Status code: $versionStatusCode"
 		}
 
-		If ($releases) {
+		if ($releases) {
 			# Get latest stable
 			foreach ($i in $releases) {
 				if (-not $i.prerelease) {
@@ -41,7 +41,7 @@ function Get-UpdateStatus {
 			}
 
 			# Set version status
-			If ($currentVersion -gt $latestStable) {
+			if ($currentVersion -gt $latestStable) {
 				$status = 'Ahead'
 			}
 			elseif ($currentVersion -lt $latestStable) {
@@ -60,7 +60,7 @@ function Get-UpdateStatus {
 				Status           = $status
 			}
 		}
-		Else {
+		else {
 			# Create PSObject to return.
 			$out = New-Object PSObject -Property @{
 				CurrentVersion = $currentVersion
