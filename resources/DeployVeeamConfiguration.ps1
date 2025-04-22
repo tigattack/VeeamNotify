@@ -14,7 +14,7 @@ function DeploymentError {
 	$launchIssuesPrompt_opts = [System.Management.Automation.Host.ChoiceDescription[]]($launchIssuesPrompt_Yes, $launchIssuesPrompt_No)
 	$launchIssuesPrompt_result = $host.UI.PromptForChoice('Open a new issue', 'Do you wish to open the new issue page in your browser?', $launchIssuesPrompt_opts, -1)
 
-	If ($launchIssuesPrompt_result -eq 1) {
+	if ($launchIssuesPrompt_result -eq 1) {
 		Start-Process "$issues/new?assignees=tigattack&labels=bug&template=bug_report.yml&title=[BUG]+Veeam%20configuration%20deployment%20error"
 	}
 }
@@ -56,7 +56,7 @@ $backupChoice_opts = [System.Management.Automation.Host.ChoiceDescription[]]($ba
 $backupChoice_message = 'This script can create a Veeam configuration backup for you before making any changes. Do you want to create a backup now?'
 $backupChoice_result = $host.UI.PromptForChoice('Veeam Configuration Backup', $backupChoice_message, $backupChoice_opts, 0)
 
-If ($backupChoice_result -eq 0) {
+if ($backupChoice_result -eq 0) {
 	# Run backup
 	Write-Output "`nCreating backup, please wait..."
 	($backupResult = Start-VBRConfigurationBackupJob) | Out-Null
@@ -88,7 +88,7 @@ $configChoice_opts = [System.Management.Automation.Host.ChoiceDescription[]]($co
 $configChoice_message = 'Do you wish to configure all supported jobs, make a decision for each job, or configure none?'
 $configChoice_result = $host.UI.PromptForChoice('Job Configuration Selection', $configChoice_message, $configChoice_opts, 0)
 
-If ($configChoice_result -eq 1) {
+if ($configChoice_result -eq 1) {
 	# Run foreach loop for all found backup jobs
 	foreach ($job in $backupJobs) {
 		# Set name string
@@ -113,7 +113,7 @@ If ($configChoice_result -eq 1) {
 					Set-VBRJobOptions -Job $job -Options $jobOptions | Out-Null
 
 					Write-Output "$($jobName) is now updated."
-					Continue
+					continue
 				}
 				catch {
 					DeploymentError
@@ -123,7 +123,7 @@ If ($configChoice_result -eq 1) {
 			# skip if all correct
 			else {
 				Write-Output "`n$($jobName) is already configured for VeeamNotify; Skipping."
-				Continue
+				continue
 			}
 		}
 
@@ -173,7 +173,7 @@ If ($configChoice_result -eq 1) {
 			$setNewPostScript_message = "Do you wish to receive notifications for $($jobName) ($($job.TypeToString))?"
 			$setNewPostScript_result = $host.UI.PromptForChoice('Configure Job', $setNewPostScript_message, $setNewPostScript_opts, -1)
 
-			Switch ($setNewPostScript_result) {
+			switch ($setNewPostScript_result) {
 				# Overwrite current post-job script
 				0 {
 					try {
@@ -222,7 +222,7 @@ elseif ($configChoice_result -eq 0) {
 					Set-VBRJobOptions -Job $job -Options $jobOptions | Out-Null
 
 					Write-Output "$($jobName) is now updated."
-					Continue
+					continue
 				}
 				catch {
 					DeploymentError
@@ -232,7 +232,7 @@ elseif ($configChoice_result -eq 0) {
 			# skip if all correct
 			else {
 				Write-Output "`n$($jobName) is already configured for VeeamNotify; Skipping."
-				Continue
+				continue
 			}
 		}
 
@@ -281,7 +281,7 @@ elseif ($configChoice_result -eq 2) {
 	Write-Output 'Skipping VeeamNotify configuration deployment for all jobs.'
 }
 
-If ($MyInvocation.ScriptName -notlike '*Installer.ps1') {
+if ($MyInvocation.ScriptName -notlike '*Installer.ps1') {
 	Write-Output "`n`Finished. Exiting."
 	Start-Sleep 10
 }
