@@ -15,7 +15,7 @@
 	.PARAMETER Branch
 	Specify a branch name to install from. Useful for testing.
 	.PARAMETER NonInteractive
-	Switch for noninteractive installation. No prompts to choose versions or configurations will appear when specified, and one of the above parameters must also be specified.
+	switch for noninteractive installation. No prompts to choose versions or configurations will appear when specified, and one of the above parameters must also be specified.
 	.PARAMETER InstallParentPath
 	Path to Telegraf destination directory. Defaults to 'C:\VeeamScripts'.
 	.INPUTS
@@ -88,11 +88,11 @@ elseif ((Test-Path "$InstallParentPath\$project") -and (Get-ChildItem "$InstallP
 	exit 1
 }
 
-If ($Version -and $Version -notmatch '^v(\d+\.)?(\d+\.)?(\*|\d+)$') {
+if ($Version -and $Version -notmatch '^v(\d+\.)?(\d+\.)?(\*|\d+)$') {
 	Write-Warning "Version parameter value '$Version' does not match the version naming structure."
 	exit 1
 }
-If ($Latest -and $Latest -notin 'Release', 'Prerelease') {
+if ($Latest -and $Latest -notin 'Release', 'Prerelease') {
 	Write-Warning "Latest parameter value must be one of 'Release' or 'Prelease'."
 	exit 1
 }
@@ -125,13 +125,13 @@ foreach ($i in $releases) {
 
 
 # Query download type if not specified
-If (-not $Version -and
+if (-not $Version -and
 	-not $Latest -and
 	-not $Branch -and
 	-not $NonInteractive) {
 
 	# Query download type / release stream
-	If ($releases) {
+	if ($releases) {
 		[System.Management.Automation.Host.ChoiceDescription[]]$downloadQuery_opts = @()
 		$downloadQuery_opts += New-Object System.Management.Automation.Host.ChoiceDescription '&Release', "Download the latest release or prerelease. You will be prompted if there's a choice between the two."
 		$downloadQuery_opts += New-Object System.Management.Automation.Host.ChoiceDescription '&Version', 'Download a specific version.'
@@ -143,7 +143,7 @@ If (-not $Version -and
 			0
 		)
 	}
-	Else {
+	else {
 		$branchQuery_yes = New-Object System.Management.Automation.Host.ChoiceDescription '&Yes', 'Install from a branch.'
 		$branchQuery_no = New-Object System.Management.Automation.Host.ChoiceDescription '&No', 'Cancel installation.'
 		$host.UI.PromptForChoice(
@@ -152,15 +152,15 @@ If (-not $Version -and
 			@($branchQuery_yes, $branchQuery_no),
 			0
 		) | ForEach-Object {
-			If ($_ -eq 0) { $downloadQuery_result = 2 }
-			Else { exit }
+			if ($_ -eq 0) { $downloadQuery_result = 2 }
+			else { exit }
 		}
 	}
 
 	# Set download type
-	Switch ($downloadQuery_result) {
+	switch ($downloadQuery_result) {
 		0 {
-			If ($latestStable -and $latestPrerelease) {
+			if ($latestStable -and $latestPrerelease) {
 				# Query release stream
 				$releasePrompt = $true
 				# Query release stream
@@ -175,7 +175,7 @@ If (-not $Version -and
 					0
 				)
 
-				Switch ($versionQuery_result) {
+				switch ($versionQuery_result) {
 					0 {
 						$Latest = 'Release'
 					}
@@ -184,10 +184,10 @@ If (-not $Version -and
 					}
 				}
 			}
-			ElseIf ($latestStable) {
+			elseif ($latestStable) {
 				$Latest = 'Release'
 			}
-			ElseIf ($latestPrerelease) {
+			elseif ($latestPrerelease) {
 				$prereleaseQuery_yes = New-Object System.Management.Automation.Host.ChoiceDescription '&Yes', 'Install the latest prerelease.'
 				$prereleaseQuery_no = New-Object System.Management.Automation.Host.ChoiceDescription '&No', 'Cancel installation.'
 				$host.UI.PromptForChoice(
@@ -196,8 +196,8 @@ If (-not $Version -and
 					@($prereleaseQuery_yes, $prereleaseQuery_no),
 					0
 				) | ForEach-Object {
-					If ($_ -eq 0) { $Latest = 'Prerelease' }
-					Else { exit }
+					if ($_ -eq 0) { $Latest = 'Prerelease' }
+					else { exit }
 				}
 			}
 		}
@@ -208,7 +208,7 @@ If (-not $Version -and
 						"Please enter the version you wish to install.`nAvailable versions:`n $(foreach ($tag in $releases.tag_name) {"$tag`n"})",
 						'Version'
 					)).Version
-				If ($releases.tag_name -notcontains $Version) { Write-Output "`nInvalid version, please try again." }
+				if ($releases.tag_name -notcontains $Version) { Write-Output "`nInvalid version, please try again." }
 			} until (
 				$releases.tag_name -contains $Version
 			)
@@ -220,7 +220,7 @@ If (-not $Version -and
 						"Please enter the name of the branch you wish to install.`nAvailable branches:`n $(foreach ($branch in $branches) {"$branch`n"})",
 						'Branch'
 					)).Branch
-				If ($branches -notcontains $Branch) { Write-Output "`nInvalid branch name, please try again." }
+				if ($branches -notcontains $Branch) { Write-Output "`nInvalid branch name, please try again." }
 			} until (
 				$branches -contains $Branch
 			)
@@ -229,10 +229,10 @@ If (-not $Version -and
 }
 
 # Download branch if specified
-If ($Branch) {
+if ($Branch) {
 
 	# Throw if branch not found
-	If (-not $branches.Contains($Branch)) {
+	if (-not $branches.Contains($Branch)) {
 
 		throw "Branch '$Branch' not found. Will not prompt for branch in non-interactive mode."
 	}
@@ -245,11 +245,11 @@ If ($Branch) {
 }
 
 # Otherwise work with versions
-Else {
+else {
 
 	# Define release to use
-	If ($Latest) {
-		Switch ($Latest) {
+	if ($Latest) {
+		switch ($Latest) {
 			'Release' {
 				$releaseName = $latestStable
 			}
@@ -258,28 +258,28 @@ Else {
 			}
 		}
 	}
-	ElseIf ($Version) {
+	elseif ($Version) {
 		$releaseName = $Version
 	}
 
-	If (($Latest -or $releasePrompt) -and (-not $releaseName)) {
+	if (($Latest -or $releasePrompt) -and (-not $releaseName)) {
 		Write-Warning 'A release of the specified type could not found.'
 		exit
 	}
 
 	# Define download URL
 	$downloadUrl = Invoke-RestMethod "https://api.github.com/repos/tigattack/$project/releases" | ForEach-Object {
-		If ($_.tag_name -eq $releaseName) {
+		if ($_.tag_name -eq $releaseName) {
 			$_.assets[0].browser_download_url
 		}
 	}
 }
 
 # Sanitise releaseName for OutFile if installing from branch
-If ($Branch) {
+if ($Branch) {
 	$outFile = "$project-$($releaseName -replace '[\W]','-')"
 }
-Else {
+else {
 	$outFile = "$project-$releaseName"
 }
 
@@ -289,7 +289,7 @@ $DownloadParams = @{
 	OutFile = "$env:TEMP\$outFile.zip"
 }
 
-Try {
+try {
 	Write-Output "`nDownloading $project $releaseName from GitHub..."
 	Invoke-WebRequest @DownloadParams
 }
@@ -315,10 +315,10 @@ Expand-Archive -Path "$env:TEMP\$outFile.zip" -DestinationPath "$InstallParentPa
 
 # Rename destination and tidy up
 Write-Output 'Renaming directory and tidying up...'
-If (Test-Path "$InstallParentPath\$outFile") {
+if (Test-Path "$InstallParentPath\$outFile") {
 	Rename-Item -Path "$InstallParentPath\$outFile" -NewName "$project"
 }
-Else {
+else {
 	# Necessary to handle branch downloads, which come as a ZIP containing a directory named similarly to "tigattack-VeeamNotify-2100906".
 	# Look for a directory less than 5 minutes old which matches the example name stated above.
 	(Get-ChildItem $InstallParentPath | Where-Object {
@@ -330,7 +330,7 @@ Else {
 
 Remove-Item -Path "$env:TEMP\$outFile.zip"
 
-If (-not $NonInteractive) {
+if (-not $NonInteractive) {
 	Write-Output "`nBeginning configuration..."
 
 	# Join config path
@@ -355,7 +355,7 @@ If (-not $NonInteractive) {
 	)
 
 	$webhookPrompt = "`nPlease enter your webhook URL"
-	Switch ($servicePrompt_result) {
+	switch ($servicePrompt_result) {
 		0 {
 			$config.services.discord.webhook = Read-Host -Prompt $webhookPrompt
 		}
@@ -383,8 +383,8 @@ If (-not $NonInteractive) {
 		2
 	)
 
-	If ($mentionPreference_result -ne 0) {
-		Switch ($servicePrompt_result) {
+	if ($mentionPreference_result -ne 0) {
+		switch ($servicePrompt_result) {
 			0 {
 				$config.services.discord.user_id = Read-Host -Prompt "`nPlease enter your Discord user ID"
 			}
@@ -400,7 +400,7 @@ If (-not $NonInteractive) {
 	}
 
 	# Set config values
-	Switch ($mentionPreference_result) {
+	switch ($mentionPreference_result) {
 		0 {
 			$config.mentions.on_failure = $false
 			$config.mentions.on_warning = $false
@@ -420,7 +420,7 @@ If (-not $NonInteractive) {
 	}
 
 	# Write config
-	Try {
+	try {
 		Write-Output "`nSetting configuration..."
 		ConvertTo-Json $config | Set-Content "$configPath"
 		Write-Output "`nConfiguration set successfully. Configuration can be found in `"$configPath`"."
@@ -441,14 +441,14 @@ If (-not $NonInteractive) {
 		),
 		0
 	) | ForEach-Object {
-		If ($_ -eq 0) {
+		if ($_ -eq 0) {
 			Write-Output "`nRunning configuration deployment script...`n"
 			& "$InstallParentPath\$project\resources\DeployVeeamConfiguration.ps1" -InstallParentPath $InstallParentPath
 		}
 	}
 
 }
-Else {
+else {
 	Write-Output "`nWill not prompt for VeeamNotify configuration, or to run Veeam configuration deployment script in non-interactive mode.`n"
 	Write-Output "`nConfiguration can be found in `"$configPath`"."
 }
