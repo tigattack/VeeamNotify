@@ -22,7 +22,7 @@ jobs:
           Invoke-Pester -Configuration $pesterConfig
 
       - name: Upload test report
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         if: success() || failure()
         with:
           name: Pester-Results
