@@ -792,7 +792,7 @@ function Send-Payload {
 		}
 		Else {
 			$postParams = @{
-				Body        = $Body
+				Body        = $Payload
 				Method      = 'Post'
 				ContentType = 'application/x-www-form-urlencoded'
 				ErrorAction = 'Stop'
