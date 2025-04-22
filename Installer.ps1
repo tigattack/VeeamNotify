@@ -15,7 +15,7 @@
 	.PARAMETER Branch
 	Specify a branch name to install from. Useful for testing.
 	.PARAMETER NonInteractive
-	switch for noninteractive installation. No prompts to choose versions or configurations will appear when specified, and one of the above parameters must also be specified.
+	Switch for noninteractive installation. No prompts to choose versions or configurations will appear when specified, and one of the above parameters must also be specified.
 	.PARAMETER InstallParentPath
 	Path to Telegraf destination directory. Defaults to 'C:\VeeamScripts'.
 	.INPUTS
