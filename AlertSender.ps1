@@ -187,7 +187,7 @@ try {
 	}
 
 	# If agent backup, gather and include session info.
-	If ($jobType -eq 'EpAgentBackup') {
+	If ($jobType -in 'EpAgentBackup','BackupToTape','FileToTape') {
 		# Gather session data sizes and timings.
 		[Float]$processedSize	= $session.Info.Progress.ProcessedSize
 		[Float]$transferSize 	= $session.Info.Progress.TransferedSize
@@ -250,6 +250,8 @@ try {
 				'EEndPoint' { $jobTypeNice = 'Windows Agent Backup' }
 			}
 		}
+		FileToTape { $jobTypeNice = 'File Tape Backup' }
+		BackupToTape { $jobTypeNice = 'Repo Tape Backup' }
 	}
 
 	# Decide whether to mention user
@@ -293,15 +295,13 @@ try {
 
 
 	# Build embed parameters
-	If ($jobType -ne 'EpAgentBackup') {
+	If ($jobType -in 'EpAgentBackup','BackupToTape','FileToTape') {
 		$payloadParams = @{
 			JobName       = $jobName
 			JobType       = $jobTypeNice
 			Status        = $status
-			DataSize      = $dataSizeRound
+			ProcessedSize = $processedSizeRound
 			TransferSize  = $transferSizeRound
-			DedupRatio    = $dedupRatio
-			CompressRatio = $compressRatio
 			Speed         = $speedRound
 			Bottleneck    = $bottleneck
 			Duration      = $durationFormatted
@@ -313,13 +313,15 @@ try {
 		}
 	}
 
-	elseif ($jobType -eq 'EpAgentBackup') {
+	else {
 		$payloadParams = @{
 			JobName       = $jobName
 			JobType       = $jobTypeNice
 			Status        = $status
-			ProcessedSize = $processedSizeRound
+			DataSize      = $dataSizeRound
 			TransferSize  = $transferSizeRound
+			DedupRatio    = $dedupRatio
+			CompressRatio = $compressRatio
 			Speed         = $speedRound
 			Bottleneck    = $bottleneck
 			Duration      = $durationFormatted

@@ -79,7 +79,48 @@ function New-DiscordPayload {
 	}
 
 	# Build field object.
-	if (-not ($JobType.EndsWith('Agent Backup'))) {
+
+	# TODO look furhter into what detail can be pulled out that is tape specefic, eg tapes used etc, requires splitting out payload creation
+	if ($JobType.EndsWith('Agent Backup') -Or $JobType.EndsWith('Tape Backup')) {
+		$fieldArray = @(
+			[PSCustomObject]@{
+				name   = 'Processed Size'
+				value  = $ProcessedSize
+				inline	= 'true'
+			}
+			[PSCustomObject]@{
+				name   = 'Transferred Data'
+				value  = $TransferSize
+				inline	= 'true'
+			}
+			[PSCustomObject]@{
+				name   = 'Processing Rate'
+				value  = $Speed
+				inline	= 'true'
+			}
+			[PSCustomObject]@{
+				name   = 'Bottleneck'
+				value  = $Bottleneck
+				inline = 'true'
+			}
+			[PSCustomObject]@{
+				name   = 'Start Time'
+				value  = $timestampStart
+				inline = 'true'
+			}
+			[PSCustomObject]@{
+				name   = 'End Time'
+				value  = $timestampEnd
+				inline = 'true'
+			}
+			[PSCustomObject]@{
+				name   = 'Duration'
+				value  = $Duration
+				inline = 'true'
+			}
+		)
+	}
+	else {
 		$fieldArray = @(
 			[PSCustomObject]@{
 				name   = 'Backup Size'
@@ -105,46 +146,6 @@ function New-DiscordPayload {
 				name   = 'Processing Rate'
 				value  = $Speed
 				inline = 'true'
-			}
-			[PSCustomObject]@{
-				name   = 'Bottleneck'
-				value  = $Bottleneck
-				inline = 'true'
-			}
-			[PSCustomObject]@{
-				name   = 'Start Time'
-				value  = $timestampStart
-				inline = 'true'
-			}
-			[PSCustomObject]@{
-				name   = 'End Time'
-				value  = $timestampEnd
-				inline = 'true'
-			}
-			[PSCustomObject]@{
-				name   = 'Duration'
-				value  = $Duration
-				inline = 'true'
-			}
-		)
-	}
-
-	elseif ($JobType.EndsWith('Agent Backup')) {
-		$fieldArray = @(
-			[PSCustomObject]@{
-				name   = 'Processed Size'
-				value  = $ProcessedSize
-				inline	= 'true'
-			}
-			[PSCustomObject]@{
-				name   = 'Transferred Data'
-				value  = $TransferSize
-				inline	= 'true'
-			}
-			[PSCustomObject]@{
-				name   = 'Processing Rate'
-				value  = $Speed
-				inline	= 'true'
 			}
 			[PSCustomObject]@{
 				name   = 'Bottleneck'
@@ -373,7 +374,7 @@ function New-TeamsPayload {
 		)
 	}
 
-	elseif ($JobType.EndsWith('Agent Backup')) {
+	elseif ($JobType.EndsWith('Agent Backup') -Or $JobType.EndsWith('Tape Backup')) {
 		$bodyArray += @(
 			@{ type = 'ColumnSet'; columns = @(
 					@{ type = 'Column'; width = 'stretch'; items = @(
@@ -577,7 +578,7 @@ function New-SlackPayload {
 		)
 	}
 
-	elseif ($JobType.EndsWith('Agent Backup')) {
+	elseif ($JobType.EndsWith('Agent Backup') -Or $JobType.EndsWith('Tape Backup')) {
 		$fieldArray += @(
 			[PSCustomObject]@{
 				type = 'mrkdwn'
@@ -738,7 +739,7 @@ function New-TelegramPayload {
 "@
 	}
 
-	elseif ($JobType.EndsWith('Agent Backup')) {
+	elseif ($JobType.EndsWith('Agent Backup') -Or $JobType.EndsWith('Tape Backup')) {
 		$message += @"
 *Processed Size:* $ProcessedSize
 *Transferred Data:* $TransferSize
