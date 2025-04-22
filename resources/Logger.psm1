@@ -1,10 +1,10 @@
 # This function log messages with a type tag
-Function Write-LogMessage {
+function Write-LogMessage {
 	[CmdletBinding(
 		SupportsShouldProcess,
 		ConfirmImpact = 'Low'
 	)]
-	Param (
+	param (
 		[ValidateSet('Debug', 'Info', 'Warn', 'Error')]
 		[Parameter(Mandatory)]
 		[String]$Tag,
@@ -25,24 +25,24 @@ Function Write-LogMessage {
 	}
 
 	# Pull config if necessary to correlate logging level
-	If (-not (Get-Variable -Name 'config' -ErrorAction SilentlyContinue)) {
+	if (-not (Get-Variable -Name 'config' -ErrorAction SilentlyContinue)) {
 		$configPath = Split-Path $PSScriptRoot -Parent | Join-Path -ChildPath 'config\conf.json'
 		$config = Get-Content -Path $configPath -Raw | ConvertFrom-Json
 	}
 
 	# If config is not found, default to info
-	If ($config.logging.level -notin $Severities.Keys) {
+	if ($config.logging.level -notin $Severities.Keys) {
 		# Set if property exists
-		If ($config.logging | Get-Member -Name level) {
+		if ($config.logging | Get-Member -Name level) {
 			$config.logging.level = 'Info'
 		}
 		# Otherwise add property
-		Else {
+		else {
 			$config.logging | Add-Member -MemberType NoteProperty -Name level -Value 'Info'
 		}
 
 		# Warn if this is the first log entry
-		If ($FirstLog) {
+		if ($FirstLog) {
 			Write-Output "$time [WARNING] Logging level unset or set incorrectly in config.json. Defaulting to info level."
 		}
 	}
@@ -53,59 +53,59 @@ Function Write-LogMessage {
 	# Gets correct severity integer dependant on severity in config.
 	$ConfigSeverity = $Severities[$Config.logging.level]
 
-	If (($PSCmdlet.ShouldProcess('Output stream', 'Write log message')) -and ($ConfigSeverity -ge $Severity)) {
+	if (($PSCmdlet.ShouldProcess('Output stream', 'Write log message')) -and ($ConfigSeverity -ge $Severity)) {
 		Write-Output "$time [$($Tag.ToUpper())] $Message"
 	}
 }
 
 # These functions handle the initiation and termination of transcript logging.
-Function Start-Logging {
+function Start-Logging {
 	[CmdletBinding(
 		SupportsShouldProcess,
 		ConfirmImpact = 'Low'
 	)]
-	Param(
+	param(
 		[Parameter(Mandatory)]
 		$Path,
 		[Switch]
 		$Append
 	)
-	If ($PSCmdlet.ShouldProcess($Path, 'Start-Transcript')) {
-		Try {
+	if ($PSCmdlet.ShouldProcess($Path, 'Start-Transcript')) {
+		try {
 			Start-Transcript -Path $Path -Force -Append | Out-Null
 			Write-LogMessage -Tag 'INFO' -Message "Transcript is being logged to '$Path'." -FirstLog
 		}
-		Catch [System.IO.IOException] {
+		catch [System.IO.IOException] {
 			Write-LogMessage -Tag 'INFO' -Message "Transcript start attemped but transcript is already being logged to '$Path'."
 		}
 	}
 }
 
-Function Stop-Logging {
+function Stop-Logging {
 	[CmdletBinding(
 		SupportsShouldProcess,
 		ConfirmImpact = 'Low'
 	)]
-	Param()
-	If ($PSCmdlet.ShouldProcess('log file', 'Stop-Transcript')) {
+	param()
+	if ($PSCmdlet.ShouldProcess('log file', 'Stop-Transcript')) {
 		Write-LogMessage -Tag 'INFO' -Message 'Stopping transcript logging.'
 		Stop-Transcript
 	}
 }
 
-Function Remove-OldLogs {
+function Remove-OldLogs {
 	[CmdletBinding(
 		SupportsShouldProcess,
 		ConfirmImpact = 'Low'
 	)]
-	Param(
+	param(
 		[Parameter(Mandatory)]
 		[String]$Path,
 		[Parameter(Mandatory)]
 		[int]$MaxAgeDays
 	)
 
-	If ($PSCmdlet.ShouldProcess($Path, 'Remove expired log files')) {
+	if ($PSCmdlet.ShouldProcess($Path, 'Remove expired log files')) {
 
 		Write-LogMessage -Tag 'DEBUG' -Message "Searching for log files older than $MaxAgeDays days."
 
@@ -113,11 +113,11 @@ Function Remove-OldLogs {
 
 		if ($($oldLogs.Count) -ne 0) {
 			Write-LogMessage -Tag 'DEBUG' -Message "Found $($oldLogs.Count) log files to remove."
-			Try {
+			try {
 				$oldLogs | Remove-Item -Force -Verbose:$VerbosePreference
 				Write-LogMessage -Tag 'INFO' -Message "Removed $($oldLogs.Count) expired log files."
 			}
-			Catch {
+			catch {
 				Write-LogMessage -Tag 'ERROR' -Message 'Failed to remove some/all log files.'
 			}
 		}
