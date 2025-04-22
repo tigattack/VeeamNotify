@@ -1,5 +1,5 @@
 # Define parameters
-Param(
+param(
 	[String]$jobName,
 	[String]$id,
 	[String]$jobType,
@@ -9,7 +9,7 @@ Param(
 
 # Function to get a session's bottleneck from the session logs
 # See https://github.com/tigattack/VeeamNotify/issues/19 for more details.
-Function Get-Bottleneck {
+function Get-Bottleneck {
 	param(
 		$Logger
 	)
@@ -20,10 +20,10 @@ Function Get-Bottleneck {
 				Select-Object -ExpandProperty Title) `
 		-replace 'Primary bottleneck:',''
 
-	If ($bottleneck.Length -eq 0) {
+	if ($bottleneck.Length -eq 0) {
 		$bottleneck = 'Undetermined'
 	}
-	Else {
+	else {
 		$bottleneck = $bottleneck.Trim()
 	}
 
@@ -40,7 +40,7 @@ Add-Type -AssemblyName System.Web
 
 
 # Start logging if logging is enabled in config
-If ($Config.logging.enabled) {
+if ($Config.logging.enabled) {
 	## Wait until log file is closed by Bootstrap.ps1
 	try {
 		$count = 1
@@ -79,23 +79,23 @@ try {
 	$vbrSessionLogger = $session.Logger
 
 	## Wait for the backup session to finish.
-	If ($session.State -ne 'Stopped') {
+	if ($session.State -ne 'Stopped') {
 		$nonStoppedStates = 'Idle', 'Pausing', 'Postprocessing', 'Resuming', 'Starting', 'Stopping', 'WaitingRepository', 'WaitingTape ', 'Working'
 		$timeout = New-TimeSpan -Minutes 5
 		$stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
-		Do {
+		do {
 			Write-LogMessage -Tag 'INFO' -Message 'Session not finished. Sleeping...'
 			Start-Sleep -Seconds 10
 			$session = (Get-VBRSessionInfo -SessionId $id -JobType $jobType).Session
 		}
-		While ($session.State -in $nonStoppedStates -and $stopwatch.elapsed -lt $timeout)
+		while ($session.State -in $nonStoppedStates -and $stopwatch.elapsed -lt $timeout)
 		$stopwatch.Stop()
 	}
 
 	## Quit if still not stopped
-	If ($session.State -ne 'Stopped') {
+	if ($session.State -ne 'Stopped') {
 		Write-LogMessage -Tag 'ERROR' -Message 'Session not stopped. Aborting.'
-		Exit 1
+		exit 1
 	}
 
 	# Add Veeam session log entry.
@@ -137,7 +137,7 @@ try {
 		$speedRound 		= (ConvertTo-ByteUnit -Data $speed).ToString() + '/s'
 
 		# Set processing speed "Unknown" if 0B/s to avoid confusion.
-		If ($speedRound -eq '0 B/s') {
+		if ($speedRound -eq '0 B/s') {
 			$speedRound = 'Unknown'
 		}
 
@@ -153,11 +153,11 @@ try {
 		$sessionObjectFails = 0
 
 		foreach ($object in $sessionObjects) {
-			If ($object.Status -eq 'Warning') {
+			if ($object.Status -eq 'Warning') {
 				$sessionObjectWarns++
 			}
 			# TODO: check if 'Failed' is a valid state.
-			If ($object.Status -eq 'Failed') {
+			if ($object.Status -eq 'Failed') {
 				$sessionObjectFails++
 			}
 		}
@@ -165,7 +165,7 @@ try {
 
 		<# TODO: utilise this.
 		# Add object warns/fails to fieldArray if any.
-		If ($sessionObjectWarns -gt 0) {
+		if ($sessionObjectWarns -gt 0) {
 			$fieldArray += @(
 				[PSCustomObject]@{
 					name	= 'Warnings'
@@ -174,7 +174,7 @@ try {
 				}
 			)
 		}
-		If ($sessionObjectFails -gt 0) {
+		if ($sessionObjectFails -gt 0) {
 			$fieldArray += @(
 				[PSCustomObject]@{
 					name	= 'Fails'
@@ -187,7 +187,7 @@ try {
 	}
 
 	# If agent backup, gather and include session info.
-	If ($jobType -in 'EpAgentBackup','BackupToTape','FileToTape') {
+	if ($jobType -in 'EpAgentBackup','BackupToTape','FileToTape') {
 		# Gather session data sizes and timings.
 		[Float]$processedSize	= $session.Info.Progress.ProcessedSize
 		[Float]$transferSize 	= $session.Info.Progress.TransferedSize
@@ -202,7 +202,7 @@ try {
 		$speedRound 		= (ConvertTo-ByteUnit -Data $speed).ToString() + '/s'
 
 		# Set processing speed "Unknown" if 0B/s to avoid confusion.
-		If ($speedRound -eq '0 B/s') {
+		if ($speedRound -eq '0 B/s') {
 			$speedRound = 'Unknown'
 		}
 	}
@@ -218,7 +218,7 @@ try {
 	$duration = $endTime - $startTime
 
 	## Switch for job duration; define pretty output.
-	Switch ($duration) {
+	switch ($duration) {
 		{ $_.Days -ge '1' } {
 			$durationFormatted	= '{0}d {1}h {2}m {3}s' -f $_.Days, $_.Hours, $_.Minutes, $_.Seconds
 			break
@@ -235,17 +235,17 @@ try {
 			$durationFormatted	= '{0}s' -f $_.Seconds
 			break
 		}
-		Default {
+		default {
 			$durationFormatted	= '{0}d {1}h {2}m {3}s' -f $_.Days, $_.Hours, $_.Minutes, $_.Seconds
 		}
 	}
 
 	# Define nice job type name
-	Switch ($jobType) {
+	switch ($jobType) {
 		Backup { $jobTypeNice = 'VM Backup' }
 		Replica { $jobTypeNice = 'VM Replication' }
 		EpAgentBackup	{
-			Switch ($session.Platform) {
+			switch ($session.Platform) {
 				'ELinuxPhysical' { $jobTypeNice = 'Linux Agent Backup' }
 				'EEndPoint' { $jobTypeNice = 'Windows Agent Backup' }
 			}
@@ -257,28 +257,28 @@ try {
 	# Decide whether to mention user
 	$mention = $false
 	## On fail
-	Try {
-		If ($Config.mentions.on_failure -and $status -eq 'Failed') {
+	try {
+		if ($Config.mentions.on_failure -and $status -eq 'Failed') {
 			$mention = $true
 		}
 	}
-	Catch {
+	catch {
 		Write-LogMessage -Tag 'WARN' -Message "Unable to determine 'mention on fail' configuration. User will not be mentioned."
 	}
 
 	## On warning
-	Try {
-		If ($Config.mentions.on_warning -and $status -eq 'Warning') {
+	try {
+		if ($Config.mentions.on_warning -and $status -eq 'Warning') {
 			$mention = $true
 		}
 	}
-	Catch {
+	catch {
 		Write-LogMessage -Tag 'WARN' -Message "Unable to determine 'mention on warning' configuration. User will not be mentioned."
 	}
 
 
 	# Define footer message.
-	Switch ($updateStatus.Status) {
+	switch ($updateStatus.Status) {
 		Current {
 			$footerMessage = "tigattack's VeeamNotify $($updateStatus.CurrentVersion) - Up to date."
 		}
@@ -288,14 +288,14 @@ try {
 		Ahead {
 			$footerMessage = "tigattack's VeeamNotify $($updateStatus.CurrentVersion) - Pre-release."
 		}
-		Default {
+		default {
 			$footerMessage = "tigattack's VeeamNotify $($updateStatus.CurrentVersion)"
 		}
 	}
 
 
 	# Build embed parameters
-	If ($jobType -in 'EpAgentBackup','BackupToTape','FileToTape') {
+	if ($jobType -in 'EpAgentBackup','BackupToTape','FileToTape') {
 		$payloadParams = @{
 			JobName       = $jobName
 			JobType       = $jobTypeNice
@@ -334,10 +334,10 @@ try {
 	}
 
 	# Add update message if relevant.
-	If ($config.update | Get-Member -Name 'notify') {
+	if ($config.update | Get-Member -Name 'notify') {
 		$config.update.notify = $true
 	}
-	If ($updateStatus.Status -eq 'Behind' -and $config.update.notify) {
+	if ($updateStatus.Status -eq 'Behind' -and $config.update.notify) {
 		$payloadParams += @{
 			UpdateNotification = $true
 			LatestVersion      = $updateStatus.LatestStable
@@ -346,7 +346,7 @@ try {
 
 
 	# Build embed and send iiiit.
-	Try {
+	try {
 		$Config.services.PSObject.Properties | ForEach-Object {
 
 			# Create variable from current pipeline object to simplify usability.
@@ -355,19 +355,19 @@ try {
 			# Create variable for service name in TitleCase format.
 			$textInfo = (Get-Culture).TextInfo
 			$serviceName = $textInfo.ToTitleCase($service.Name)
-			If ($service.Value.webhook -ne $null) {
-				If ($service.Value.webhook.StartsWith('https')) {
+			if ($service.Value.webhook -ne $null) {
+				if ($service.Value.webhook.StartsWith('https')) {
 					Write-LogMessage -Tag 'INFO' -Message "Sending notification to $($serviceName)."
 					$logId_service = $vbrSessionLogger.AddLog("[VeeamNotify] Sending notification to $($serviceName)...")
 
 					# Add user information for mention if relevant.
 					Write-LogMessage -Tag 'DEBUG' -Message 'Determining if user should be mentioned.'
-					If ($mention) {
+					if ($mention) {
 						Write-LogMessage -Tag 'DEBUG' -Message 'Getting user ID for mention.'
 						$payloadParams.UserId = $service.Value.user_id
 
 						# Set username if exists
-						If ($service.Value.user_name -and $service.Value.user_name -ne 'Your Name') {
+						if ($service.Value.user_name -and $service.Value.user_name -ne 'Your Name') {
 							Write-LogMessage -Tag 'DEBUG' -Message 'Setting user name for mention.'
 							$payloadParams.UserName = $service.Value.user_name
 						}
@@ -376,40 +376,40 @@ try {
 					# Get URI from webhook value
 					$uri = $service.Value.webhook
 
-					Try {
+					try {
 						New-Payload -Service $service.Name -Parameters $payloadParams | Send-Payload -Uri $uri -JSONPayload $true | Out-Null
 
 						Write-LogMessage -Tag 'INFO' -Message "Notification sent to $serviceName successfully."
 						$vbrSessionLogger.UpdateSuccess($logId_service, "[VeeamNotify] Sent notification to $($serviceName).") | Out-Null
 					}
-					Catch {
+					catch {
 						Write-LogMessage -Tag 'ERROR' -Message "Unable to send $serviceName notification: $_"
 						$vbrSessionLogger.UpdateErr($logId_service, "[VeeamNotify] $serviceName notification could not be sent.", "Please check the log: $Logfile") | Out-Null
 					}
 				}
-				Else {
+				else {
 					Write-LogMessage -Tag 'DEBUG' -Message "$serviceName is unconfigured (invalid URL). Skipping $serviceName notification."
 				}
 			}
 			else {
 				# Get URI from webhook value
-				If ($service.Name -eq 'telegram') {
+				if ($service.Name -eq 'telegram') {
 					if (!($Service.Value.bot_token -eq 'TelegramBotToken' -or $Service.Value.chat_id -eq 'TelegramChatID')) {
 						Write-LogMessage -Tag 'INFO' -Message "Sending notification to $($serviceName)."
 						$logId_service = $vbrSessionLogger.AddLog("[VeeamNotify] Sending notification to $($serviceName)...")
-						Try {
+						try {
 							$payload = New-Payload -Service $service.Name -Parameters $payloadParams
 							Send-Payload -Uri "https://api.telegram.org/bot$($service.Value.bot_token)/sendMessage" -Body @{ chat_id = "$($service.Value.chat_id)"; parse_mode = 'MarkdownV2'; text = $payload }
 
 							Write-LogMessage -Tag 'INFO' -Message "Notification sent to $serviceName successfully."
 							$vbrSessionLogger.UpdateSuccess($logId_service, "[VeeamNotify] Sent notification to $($serviceName).") | Out-Null
 						}
-						Catch {
+						catch {
 							Write-LogMessage -Tag 'ERROR' -Message "Unable to send $serviceName notification: $_"
 							$vbrSessionLogger.UpdateErr($logId_service, "[VeeamNotify] $serviceName notification could not be sent.", "Please check the log: $Logfile") | Out-Null
 						}
 					}
-					Else {
+					else {
 						Write-LogMessage -Tag 'DEBUG' -Message "$serviceName is unconfigured (invalid bot_token or chat_id). Skipping $serviceName notification."
 					}
 				}
@@ -419,11 +419,11 @@ try {
 		# Update Veeam session log.
 		$vbrSessionLogger.AddSuccess('[VeeamNotify] Notification(s) sent successfully.') | Out-Null
 	}
-	Catch {
+	catch {
 		Write-LogMessage -Tag 'WARN' -Message "Unable to send notification(s): $_"
 		$vbrSessionLogger.AddErr('[VeeamNotify] An error occured while sending notification(s).', "Please check the log: $Logfile") | Out-Null
 	}
-	Finally {
+	finally {
 		$vbrSessionLogger.RemoveRecord($logId_notification) | Out-Null
 	}
 
@@ -431,7 +431,7 @@ try {
 	if ($Config.logging.max_age_days -ne 0) {
 		Write-LogMessage -Tag 'DEBUG' -Message 'Running log cleanup.'
 
-		If ($config.logging.level -eq 'debug') {
+		if ($config.logging.level -eq 'debug') {
 			$debug = $true
 		}
 		else {
@@ -442,15 +442,15 @@ try {
 	}
 
 	# If newer version available...
-	If ($updateStatus.Status -eq 'Behind') {
+	if ($updateStatus.Status -eq 'Behind') {
 
 		# Add Veeam session log entry.
-		If ($Config.update.notify) {
+		if ($Config.update.notify) {
 			$vbrSessionLogger.AddWarning("[VeeamNotify] A new version is available: $($updateStatus.LatestStable). Currently running: $($updateStatus.CurrentVersion)") | Out-Null
 		}
 
 		# Trigger update if configured to do so.
-		If ($Config.update.auto_update) {
+		if ($Config.update.auto_update) {
 
 			# Copy update script out of working directory.
 			Copy-Item $PSScriptRoot\Updater.ps1 $PSScriptRoot\..\VDNotifs-Updater.ps1
@@ -469,7 +469,7 @@ catch {
 }
 finally {
 	# Stop logging.
-	If ($Config.logging.enabled) {
+	if ($Config.logging.enabled) {
 		Stop-Logging
 	}
 }

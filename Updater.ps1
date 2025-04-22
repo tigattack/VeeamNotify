@@ -1,5 +1,5 @@
 # Pull version from script trigger
-Param (
+param (
 	[string]$LatestVersion
 )
 
@@ -26,8 +26,8 @@ function Update-Notification {
 		SupportsShouldProcess,
 		ConfirmImpact = 'Low'
 	)]
-	Param ()
-	If ($PSCmdlet.ShouldProcess('Discord', 'Send update notification')) {
+	param ()
+	if ($PSCmdlet.ShouldProcess('Discord', 'Send update notification')) {
 		Write-LogMessage -Tag 'INFO' -Message 'Building notification.'
 		# Create embed and fields array
 		[System.Collections.ArrayList]$embedArray = @()
@@ -57,7 +57,7 @@ function Update-Notification {
 		$fieldArray.Add($newVersionField) | Out-Null
 		$fieldArray.Add($resultField) | Out-Null
 		# Send error if exist
-		If ($null -ne $errorVar) {
+		if ($null -ne $errorVar) {
 			$errorField = [PSCustomObject]@{
 				name   = 'Update Error'
 				value  = $errorVar
@@ -80,10 +80,10 @@ function Update-Notification {
 		}
 		Write-LogMessage -Tag 'INFO' -Message 'Sending notification.'
 		# Send iiit
-		Try {
+		try {
 			Invoke-RestMethod -Uri $currentConfig.webhook -Body ($payload | ConvertTo-Json -Depth 4) -Method Post -ContentType 'application/json'
 		}
-		Catch {
+		catch {
 			$errorVar = $_.CategoryInfo.Activity + ' : ' + $_.ToString()
 			Write-Warning 'Update notification failed to send to Discord.'
 			Write-LogMessage -Tag 'ERROR' -Message "$errorVar"
@@ -97,8 +97,8 @@ function Update-Success {
 		SupportsShouldProcess,
 		ConfirmImpact = 'Low'
 	)]
-	Param ()
-	If ($PSCmdlet.ShouldProcess('Updater', 'Update success process')) {
+	param ()
+	if ($PSCmdlet.ShouldProcess('Updater', 'Update success process')) {
 		# Set error action preference so that errors while ending the script don't end the script prematurely.
 		Write-LogMessage -Tag 'INFO' -Message 'Set error action preference.'
 		$ErrorActionPreference = 'Continue'
@@ -126,8 +126,8 @@ function Update-Fail {
 		SupportsShouldProcess,
 		ConfirmImpact = 'Low'
 	)]
-	Param ()
-	If ($PSCmdlet.ShouldProcess('Updater', 'Update failure process')) {
+	param ()
+	if ($PSCmdlet.ShouldProcess('Updater', 'Update failure process')) {
 		# Set error action preference so that errors while ending the script don't end the script prematurely.
 		Write-LogMessage -Tag 'INFO' -Message 'Set error action preference.'
 		$ErrorActionPreference = 'Continue'
@@ -136,7 +136,7 @@ function Update-Fail {
 		$script:result = 'Failure!'
 
 		# Take action based on the stage at which the error occured
-		Switch ($fail) {
+		switch ($fail) {
 			download {
 				Write-Warning 'Failed to download update.'
 			}
@@ -175,11 +175,11 @@ function Stop-Script {
 		SupportsShouldProcess,
 		ConfirmImpact = 'Low'
 	)]
-	Param ()
-	If ($PSCmdlet.ShouldProcess('Updater', 'Cleanup & stop')) {
+	param ()
+	if ($PSCmdlet.ShouldProcess('Updater', 'Cleanup & stop')) {
 		# Clean up.
 		Write-LogMessage -Tag 'INFO' -Message 'Remove downloaded ZIP.'
-		If (Test-Path "$projectPath-$LatestVersion.zip") {
+		if (Test-Path "$projectPath-$LatestVersion.zip") {
 			Remove-Item "$projectPath-$LatestVersion.zip"
 		}
 		Write-LogMessage -Tag 'INFO' -Message 'Remove Updater.ps1.'
@@ -198,27 +198,27 @@ function Stop-Script {
 
 		# Exit script
 		Write-Output 'Exiting.'
-		Exit
+		exit
 	}
 }
 
 # Pull current config to variable
-Try {
+try {
 	Write-LogMessage -Tag 'INFO' -Message 'Pull current config to variable.'
-	$currentConfig = (Get-Content "$projectPath\config\conf.json") -Join "`n" | ConvertFrom-Json
+	$currentConfig = (Get-Content "$projectPath\config\conf.json") -join "`n" | ConvertFrom-Json
 }
-Catch {
+catch {
 	$errorVar = $_.CategoryInfo.Activity + ' : ' + $_.ToString()
 	Write-LogMessage -Tag 'ERROR' -Message "$errorVar"
 	Update-Fail
 }
 
 # Get currently downloaded version
-Try {
+try {
 	Write-LogMessage -Tag 'INFO' -Message 'Getting currently downloaded version of the script.'
 	[String]$oldVersion = Get-Content "$projectPath\resources\version.txt" -Raw
 }
-Catch {
+catch {
 	$errorVar = $_.CategoryInfo.Activity + ' : ' + $_.ToString()
 	Write-LogMessage -Tag 'ERROR' -Message "$errorVar"
 	Update-Fail
@@ -228,21 +228,21 @@ Catch {
 while (Get-CimInstance win32_process -Filter "name='powershell.exe' and commandline like '%AlertSender.ps1%'") {
 	$timer++
 	Start-Sleep -Seconds 1
-	If ($timer -eq '90') {
+	if ($timer -eq '90') {
 		Write-LogMessage -Tag 'INFO' -Message "Timeout reached. Updater quitting as AlertSender.ps1 is still running after $timer seconds."
 	}
 	Update-Fail
 }
 
 # Pull latest version of script from GitHub
-Try {
+try {
 	Write-LogMessage -Tag 'INFO' -Message 'Pull latest version of script from GitHub.'
 	[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 	Invoke-WebRequest -Uri `
 		https://github.com/tigattack/VeeamNotify/releases/download/$LatestVersion/VeeamNotify-$LatestVersion.zip `
 		-OutFile $projectPath-$LatestVersion.zip
 }
-Catch {
+catch {
 	$errorVar = $_.CategoryInfo.Activity + ' : ' + $_.ToString()
 	Write-LogMessage -Tag 'ERROR' -Message "$errorVar"
 	$fail = 'download'
@@ -250,11 +250,11 @@ Catch {
 }
 
 # Expand downloaded ZIP
-Try {
+try {
 	Write-LogMessage -Tag 'INFO' -Message 'Expand downloaded ZIP.'
 	Expand-Archive $projectPath-$LatestVersion.zip -DestinationPath $PSScriptRoot
 }
-Catch {
+catch {
 	$errorVar = $_.CategoryInfo.Activity + ' : ' + $_.ToString()
 	Write-LogMessage -Tag 'ERROR' -Message "$errorVar"
 	$fail = 'unzip'
@@ -262,11 +262,11 @@ Catch {
 }
 
 # Rename old version to keep as a backup while the update is in progress.
-Try {
+try {
 	Write-LogMessage -Tag 'INFO' -Message 'Rename current to avoid conflict with new version.'
 	Rename-Item $projectPath $projectPath-old
 }
-Catch {
+catch {
 	$errorVar = $_.CategoryInfo.Activity + ' : ' + $_.ToString()
 	Write-LogMessage -Tag 'ERROR' -Message "$errorVar"
 	$fail = 'rename_old'
@@ -274,11 +274,11 @@ Catch {
 }
 
 # Rename extracted update
-Try {
+try {
 	Write-LogMessage -Tag 'INFO' -Message 'Rename extracted download.'
 	Rename-Item $projectPath-$LatestVersion $projectPath
 }
-Catch {
+catch {
 	$errorVar = $_.CategoryInfo.Activity + ' : ' + $_.ToString()
 	Write-LogMessage -Tag 'ERROR' -Message "$errorVar"
 	$fail = 'rename_new'
@@ -286,11 +286,11 @@ Catch {
 }
 
 # Pull configuration from new conf file
-Try {
+try {
 	Write-LogMessage -Tag 'INFO' -Message 'Pull configuration from new conf file.'
-	$newConfig = (Get-Content "$projectPath\config\conf.json") -Join "`n" | ConvertFrom-Json
+	$newConfig = (Get-Content "$projectPath\config\conf.json") -join "`n" | ConvertFrom-Json
 }
-Catch {
+catch {
 	$errorVar = $_.CategoryInfo.Activity + ' : ' + $_.ToString()
 	Write-LogMessage -Tag 'ERROR' -Message "$errorVar"
 	$fail = 'after_rename_new'
@@ -304,12 +304,12 @@ Write-LogMessage -Tag 'INFO' -Message 'Unblock script files.'
 $pwshFiles = Get-ChildItem $projectPath\* -Recurse | Where-Object { $_.Name -match '^.*\.ps(m)?1$' }
 
 ## Unblock them
-Try {
+try {
 	foreach ($i in $pwshFiles) {
 		Unblock-File -Path $i.FullName
 	}
 }
-Catch {
+catch {
 	$errorVar = $_.CategoryInfo.Activity + ' : ' + $_.ToString()
 	Write-LogMessage -Tag 'ERROR' -Message "$errorVar"
 	$fail = 'unblock_scripts'
@@ -317,7 +317,7 @@ Catch {
 }
 
 # Populate conf.json with previous configuration
-Try {
+try {
 	Write-LogMessage -Tag 'INFO' -Message 'Populate conf.json with previous configuration.'
 	$newConfig.webhook = $currentConfig.webhook
 	$newConfig.userid = $currentConfig.userid
@@ -332,7 +332,7 @@ Try {
 	}
 	ConvertTo-Json $newConfig | Set-Content "$projectPath\config\conf.json"
 }
-Catch {
+catch {
 	$errorVar = $_.CategoryInfo.Activity + ' : ' + $_.ToString()
 	Write-LogMessage -Tag 'ERROR' -Message "$errorVar"
 	$fail = 'after_rename_new'
@@ -340,11 +340,11 @@ Catch {
 }
 
 # Get newly downloaded version
-Try {
+try {
 	Write-LogMessage -Tag 'INFO' -Message 'Get newly downloaded version.'
 	[String]$newVersion = Get-Content "$projectPath\resources\version.txt" -Raw
 }
-Catch {
+catch {
 	$errorVar = $_.CategoryInfo.Activity + ' : ' + $_.ToString()
 	Write-LogMessage -Tag 'ERROR' -Message "$errorVar"
 	$fail = 'after_rename_new'
@@ -352,9 +352,9 @@ Catch {
 }
 
 # Send notification
-If ($newVersion -eq $LatestVersion) {
+if ($newVersion -eq $LatestVersion) {
 	Update-Success
 }
-Else {
+else {
 	Update-Fail
 }

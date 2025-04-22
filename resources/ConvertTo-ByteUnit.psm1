@@ -10,7 +10,7 @@ function ConvertTo-ByteUnit {
 		ConvertTo-ByteUnit -Data ((Get-ChildItem -Path ./ -Recurse | Measure-Object -Property Length -Sum).Sum)
 	#>
 	[CmdletBinding()]
-	Param (
+	param (
 		[Parameter (Mandatory)]
 		$Data
 	)

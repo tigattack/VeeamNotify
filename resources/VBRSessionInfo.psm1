@@ -1,4 +1,4 @@
-Function Get-VBRSessionInfo {
+function Get-VBRSessionInfo {
 	param (
 		[Parameter(Mandatory=$true)]$SessionId,
 		[Parameter(Mandatory=$true)]$JobType
@@ -7,10 +7,10 @@ Function Get-VBRSessionInfo {
 	# Import VBR module
 	Import-Module Veeam.Backup.PowerShell -DisableNameChecking
 
-	If (($null -ne $SessionId) -and ($null -ne $JobType)) {
+	if (($null -ne $SessionId) -and ($null -ne $JobType)) {
 
 		# Switch on job type.
-		Switch ($JobType) {
+		switch ($JobType) {
 
 			# VM job
 			{$_ -in 'Backup','Replica'} {
@@ -49,11 +49,11 @@ Function Get-VBRSessionInfo {
 		}
 	}
 
-	Elseif ($null -eq $SessionId) {
+	elseif ($null -eq $SessionId) {
 		Write-LogMessage -Tag 'WARN' -Message 'SessionId is null.'
 	}
 
-	Elseif ($null -eq $JobType) {
+	elseif ($null -eq $JobType) {
 		Write-LogMessage -Tag 'WARN' -Message 'JobType is null.'
 	}
 }
