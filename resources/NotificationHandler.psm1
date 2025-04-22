@@ -23,7 +23,7 @@ function New-Payload {
 		'Telegram' {
 			New-TelegramPayload @Parameters
 		}
-		Default {
+		default {
 			Write-LogMessage -Tag 'ERROR' -Message "Unknown service: $Service"
 		}
 	}
@@ -59,12 +59,12 @@ function New-DiscordPayload {
 	$timestampEnd = "<t:$(([System.DateTimeOffset]$(Get-Date $EndTime)).ToUnixTimeSeconds())>"
 
 	# Switch for the session status to decide the embed colour.
-	Switch ($Status) {
+	switch ($Status) {
 		None { $colour = '16777215' }
 		Warning { $colour = '16776960' }
 		Success { $colour = '65280' }
 		Failed { $colour = '16711680' }
-		Default { $colour = '16777215' }
+		default { $colour = '16777215' }
 	}
 
 	# Build footer object.
@@ -81,7 +81,7 @@ function New-DiscordPayload {
 	# Build field object.
 
 	# TODO look furhter into what detail can be pulled out that is tape specefic, eg tapes used etc, requires splitting out payload creation
-	if ($JobType.EndsWith('Agent Backup') -Or $JobType.EndsWith('Tape Backup')) {
+	if ($JobType.EndsWith('Agent Backup') -or $JobType.EndsWith('Tape Backup')) {
 		$fieldArray = @(
 			[PSCustomObject]@{
 				name   = 'Processed Size'
@@ -186,14 +186,14 @@ function New-DiscordPayload {
 	}
 
 	# Mention user if configured to do so.
-	If ($mention) {
+	if ($mention) {
 		$payload += @{
 			content = "<@!$($UserId)> Job $($Status.ToLower())!"
 		}
 	}
 
 	# Add update notice if relevant and configured to do so.
-	If ($UpdateNotification) {
+	if ($UpdateNotification) {
 		# Add embed to payload.
 		$payload.embeds += @(
 			@{
@@ -237,13 +237,13 @@ function New-TeamsPayload {
 	)
 
 	# Define username
-	If (-not $UserName) {
+	if (-not $UserName) {
 		$UserName = $($UserId.Split('@')[0])
 	}
 
 	# Mention user if configured to do so.
 	# Must be done at early stage to ensure this section is at the top of the embed object.
-	If ($mention) {
+	if ($mention) {
 		$bodyArray = @(
 			@{
 				type = 'TextBlock'
@@ -267,7 +267,7 @@ function New-TeamsPayload {
 	)
 
 	# Add URL to update notice if relevant and configured to do so.
-	If ($UpdateNotification) {
+	if ($UpdateNotification) {
 		# Add URL to update notice.
 		$FooterMessage += "  `n[See release **$LatestVersion** on GitHub.](https://github.com/tigattack/VeeamNotify/releases/$LatestVersion)"
 	}
@@ -374,7 +374,7 @@ function New-TeamsPayload {
 		)
 	}
 
-	elseif ($JobType.EndsWith('Agent Backup') -Or $JobType.EndsWith('Tape Backup')) {
+	elseif ($JobType.EndsWith('Agent Backup') -or $JobType.EndsWith('Tape Backup')) {
 		$bodyArray += @(
 			@{ type = 'ColumnSet'; columns = @(
 					@{ type = 'Column'; width = 'stretch'; items = @(
@@ -466,7 +466,7 @@ function New-TeamsPayload {
 
 	# Mention user if configured to do so.
 	# Must be done at early stage to ensure this section is at the top of the embed object.
-	If ($mention) {
+	if ($mention) {
 		$payload.attachments[0].content += @{
 			msteams = @{
 				entities = @(
@@ -513,7 +513,7 @@ function New-SlackPayload {
 
 	# Mention user if configured to do so.
 	# Must be done at early stage to ensure this section is at the top of the embed object.
-	If ($mention) {
+	if ($mention) {
 		$payload = @{
 			blocks = @(
 				@{
@@ -578,7 +578,7 @@ function New-SlackPayload {
 		)
 	}
 
-	elseif ($JobType.EndsWith('Agent Backup') -Or $JobType.EndsWith('Tape Backup')) {
+	elseif ($JobType.EndsWith('Agent Backup') -or $JobType.EndsWith('Tape Backup')) {
 		$fieldArray += @(
 			[PSCustomObject]@{
 				type = 'mrkdwn'
@@ -653,7 +653,7 @@ function New-SlackPayload {
 	)
 
 	# Add update notice if relevant and configured to do so.
-	If ($UpdateNotification) {
+	if ($UpdateNotification) {
 		# Add block to payload.
 		$payload.blocks += @(
 			@{
@@ -710,7 +710,7 @@ function New-TelegramPayload {
 
 	# Mention user if configured to do so.
 	# Must be done at early stage to ensure this section is at the top of the embed object.
-	If ($mention) {
+	if ($mention) {
 		$message =  "[$UserName](tg://user?id=$UserId) Job $($Status.ToLower())!`n"
 	}
 	else {
@@ -739,7 +739,7 @@ function New-TelegramPayload {
 "@
 	}
 
-	elseif ($JobType.EndsWith('Agent Backup') -Or $JobType.EndsWith('Tape Backup')) {
+	elseif ($JobType.EndsWith('Agent Backup') -or $JobType.EndsWith('Tape Backup')) {
 		$message += @"
 *Processed Size:* $ProcessedSize
 *Transferred Data:* $TransferSize
@@ -755,7 +755,7 @@ function New-TelegramPayload {
 	$message += "`n`n$FooterMessage"
 
 	# Add update notice if relevant and configured to do so.
-	If ($UpdateNotification) {
+	if ($UpdateNotification) {
 		# Add block to payload.
 		$message += "`nA new version of VeeamNotify is available! See release [*$LatestVersion* on GitHub](https://github.com/tigattack/VeeamNotify/releases/$LatestVersion)."
 	}
@@ -790,7 +790,7 @@ function Send-Payload {
 				ErrorAction = 'Stop'
 			}
 		}
-		Else {
+		else {
 			$postParams = @{
 				Body        = $Payload
 				Method      = 'Post'
@@ -799,14 +799,14 @@ function Send-Payload {
 			}
 		}
 
-		Try {
+		try {
 			# Post payload
 			$request = Invoke-RestMethod @postParams
 
 			# Return request object
 			return $request
 		}
-		Catch [System.Net.WebException] {
+		catch [System.Net.WebException] {
 			Write-LogMessage -Tag 'ERROR' -Message 'Unable to send Payload. Check your Payload or network connection.'
 			throw
 		}
