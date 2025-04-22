@@ -21,7 +21,7 @@ Write-LogMessage -Tag 'INFO' -Message "Version: $(Get-Content "$PSScriptRoot\res
 $config = Get-Content -Raw $configFile | ConvertFrom-Json # TODO: import config from param instead of later as file. Can then improve logging flow.
 
 # Stop logging and remove log file if logging is disable in config.
-If (-not $config.logging.enabled) {
+if (-not $config.logging.enabled) {
 	Stop-Logging
 	Remove-Item $logFile -Force -ErrorAction SilentlyContinue
 }
@@ -31,15 +31,15 @@ If (-not $config.logging.enabled) {
 $configRaw = (Get-Content -Raw $configFile).Replace('"','\"').Replace("`n",'').Replace("`t",'').Replace('  ',' ')
 
 ## Test config.
-Try {
+try {
 	$configSchema = Get-Content -Raw "$PSScriptRoot\config\conf.schema.json" | ConvertFrom-Json
 	foreach ($i in $configSchema.required) {
-		If (-not (Get-Member -InputObject $config -Name "$i" -MemberType NoteProperty)) {
+		if (-not (Get-Member -InputObject $config -Name "$i" -MemberType NoteProperty)) {
 			throw "Required configuration property is missing. Property: $i"
 		}
 	}
 }
-Catch {
+catch {
 	Write-LogMessage -Tag 'ERROR' -Message "Failed to validate configuration: $_"
 	exit 1
 }
@@ -75,19 +75,19 @@ $vbrSessionLogger = $sessionInfo.Session.Logger
 $vbrLogEntry = $vbrSessionLogger.AddLog('[VeeamNotify] Parsing job & session information...')
 
 # Quit if job type is not supported.
-If ($JobType -notin $supportedTypes) {
+if ($JobType -notin $supportedTypes) {
 	Write-LogMessage -Tag 'ERROR' -Message "Job type '$($JobType)' is not supported."
-	Exit 1
+	exit 1
 }
 
 Write-LogMessage -Tag 'INFO' -Message "Bootstrap script for Veeam job '$jobName' (job $jobId session $sessionId) - Session & job detection complete."
 
 # Set log file name based on job
 ## Replace spaces if any in the job name
-If ($jobName -match ' ') {
+if ($jobName -match ' ') {
 	$logJobName = $jobName.Replace(' ', '_')
 }
-Else {
+else {
 	$logJobName = $jobName
 }
 $newLogfile = "$PSScriptRoot\log\$($date)-$($logJobName).log"
@@ -100,28 +100,28 @@ $vbrSessionLogger.UpdateSuccess($vbrLogEntry, '[VeeamNotify] Parsed job & sessio
 
 # Start a new new script in a new process with some of the information gathered here.
 # This allows Veeam to finish the current session faster and allows us gather information from the completed job.
-Try {
+try {
 	Write-LogMessage -Tag 'INFO' -Message 'Launching AlertSender.ps1...'
 	$vbrLogEntry = $vbrSessionLogger.AddLog('[VeeamNotify] Launching Alert Sender...')
 	Start-Process -FilePath 'powershell' -Verb runAs -ArgumentList $powershellArguments -WindowStyle hidden -ErrorAction Stop
 	Write-LogMessage -Tag 'INFO' -Message 'AlertSender.ps1 launched successfully.'
 	$vbrSessionLogger.UpdateSuccess($vbrLogEntry, '[VeeamNotify] Launched Alert Sender.') | Out-Null
 }
-Catch {
+catch {
 	Write-LogMessage -Tag 'ERROR' -Message "Failed to launch AlertSender.ps1: $_"
 	$vbrSessionLogger.UpdateErr($vbrLogEntry, '[VeeamNotify] Failed to launch Alert Sender.', "Please check the log: $newLogfile") | Out-Null
 	exit 1
 }
 
 # Stop logging.
-If ($config.logging.enabled) {
+if ($config.logging.enabled) {
 	Stop-Logging
 
 	# Rename log file to include the job name.
-	Try {
+	try {
 		Rename-Item -Path $logFile -NewName "$(Split-Path $newLogfile -Leaf)"
 	}
-	Catch {
+	catch {
 		Write-Output "ERROR: Failed to rename log file: $_" | Out-File $logFile -Append
 	}
 }
