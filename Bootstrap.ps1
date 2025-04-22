@@ -76,7 +76,7 @@ $vbrLogEntry = $vbrSessionLogger.AddLog('[VeeamNotify] Parsing job & session inf
 
 # Quit if job type is not supported.
 If ($JobType -notin $supportedTypes) {
-	Write-LogMessage -Tag 'ERROR' -Message "Job type '$($job.JobType)' is not supported."
+	Write-LogMessage -Tag 'ERROR' -Message "Job type '$($JobType)' is not supported."
 	Exit 1
 }
 
