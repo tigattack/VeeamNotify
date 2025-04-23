@@ -336,6 +336,13 @@ if (-not $NonInteractive) {
 	# Join config path
 	$configPath = Join-Path -Path $InstallParentPath -ChildPath $project | Join-Path -ChildPath 'config\conf.json'
 
+	# Create config from example if it doesn't exist
+	if (-not (Test-Path $configPath)) {
+		Write-Output "`nCreating configuration file..."
+		$exampleConfig = Join-Path -Path $InstallParentPath -ChildPath $project | Join-Path -ChildPath 'config\conf.example.json'
+		Copy-Item -Path $exampleConfig -Destination $configPath
+	}
+
 	# Get config
 	$config = Get-Content "$configPath" -Raw | ConvertFrom-Json
 
