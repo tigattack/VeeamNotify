@@ -2,3 +2,5 @@ notes.md
 ExampleData
 Test-*
 !/tests/*
+log/*.log
+config/conf.json
