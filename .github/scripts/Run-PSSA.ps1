@@ -50,7 +50,7 @@ foreach ($file in $Files) {
 		Write-Output "$($file) was analysed; it has $($analysis.Count) issues."
 	}
 	catch {
-		Write-Output "Error analysing $($file):"
+		Write-Output "Error analysing $($file): $($_.Exception.Message)"
 		exit 1
 	}
 }
