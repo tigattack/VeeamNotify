@@ -12,6 +12,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Ensure version matches tag
+        run: |
+          version=$(cat version.txt)
+          if [ "$version" != "$GITHUB_REF_NAME" ]; then
+            echo "Version in version.txt ($version) does not match tag ($GITHUB_REF_NAME)."
+            exit 1
+          fi
+
       - name: Create release asset
         run: |
           shopt -s extglob
