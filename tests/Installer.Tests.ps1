@@ -1,8 +1,5 @@
 Describe 'Installer.ps1' {
 	BeforeAll {
-		# Define project name
-		$project = 'VeeamNotify'
-
 		# Create temp install dir
 		$installDir = New-Item -Path (Join-Path -Path $PSScriptRoot -ChildPath 'test-install') -Type Directory -Force
 
@@ -32,7 +29,7 @@ Describe 'Installer.ps1' {
 		# Define required files check
 		[scriptblock]$expectedFilesCheck = {
 			foreach ($file in $expectedFiles) {
-				Join-Path -Path "$installDir\$project" -ChildPath $file | Should -Exist
+				Join-Path -Path "$installDir" -ChildPath 'VeeamNotify' -AdditionalChildPath $file | Should -Exist
 			}
 		}
 	}
