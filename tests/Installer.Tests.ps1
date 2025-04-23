@@ -29,7 +29,7 @@ Describe 'Installer.ps1' {
 		# Define required files check
 		[scriptblock]$expectedFilesCheck = {
 			foreach ($file in $expectedFiles) {
-				Join-Path -Path "$installDir" -ChildPath 'VeeamNotify' -AdditionalChildPath $file | Should -Exist
+				Join-Path -Path "$installDir" -ChildPath 'VeeamNotify' | Join-Path -ChildPath $file | Should -Exist
 			}
 		}
 	}
