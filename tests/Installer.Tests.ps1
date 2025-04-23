@@ -35,13 +35,9 @@ Describe 'Installer.ps1' {
 				Join-Path -Path "$installDir\$project" -ChildPath $file | Should -Exist
 			}
 		}
-
-		# Get releases
-		[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-		$releases = Invoke-RestMethod -Uri "https://api.github.com/repos/tigattack/$project/releases" -Method Get
 	}
 
-	It 'Install from specific version' -Skip:(-not $releases) {
+	It 'Install from specific version' {
 		# Run installer
 		& $installerPath -Version 'v1.0' @installerParams
 
@@ -49,7 +45,7 @@ Describe 'Installer.ps1' {
 		Invoke-Command -ScriptBlock $expectedFilesCheck
 	}
 
-	It 'Install from latest release' -Skip:(-not $releases) {
+	It 'Install from latest release' {
 		# Run installer
 		& $installerPath -Latest Release @installerParams
 
