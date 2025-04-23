@@ -26,13 +26,12 @@ body:
         2. With this config...
         3. Run '...'
         4. See error...
-  - type: dropdown
+  - type: input
     id: project_version
     attributes:
       label: VeeamNotify version
       description: This can be found in the footer of any notification or in `C:\VeeamScripts\VeeamNotify\resources\version.txt`.
-      options:
-        - 'v1.0'
+      placeholder: e.g. v1.1.1
     validations:
       required: true
   - type: dropdown
