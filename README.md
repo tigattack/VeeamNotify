@@ -49,7 +49,7 @@ Please see the [How to Install](https://github.com/tigattack/VeeamNotify/wiki/%F
 
 ## Configuration
 
-Default configuration can be found in `C:\VeeamScripts\VeeamNotify\config\conf.json`
+Default configuration can be found in `C:\VeeamScripts\VeeamNotify\config\conf.example.json`
 
 Details and examples can be found in the [Configuration Options](https://github.com/tigattack/VeeamNotify/wiki/%E2%9A%99%EF%B8%8F-Configuration-Options) wiki page.
 
