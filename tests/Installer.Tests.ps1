@@ -36,7 +36,7 @@ Describe 'Installer.ps1' {
 
 	It 'Install from specific version' {
 		# Run installer
-		& $installerPath -Version 'v1.0' @installerParams
+		& $installerPath -Version 'v1.1.1' @installerParams
 
 		# Check for expected files
 		Invoke-Command -ScriptBlock $expectedFilesCheck
