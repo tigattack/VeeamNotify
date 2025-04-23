@@ -52,7 +52,7 @@ Describe 'Installer.ps1' {
 
 	It 'Install from branch' {
 		# Run installer
-		& $installerPath -Branch dev @installerParams
+		& $installerPath -Branch main @installerParams
 
 		# Check for expected files
 		Invoke-Command -ScriptBlock $expectedFilesCheck
