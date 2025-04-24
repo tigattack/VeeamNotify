@@ -67,7 +67,7 @@ function Send-WebhookNotification {
 		# Add user information for mention if relevant
 		if ($Parameters.Mention) {
 			$Parameters.UserId = $ServiceConfig.user_id
-			
+
 			# Set username if exists (Teams specific)
 			if ($Service -eq 'Teams' -and $ServiceConfig.user_name -and $ServiceConfig.user_name -ne 'Your Name') {
 				$Parameters.UserName = $ServiceConfig.user_name
@@ -111,10 +111,10 @@ function Send-TelegramNotification {
 		# Create payload and send notification
 		$uri = "https://api.telegram.org/bot$($ServiceConfig.bot_token)/sendMessage"
 		$notificationText = New-Payload -Service 'Telegram' -Parameters $Parameters
-		$payload = @{ 
+		$payload = @{
 			chat_id    = "$($ServiceConfig.chat_id)"
 			parse_mode = 'MarkdownV2'
-			text       = $notificationText 
+			text       = $notificationText
 		}
 		Send-Payload -Uri $uri -Payload $payload -ContentType 'application/x-www-form-urlencoded' | Out-Null
 

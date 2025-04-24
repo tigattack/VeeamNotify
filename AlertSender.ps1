@@ -351,7 +351,7 @@ try {
 
 			# Log that we're attempting to send notification
 			$logId_service = $vbrSessionLogger.AddLog("[VeeamNotify] Sending notification to $($serviceName)...")
-			
+
 			# Call the appropriate notification sender function based on service name
 			$success = $false
 			switch ($serviceName) {
