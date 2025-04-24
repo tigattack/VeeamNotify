@@ -278,19 +278,11 @@ try {
 
 
 	# Define footer message.
+	$footerMessage = "tigattack's VeeamNotify $($updateStatus.CurrentVersion)"
 	switch ($updateStatus.Status) {
-		Current {
-			$footerMessage = "tigattack's VeeamNotify $($updateStatus.CurrentVersion) - Up to date."
-		}
-		Behind {
-			$footerMessage = "tigattack's VeeamNotify $($updateStatus.CurrentVersion) - Update to $($updateStatus.LatestStable) is available!"
-		}
-		Ahead {
-			$footerMessage = "tigattack's VeeamNotify $($updateStatus.CurrentVersion) - Pre-release."
-		}
-		default {
-			$footerMessage = "tigattack's VeeamNotify $($updateStatus.CurrentVersion)"
-		}
+		Current {$footerMessage += ' - Up to date.'}
+		Behind {$footerMessage += ' - Update to $($updateStatus.LatestStable) is available!'}
+		Ahead {$footerMessage += ' - Pre-release.'}
 	}
 
 
