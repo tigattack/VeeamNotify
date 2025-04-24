@@ -348,19 +348,19 @@ try {
 			$success = $false
 			switch ($serviceName) {
 				'Discord' {
-					$success = Send-WebhookNotification -Service 'Discord' -Parameters $payloadParams -ServiceConfig $service.Value -LogFile $Logfile
+					$success = Send-WebhookNotification -Service 'Discord' -Parameters $payloadParams -ServiceConfig $service.Value
 				}
 				'Slack' {
-					$success = Send-WebhookNotification -Service 'Slack' -Parameters $payloadParams -ServiceConfig $service.Value -LogFile $Logfile
+					$success = Send-WebhookNotification -Service 'Slack' -Parameters $payloadParams -ServiceConfig $service.Value
 				}
 				'Teams' {
-					$success = Send-WebhookNotification -Service 'Teams' -Parameters $payloadParams -ServiceConfig $service.Value -LogFile $Logfile
+					$success = Send-WebhookNotification -Service 'Teams' -Parameters $payloadParams -ServiceConfig $service.Value
 				}
 				'Telegram' {
-					$success = Send-TelegramNotification -Parameters $payloadParams -ServiceConfig $service.Value -LogFile $Logfile
+					$success = Send-TelegramNotification -Parameters $payloadParams -ServiceConfig $service.Value
 				}
 				'Ping' {
-					$success = Send-PingNotification -ServiceConfig $service.Value -LogFile $Logfile
+					$success = Send-PingNotification -ServiceConfig $service.Value
 				}
 				default {
 					Write-LogMessage -Tag 'WARN' -Message "Skipping unknown service: $serviceName"
