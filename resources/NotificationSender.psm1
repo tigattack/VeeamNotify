@@ -13,7 +13,7 @@ function Send-Payload {
 		[Parameter(ParameterSetName = 'Notification', Position = 2)]
 		[String]$ContentType = 'application/json',
 		[Parameter(ParameterSetName = 'Notification', Position = 3)]
-		[WebRequestMethod]$Method = 'Post',
+		[String]$Method = 'Post',
 		[Parameter(ParameterSetName = 'Notification', Position = 4)]
 		[Switch]$JSONPayload
 	)
