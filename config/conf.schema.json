@@ -70,7 +70,7 @@
                         "enabled": {
                             "type": "boolean"
                         },
-                        "webhook": {
+                        "url": {
                             "type" :"string"
                         }
                     }

@@ -138,7 +138,7 @@ function Send-PingNotification {
 	)
 
 	# Return early if URL is not configured or appears incorrect
-	if (-not $ServiceConfig.webhook -or -not $ServiceConfig.webhook.StartsWith('http')) {
+	if (-not $ServiceConfig.url -or -not $ServiceConfig.url.StartsWith('http')) {
 		Write-LogMessage -Tag 'DEBUG' -Message 'Ping service is unconfigured (invalid URL). Skipping HTTP Ping.'
 		return $false
 	}
@@ -146,7 +146,7 @@ function Send-PingNotification {
 	try {
 		# Send the actual ping
 		# TODO: support different methods
-		Send-Payload -Ping -Uri $ServiceConfig.webhook | Out-Null
+		Send-Payload -Ping -Uri $ServiceConfig.url | Out-Null
 		Write-LogMessage -Tag 'INFO' -Message 'HTTP Ping sent successfully.'
 		return $true
 	}

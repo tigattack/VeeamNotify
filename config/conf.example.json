@@ -23,7 +23,7 @@
         },
         "ping": {
             "enabled": false,
-            "webhook": "PingWebhook"
+            "url": "PingWebhook"
         }
     },
     "mentions": {
