@@ -356,83 +356,43 @@ try {
 			$textInfo = (Get-Culture).TextInfo
 			$serviceName = $textInfo.ToTitleCase($service.Name)
 
-			if ($service.Value.webhook -ne $null) {
-				if ($service.Value.webhook.StartsWith('https')) {
-					# Firstly check if service is ping, as the fields are different.
-					if ($serviceName -eq 'Ping') {
-						Write-LogMessage -Tag 'INFO' -Message 'Sending HTTP Ping..'
-						$logId_service = $vbrSessionLogger.AddLog('[VeeamNotify] Sending HTTP Ping..')
+			# Skip if service is not enabled
+			if (-not $service.Value.enabled) {
+				Write-LogMessage -Tag 'DEBUG' -Message "$serviceName is not enabled. Skipping $serviceName notification."
+				return # Continue to next service in the loop
+			}
 
-						# Send the actual ping.
-						try {
-							Send-Payload -Ping -Uri $service.Value.webhook | Out-Null
-							Write-LogMessage -Tag 'INFO' -Message "HTTP Ping sent successfully."
-							$vbrSessionLogger.UpdateSuccess($logId_service, "[VeeamNotify] HTTP Ping sent successfully.") | Out-Null
-						}
-						catch {
-							Write-LogMessage -Tag 'ERROR' -Message "Unable to send HTTP Ping: $_"
-							$vbrSessionLogger.UpdateErr($logId_service, "[VeeamNotify] HTTP Ping could not be sent.", "Please check the log: $Logfile") | Out-Null
-						}
-					}
-					# Handle all services that aren't ping.
-					else {
-						Write-LogMessage -Tag 'INFO' -Message "Sending notification to $($serviceName)."
-						$logId_service = $vbrSessionLogger.AddLog("[VeeamNotify] Sending notification to $($serviceName)...")
-
-						# Add user information for mention if relevant.
-						Write-LogMessage -Tag 'DEBUG' -Message 'Determining if user should be mentioned.'
-						if ($mention) {
-							Write-LogMessage -Tag 'DEBUG' -Message 'Getting user ID for mention.'
-							$payloadParams.UserId = $service.Value.user_id
-
-							# Set username if exists
-							if ($service.Value.user_name -and $service.Value.user_name -ne 'Your Name') {
-								Write-LogMessage -Tag 'DEBUG' -Message 'Setting user name for mention.'
-								$payloadParams.UserName = $service.Value.user_name
-							}
-						}
-
-						# Get URI from webhook value
-						$uri = $service.Value.webhook
-
-						try {
-							New-Payload -Service $service.Name -Parameters $payloadParams | Send-Payload -Uri $uri -JSONPayload $true | Out-Null
-
-							Write-LogMessage -Tag 'INFO' -Message "Notification sent to $serviceName successfully."
-							$vbrSessionLogger.UpdateSuccess($logId_service, "[VeeamNotify] Sent notification to $($serviceName).") | Out-Null
-						}
-						catch {
-							Write-LogMessage -Tag 'ERROR' -Message "Unable to send $serviceName notification: $_"
-							$vbrSessionLogger.UpdateErr($logId_service, "[VeeamNotify] $serviceName notification could not be sent.", "Please check the log: $Logfile") | Out-Null
-						}
-					}
+			# Log that we're attempting to send notification
+			$logId_service = $vbrSessionLogger.AddLog("[VeeamNotify] Sending notification to $($serviceName)...")
+			
+			# Call the appropriate notification sender function based on service name
+			$success = $false
+			switch ($serviceName) {
+				'Discord' {
+					$success = Send-WebhookNotification -Service 'Discord' -Parameters $payloadParams -ServiceConfig $service.Value -LogFile $Logfile
 				}
-				else {
-					Write-LogMessage -Tag 'DEBUG' -Message "$serviceName is unconfigured (invalid URL). Skipping $serviceName notification."
+				'Slack' {
+					$success = Send-WebhookNotification -Service 'Slack' -Parameters $payloadParams -ServiceConfig $service.Value -LogFile $Logfile
+				}
+				'Teams' {
+					$success = Send-WebhookNotification -Service 'Teams' -Parameters $payloadParams -ServiceConfig $service.Value -LogFile $Logfile
+				}
+				'Telegram' {
+					$success = Send-TelegramNotification -Parameters $payloadParams -ServiceConfig $service.Value -LogFile $Logfile
+				}
+				'Ping' {
+					$success = Send-PingNotification -ServiceConfig $service.Value -LogFile $Logfile
+				}
+				default {
+					Write-LogMessage -Tag 'WARN' -Message "Unknown service: $serviceName"
 				}
 			}
-			else {
-				# Get URI from webhook value
-				if ($service.Name -eq 'telegram') {
-					if (!($Service.Value.bot_token -eq 'TelegramBotToken' -or $Service.Value.chat_id -eq 'TelegramChatID')) {
-						Write-LogMessage -Tag 'INFO' -Message "Sending notification to $($serviceName)."
-						$logId_service = $vbrSessionLogger.AddLog("[VeeamNotify] Sending notification to $($serviceName)...")
-						try {
-							$payload = New-Payload -Service $service.Name -Parameters $payloadParams
-							Send-Payload -Uri "https://api.telegram.org/bot$($service.Value.bot_token)/sendMessage" -Body @{ chat_id = "$($service.Value.chat_id)"; parse_mode = 'MarkdownV2'; text = $payload }
 
-							Write-LogMessage -Tag 'INFO' -Message "Notification sent to $serviceName successfully."
-							$vbrSessionLogger.UpdateSuccess($logId_service, "[VeeamNotify] Sent notification to $($serviceName).") | Out-Null
-						}
-						catch {
-							Write-LogMessage -Tag 'ERROR' -Message "Unable to send $serviceName notification: $_"
-							$vbrSessionLogger.UpdateErr($logId_service, "[VeeamNotify] $serviceName notification could not be sent.", "Please check the log: $Logfile") | Out-Null
-						}
-					}
-					else {
-						Write-LogMessage -Tag 'DEBUG' -Message "$serviceName is unconfigured (invalid bot_token or chat_id). Skipping $serviceName notification."
-					}
-				}
+			# Update the Veeam session log based on the result
+			if ($success) {
+				$vbrSessionLogger.UpdateSuccess($logId_service, "[VeeamNotify] Sent notification to $($serviceName).") | Out-Null
+			} else {
+				$vbrSessionLogger.UpdateErr($logId_service, "[VeeamNotify] $serviceName notification could not be sent.", "Please check the log: $Logfile") | Out-Null
 			}
 		}
 
