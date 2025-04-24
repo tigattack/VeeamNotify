@@ -51,7 +51,7 @@ if ($Config.logging.enabled) {
 		}
 		until ($logExist -eq $true -or $count -ge 10)
 		do {
-			$logLocked = $(Test-FileIsLocked -Path "$Logfile" -ErrorAction Stop).IsLocked
+			$logLocked = $(Test-FileLock -Path "$Logfile" -ErrorAction Stop).IsLocked
 			Start-Sleep -Seconds 1
 		}
 		until (-not $logLocked)

@@ -1,8 +1,8 @@
-function Test-FileIsLocked {
+function Test-FileLock {
 	[cmdletbinding()]
 	param (
-		[parameter(Mandatory=$True,ValueFromPipeline=$True,ValueFromPipelineByPropertyName=$True)]
-		[Alias('FullName','PSPath')]
+		[parameter(Mandatory = $True, ValueFromPipeline = $True, ValueFromPipelineByPropertyName = $True)]
+		[Alias('FullName', 'PSPath')]
 		[string[]]$Path
 	)
 	process {
@@ -12,7 +12,7 @@ function Test-FileIsLocked {
 			#Verify that this is a file and not a directory
 			if ([System.IO.File]::Exists($Item)) {
 				try {
-					$FileStream = [System.IO.File]::Open($Item,'Open','Write')
+					$FileStream = [System.IO.File]::Open($Item, 'Open', 'Write')
 					$FileStream.Close()
 					$FileStream.Dispose()
 					$IsLocked = $False
