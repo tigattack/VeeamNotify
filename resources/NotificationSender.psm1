@@ -47,6 +47,7 @@ function Send-Payload {
 
 function Send-WebhookNotification {
 	[CmdletBinding()]
+	[OutputType([bool])]
 	param (
 		[Parameter(Mandatory)]
 		[ValidateSet('Discord', 'Slack', 'Teams')]
@@ -88,6 +89,7 @@ function Send-WebhookNotification {
 
 function Send-TelegramNotification {
 	[CmdletBinding()]
+	[OutputType([bool])]
 	param (
 		[Parameter(Mandatory)]
 		[Hashtable]$Parameters,
@@ -129,6 +131,7 @@ function Send-TelegramNotification {
 
 function Send-PingNotification {
 	[CmdletBinding()]
+	[OutputType([bool])]
 	param (
 		[Parameter(Mandatory)]
 		[PSObject]$ServiceConfig
