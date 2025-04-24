@@ -378,7 +378,8 @@ try {
 			# Update the Veeam session log based on the result
 			if ($success) {
 				$vbrSessionLogger.UpdateSuccess($logId_service, "[VeeamNotify] Sent notification to $($serviceName).") | Out-Null
-			} else {
+			}
+			else {
 				$vbrSessionLogger.UpdateErr($logId_service, "[VeeamNotify] $serviceName notification could not be sent.", "Please check the log: $Logfile") | Out-Null
 			}
 		}
