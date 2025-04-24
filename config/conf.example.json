@@ -1,23 +1,28 @@
 {
     "services": {
         "discord": {
+            "enabled": false,
             "webhook": "DiscordWebhook",
             "user_id": "123456789"
         },
         "slack": {
+            "enabled": false,
             "webhook": "SlackWebhook",
             "user_id": "A1B2C3D4E5"
         },
         "teams": {
+            "enabled": false,
             "webhook": "TeamsWebhook",
             "user_id": "user@domain.tld",
             "user_name": "Your Name"
         },
         "telegram": {
+            "enabled": false,
             "bot_token": "TelegramBotToken",
             "chat_id": "TelegramChatID"
         },
         "ping": {
+            "enabled": false,
             "webhook": "PingWebhook"
         }
     },

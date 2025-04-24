@@ -8,6 +8,9 @@
                 "discord": {
                     "type": "object",
                     "properties": {
+                        "enabled": {
+                            "type": "boolean"
+                        },
                         "webhook": {
                             "type": "string"
                         },
@@ -19,6 +22,9 @@
                 "slack": {
                     "type": "object",
                     "properties": {
+                        "enabled": {
+                            "type": "boolean"
+                        },
                         "webhook": {
                             "type": "string"
                         },
@@ -30,6 +36,9 @@
                 "teams": {
                     "type": "object",
                     "properties": {
+                        "enabled": {
+                            "type": "boolean"
+                        },
                         "webhook": {
                             "type": "string"
                         },
@@ -44,6 +53,9 @@
                 "telegram": {
                     "type": "object",
                     "properties": {
+                        "enabled": {
+                            "type": "boolean"
+                        },
                         "bot_token": {
                             "type": "string"
                         },
@@ -55,6 +67,9 @@
                 "ping": {
                     "type": "object",
                     "properties": {
+                        "enabled": {
+                            "type": "boolean"
+                        },
                         "webhook": {
                             "type" :"string"
                         }  
