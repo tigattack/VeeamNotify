@@ -208,7 +208,7 @@ try {
 	}
 
 	# Update Veeam session log.
-	$vbrSessionLogger.UpdateSuccess($logId_start, '[VeeamNotify] Gathered session details.') | Out-Null
+	$vbrSessionLogger.UpdateSuccess($logId_start, '[VeeamNotify] Successfully discovered session details.') | Out-Null
 	$logId_notification = $vbrSessionLogger.AddLog('[VeeamNotify] Preparing to send notification(s)...')
 
 
@@ -371,7 +371,7 @@ try {
 					$success = Send-PingNotification -ServiceConfig $service.Value -LogFile $Logfile
 				}
 				default {
-					Write-LogMessage -Tag 'WARN' -Message "Unknown service: $serviceName"
+					Write-LogMessage -Tag 'WARN' -Message "Skipping unknown service: $serviceName"
 				}
 			}
 
@@ -385,14 +385,11 @@ try {
 		}
 
 		# Update Veeam session log.
-		$vbrSessionLogger.AddSuccess('[VeeamNotify] Notification(s) sent successfully.') | Out-Null
+		$vbrSessionLogger.UpdateSuccess($logId_notification, '[VeeamNotify] Notification(s) sent successfully.') | Out-Null
 	}
 	catch {
 		Write-LogMessage -Tag 'WARN' -Message "Unable to send notification(s): $_"
-		$vbrSessionLogger.AddErr('[VeeamNotify] An error occured while sending notification(s).', "Please check the log: $Logfile") | Out-Null
-	}
-	finally {
-		$vbrSessionLogger.RemoveRecord($logId_notification) | Out-Null
+		$vbrSessionLogger.UpdateErr($logId_notification, '[VeeamNotify] An error occured while sending notification(s).', "Please check the log: $Logfile") | Out-Null
 	}
 
 	# Clean up old log files if configured
