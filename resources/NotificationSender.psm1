@@ -58,7 +58,7 @@ function Send-WebhookNotification {
 		[PSObject]$ServiceConfig
 	)
 
-	# Return early if webhook is not configured
+	# Return early if webhook is not configured or appears incorrect
 	if (-not $ServiceConfig.webhook -or -not $ServiceConfig.webhook.StartsWith('http')) {
 		Write-LogMessage -Tag 'DEBUG' -Message "$Service is unconfigured (invalid URL). Skipping $Service notification."
 		return $false
@@ -97,7 +97,7 @@ function Send-TelegramNotification {
 		[PSObject]$ServiceConfig
 	)
 
-	# Return early if bot token or chat ID is not configured
+	# Return early if bot token or chat ID is not configured or appears incorrect
 	if ($ServiceConfig.bot_token -eq 'TelegramBotToken' -or $ServiceConfig.chat_id -eq 'TelegramChatID') {
 		Write-LogMessage -Tag 'DEBUG' -Message 'Telegram is unconfigured (invalid bot_token or chat_id). Skipping Telegram notification.'
 		return $false
@@ -137,7 +137,7 @@ function Send-PingNotification {
 		[PSObject]$ServiceConfig
 	)
 
-	# Return early if webhook is not configured
+	# Return early if URL is not configured or appears incorrect
 	if (-not $ServiceConfig.webhook -or -not $ServiceConfig.webhook.StartsWith('http')) {
 		Write-LogMessage -Tag 'DEBUG' -Message 'Ping service is unconfigured (invalid URL). Skipping HTTP Ping.'
 		return $false
