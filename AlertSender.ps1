@@ -345,22 +345,21 @@ try {
 			$logId_service = $vbrSessionLogger.AddLog("[VeeamNotify] Sending notification to $($serviceName)...")
 
 			# Call the appropriate notification sender function based on service name
-			$success = $false
 			switch ($serviceName) {
 				'Discord' {
-					$success = Send-WebhookNotification -Service 'Discord' -Parameters $payloadParams -ServiceConfig $service.Value
+					$result = Send-WebhookNotification -Service 'Discord' -Parameters $payloadParams -ServiceConfig $service.Value
 				}
 				'Slack' {
-					$success = Send-WebhookNotification -Service 'Slack' -Parameters $payloadParams -ServiceConfig $service.Value
+					$result = Send-WebhookNotification -Service 'Slack' -Parameters $payloadParams -ServiceConfig $service.Value
 				}
 				'Teams' {
-					$success = Send-WebhookNotification -Service 'Teams' -Parameters $payloadParams -ServiceConfig $service.Value
+					$result = Send-WebhookNotification -Service 'Teams' -Parameters $payloadParams -ServiceConfig $service.Value
 				}
 				'Telegram' {
-					$success = Send-TelegramNotification -Parameters $payloadParams -ServiceConfig $service.Value
+					$result = Send-TelegramNotification -Parameters $payloadParams -ServiceConfig $service.Value
 				}
 				'Ping' {
-					$success = Send-PingNotification -ServiceConfig $service.Value
+					$result = Send-PingNotification -ServiceConfig $service.Value
 				}
 				default {
 					Write-LogMessage -Tag 'WARN' -Message "Skipping unknown service: $serviceName"
@@ -368,11 +367,14 @@ try {
 			}
 
 			# Update the Veeam session log based on the result
-			if ($success) {
+			if ($result.Success) {
 				$vbrSessionLogger.UpdateSuccess($logId_service, "[VeeamNotify] Sent notification to $($serviceName).") | Out-Null
+				Write-LogMessage -Tag 'INFO' -Message "$serviceName notification sent successfully."
+				Write-LogMessage -Tag 'DEBUG' -Message "$serviceName notification response: $($result.Result)"
 			}
 			else {
 				$vbrSessionLogger.UpdateErr($logId_service, "[VeeamNotify] $serviceName notification could not be sent.", "Please check the log: $Logfile") | Out-Null
+				Write-LogMessage -Tag 'ERROR' -Message "$serviceName notification could not be sent: $($result.Result)"
 			}
 		}
 

@@ -47,7 +47,7 @@ function Send-Payload {
 
 function Send-WebhookNotification {
 	[CmdletBinding()]
-	[OutputType([bool])]
+	[OutputType([PSObject])]
 	param (
 		[Parameter(Mandatory)]
 		[ValidateSet('Discord', 'Slack', 'Teams')]
@@ -61,7 +61,10 @@ function Send-WebhookNotification {
 	# Return early if webhook is not configured or appears incorrect
 	if (-not $ServiceConfig.webhook -or -not $ServiceConfig.webhook.StartsWith('http')) {
 		Write-LogMessage -Tag 'DEBUG' -Message "$Service is unconfigured (invalid URL). Skipping $Service notification."
-		return $false
+		return @{
+			Success = $false
+			Result  = "$Service is unconfigured (invalid URL)."
+		}
 	}
 
 	try {
@@ -77,19 +80,24 @@ function Send-WebhookNotification {
 
 		# Create payload and send notification
 		$uri = $ServiceConfig.webhook
-		New-Payload -Service $Service -Parameters $Parameters | Send-Payload -Uri $uri -JSONPayload | Out-Null
+		$response = New-Payload -Service $Service -Parameters $Parameters | Send-Payload -Uri $uri -JSONPayload
 		Write-LogMessage -Tag 'INFO' -Message "Notification sent to $Service successfully."
-		return $true
+		return @{
+			Success = $true
+			Result = $response
+		}
 	}
 	catch {
 		Write-LogMessage -Tag 'ERROR' -Message "Unable to send $Service notification: $_"
-		return $false
+		return @{
+			Success = $false
+			Result   = $_
+		}
 	}
 }
-
 function Send-TelegramNotification {
 	[CmdletBinding()]
-	[OutputType([bool])]
+	[OutputType([PSObject])]
 	param (
 		[Parameter(Mandatory)]
 		[Hashtable]$Parameters,
@@ -100,7 +108,10 @@ function Send-TelegramNotification {
 	# Return early if bot token or chat ID is not configured or appears incorrect
 	if ($ServiceConfig.bot_token -eq 'TelegramBotToken' -or $ServiceConfig.chat_id -eq 'TelegramChatID') {
 		Write-LogMessage -Tag 'DEBUG' -Message 'Telegram is unconfigured (invalid bot_token or chat_id). Skipping Telegram notification.'
-		return $false
+		return @{
+			Success = $false
+			Result  = 'Telegram is unconfigured (invalid bot_token or chat_id).'
+		}
 	}
 
 	try {
@@ -118,20 +129,26 @@ function Send-TelegramNotification {
 			parse_mode = 'MarkdownV2'
 			text       = $notificationText
 		}
-		Send-Payload -Uri $uri -Payload $payload -ContentType 'application/x-www-form-urlencoded' | Out-Null
+		$response = Send-Payload -Uri $uri -Payload $payload -ContentType 'application/x-www-form-urlencoded'
 
 		Write-LogMessage -Tag 'INFO' -Message 'Notification sent to Telegram successfully.'
-		return $true
+		return @{
+			Success = $true
+			Result  = $response
+		}
 	}
 	catch {
 		Write-LogMessage -Tag 'ERROR' -Message "Unable to send Telegram notification: $_"
-		return $false
+		return @{
+			Success = $false
+			Result  = $_
+		}
 	}
 }
 
 function Send-PingNotification {
 	[CmdletBinding()]
-	[OutputType([bool])]
+	[OutputType([PSObject])]
 	param (
 		[Parameter(Mandatory)]
 		[PSObject]$ServiceConfig
@@ -140,18 +157,28 @@ function Send-PingNotification {
 	# Return early if URL is not configured or appears incorrect
 	if (-not $ServiceConfig.url -or -not $ServiceConfig.url.StartsWith('http')) {
 		Write-LogMessage -Tag 'DEBUG' -Message 'Ping service is unconfigured (invalid URL). Skipping HTTP Ping.'
-		return $false
+		return @{
+			Success = $false
+			Result  = 'Ping service is unconfigured (invalid URL).'
+		}
 	}
 
 	try {
 		# Send the actual ping
 		# TODO: support different methods
-		Send-Payload -Ping -Uri $ServiceConfig.url | Out-Null
+		$response = Send-Payload -Ping -Uri $ServiceConfig.url
+
 		Write-LogMessage -Tag 'INFO' -Message 'HTTP Ping sent successfully.'
-		return $true
+		return @{
+			Success = $true
+			Result  = $response
+		}
 	}
 	catch {
 		Write-LogMessage -Tag 'ERROR' -Message "Unable to send HTTP Ping: $_"
-		return $false
+		return @{
+			Success = $false
+			Result  = $_
+		}
 	}
 }
