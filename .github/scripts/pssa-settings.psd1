@@ -67,5 +67,8 @@
 		PSUseCorrectCasing                        = @{
 			Enable = $true
 		}
+		PSAvoidSemicolonsAsLineTerminators        = @{
+			Enable = $true
+		}
 	}
 }
