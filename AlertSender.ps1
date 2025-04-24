@@ -35,7 +35,7 @@ $Config = $Config | ConvertFrom-Json
 
 # Import modules.
 Import-Module Veeam.Backup.PowerShell -DisableNameChecking
-Get-Item "$PSScriptRoot\resources\*.psm1" | Import-Module
+Get-Item "$PSScriptRoot\resources\*.psm1" | Import-Module #-Global
 Add-Type -AssemblyName System.Web
 
 
@@ -295,42 +295,29 @@ try {
 
 
 	# Build embed parameters
-	if ($jobType -in 'EpAgentBackup','BackupToTape','FileToTape') {
-		$payloadParams = @{
-			JobName       = $jobName
-			JobType       = $jobTypeNice
-			Status        = $status
-			ProcessedSize = $processedSizeRound
-			TransferSize  = $transferSizeRound
-			Speed         = $speedRound
-			Bottleneck    = $bottleneck
-			Duration      = $durationFormatted
-			StartTime     = $startTime
-			EndTime       = $endTime
-			Mention       = $mention
-			ThumbnailUrl  = $Config.thumbnail
-			FooterMessage = $footerMessage
-		}
+	$payloadParams = [ordered]@{
+		JobName       = $jobName
+		JobType       = $jobTypeNice
+		Status        = $status
+		Speed         = $speedRound
+		Bottleneck    = $bottleneck
+		Duration      = $durationFormatted
+		StartTime     = $startTime
+		EndTime       = $endTime
+		Mention       = $mention
+		ThumbnailUrl  = $Config.thumbnail
+		FooterMessage = $footerMessage
 	}
 
+	if ($jobType -in 'EpAgentBackup','BackupToTape','FileToTape') {
+		$payloadParams.Insert('3', 'ProcessedSize', $processedSizeRound)
+		$payloadParams.Insert('4', 'TransferSize', $transferSizeRound)
+	}
 	else {
-		$payloadParams = @{
-			JobName       = $jobName
-			JobType       = $jobTypeNice
-			Status        = $status
-			DataSize      = $dataSizeRound
-			TransferSize  = $transferSizeRound
-			DedupRatio    = $dedupRatio
-			CompressRatio = $compressRatio
-			Speed         = $speedRound
-			Bottleneck    = $bottleneck
-			Duration      = $durationFormatted
-			StartTime     = $startTime
-			EndTime       = $endTime
-			Mention       = $mention
-			ThumbnailUrl  = $Config.thumbnail
-			FooterMessage = $footerMessage
-		}
+		$payloadParams.Insert('3', 'DataSize', $dataSizeRound)
+		$payloadParams.Insert('4', 'TransferSize', $transferSizeRound)
+		$payloadParams.Insert('5', 'DedupRatio', $dedupRatio)
+		$payloadParams.Insert('6', 'CompressRatio', $compressRatio)
 	}
 
 	# Add update message if relevant.
