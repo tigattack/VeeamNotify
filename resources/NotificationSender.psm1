@@ -84,17 +84,18 @@ function Send-WebhookNotification {
 		Write-LogMessage -Tag 'INFO' -Message "Notification sent to $Service successfully."
 		return @{
 			Success = $true
-			Result = $response
+			Result  = $response
 		}
 	}
 	catch {
-		Write-LogMessage -Tag 'ERROR' -Message "Unable to send $Service notification: $_"
+		Write-LogMessage -Tag 'ERROR' -Message "Unable to send $Service notification: $($_)"
 		return @{
 			Success = $false
-			Result   = $_
+			Result  = $_
 		}
 	}
 }
+
 function Send-TelegramNotification {
 	[CmdletBinding()]
 	[OutputType([PSObject])]
@@ -138,7 +139,7 @@ function Send-TelegramNotification {
 		}
 	}
 	catch {
-		Write-LogMessage -Tag 'ERROR' -Message "Unable to send Telegram notification: $_"
+		Write-LogMessage -Tag 'ERROR' -Message "Unable to send Telegram notification: $($_)"
 		return @{
 			Success = $false
 			Result  = $_
@@ -175,7 +176,7 @@ function Send-PingNotification {
 		}
 	}
 	catch {
-		Write-LogMessage -Tag 'ERROR' -Message "Unable to send HTTP Ping: $_"
+		Write-LogMessage -Tag 'ERROR' -Message "Unable to send HTTP Ping: $($_)"
 		return @{
 			Success = $false
 			Result  = $_
