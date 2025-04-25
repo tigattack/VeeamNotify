@@ -5,10 +5,10 @@ Import-Module "$PSScriptRoot\resources\VBRSessionInfo.psm1"
 
 # Set vars
 $configFile = "$PSScriptRoot\config\conf.json"
-$date = (Get-Date -UFormat %Y-%m-%d_%T).Replace(':','.')
+$date = (Get-Date -UFormat %Y-%m-%d_%T).Replace(':', '.')
 $logFile = "$PSScriptRoot\log\$($date)_Bootstrap.log"
 $idRegex = '[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}'
-$supportedTypes = 'Backup', 'EpAgentBackup','Replica','BackupToTape','FileToTape'
+$supportedTypes = 'Backup', 'EpAgentBackup', 'Replica', 'BackupToTape', 'FileToTape'
 
 # Start logging to file
 Start-Logging -Path $logFile
@@ -28,7 +28,7 @@ if (-not $config.logging.enabled) {
 
 ## Pull raw config and format for later.
 ## This is necessary since $config as a PSCustomObject was not passed through correctly with Start-Process and $powershellArguments.
-$configRaw = (Get-Content -Raw $configFile).Replace('"','\"').Replace("`n",'').Replace("`t",'').Replace('  ',' ')
+$configRaw = (Get-Content -Raw $configFile).Replace('"', '\"').Replace("`n", '').Replace("`t", '').Replace('  ', ' ')
 
 ## Test config.
 try {

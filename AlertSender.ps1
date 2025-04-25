@@ -16,9 +16,9 @@ function Get-Bottleneck {
 
 	$bottleneck = ($Logger.GetLog() | `
 				Select-Object -ExpandProperty UpdatedRecords | `
-				Where-Object {$_.Title -match 'Primary bottleneck:.*'} | `
-				Select-Object -ExpandProperty Title) `
-		-replace 'Primary bottleneck:',''
+					Where-Object {$_.Title -match 'Primary bottleneck:.*'} | `
+						Select-Object -ExpandProperty Title) `
+		-replace 'Primary bottleneck:', ''
 
 	if ($bottleneck.Length -eq 0) {
 		$bottleneck = 'Undetermined'
@@ -187,7 +187,7 @@ try {
 	}
 
 	# If agent backup, gather and include session info.
-	if ($jobType -in 'EpAgentBackup','BackupToTape','FileToTape') {
+	if ($jobType -in 'EpAgentBackup', 'BackupToTape', 'FileToTape') {
 		# Gather session data sizes and timings.
 		[Float]$processedSize	= $session.Info.Progress.ProcessedSize
 		[Float]$transferSize 	= $session.Info.Progress.TransferedSize
@@ -301,7 +301,7 @@ try {
 		FooterMessage = $footerMessage
 	}
 
-	if ($jobType -in 'EpAgentBackup','BackupToTape','FileToTape') {
+	if ($jobType -in 'EpAgentBackup', 'BackupToTape', 'FileToTape') {
 		$payloadParams.Insert('3', 'ProcessedSize', $processedSizeRound)
 		$payloadParams.Insert('4', 'TransferSize', $transferSizeRound)
 	}

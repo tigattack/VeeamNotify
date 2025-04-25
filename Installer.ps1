@@ -38,17 +38,17 @@
 
 [CmdletBinding(DefaultParameterSetName='None')]
 param(
-	[Parameter(ParameterSetName = 'Version', Position = 0, Mandatory = $true)]
+	[Parameter(ParameterSetName = 'Version', Position = 0, Mandatory)]
 	# Built-in parameter validation disabled - See https://github.com/tigattack/VeeamNotify/issues/50
 	# [ValidatePattern('^v(\d+\.)?(\d+\.)?(\*|\d+)$')]
 	[String]$Version,
 
-	[Parameter(ParameterSetName = 'Release', Position = 0, Mandatory = $true)]
+	[Parameter(ParameterSetName = 'Release', Position = 0, Mandatory)]
 	# Built-in parameter validation disabled - See https://github.com/tigattack/VeeamNotify/issues/50
 	# [ValidateSet('Release', 'Prerelease')]
 	[String]$Latest,
 
-	[Parameter(ParameterSetName = 'Branch', Position = 0, Mandatory = $true)]
+	[Parameter(ParameterSetName = 'Branch', Position = 0, Mandatory)]
 	[String]$Branch,
 
 	[Parameter(ParameterSetName = 'Version', Position = 1)]
@@ -361,6 +361,7 @@ if (-not $NonInteractive) {
 		-1
 	)
 
+	# TODO: support Telegram & ping
 	$webhookPrompt = "`nPlease enter your webhook URL"
 	switch ($servicePrompt_result) {
 		0 {

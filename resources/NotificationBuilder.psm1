@@ -2,11 +2,11 @@ function New-Payload {
 	[CmdletBinding()]
 	[OutputType([PSCustomObject])]
 	param (
-		[Parameter(Mandatory=$true)]
+		[Parameter(Mandatory)]
 		[ValidateSet('Discord', 'Slack', 'Teams', 'Telegram')]
 		[string]$Service,
 
-		[Parameter(Mandatory=$true)]
+		[Parameter(Mandatory)]
 		[Hashtable]$Parameters
 	)
 
@@ -686,7 +686,7 @@ function New-TelegramPayload {
 	[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute(
 		'PSReviewUnusedParameter',
 		'ThumbnailUrl',
-		Justification='ThumbnailUrl is part of standard notification parameters'
+		Justification = 'ThumbnailUrl is part of standard notification parameters'
 	)]
 	param (
 		[ValidateNotNullOrEmpty()]
