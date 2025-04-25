@@ -64,7 +64,7 @@
                         }
                     }
                 },
-                "ping": {
+                "http": {
                     "type": "object",
                     "properties": {
                         "enabled": {
@@ -88,7 +88,7 @@
                 "slack",
                 "teams",
                 "telegram",
-                "ping"
+                "http"
             ]
         },
         "mentions": {

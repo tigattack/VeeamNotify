@@ -21,10 +21,10 @@
             "bot_token": "TelegramBotToken",
             "chat_id": "TelegramChatID"
         },
-        "ping": {
+        "http": {
             "enabled": false,
-            "url": "PingWebhook",
-            "method": "GET"
+            "url": "EndpointURL",
+            "method": "POST"
         }
     },
     "mentions": {

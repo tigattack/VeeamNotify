@@ -10,25 +10,13 @@ function Send-Payload {
 	[CmdletBinding()]
 	[OutputType([NotificationResult])]
 	param (
-		[Parameter(Mandatory, ParameterSetName = 'Notification', Position = 0, ValueFromPipeline)]
+		[Parameter(Mandatory, ValueFromPipeline)]
 		[PSCustomObject]$Payload,
-
-		[Parameter(Mandatory, ParameterSetName = 'Ping', Position = 0)]
-		[Switch]$Ping,
-
-		[Parameter(Mandatory, ParameterSetName = 'Notification', Position = 1)]
-		[Parameter(Mandatory, ParameterSetName = 'Ping', Position = 1, ValueFromPipeline)]
+		[Parameter(Mandatory)]
 		[String]$Uri,
-
-		[Parameter(ParameterSetName = 'Notification', Position = 2)]
 		[String]$ContentType = 'application/json',
-
-		[Parameter(ParameterSetName = 'Notification', Position = 3)]
-		[Parameter(ParameterSetName = 'Ping', Position = 2)]
 		[String]$Method = 'Post',
-
-		[Parameter(ParameterSetName = 'Notification', Position = 4)]
-		[Switch]$JSONPayload
+		[Switch]$NoConvertJson
 	)
 
 	begin {
@@ -39,21 +27,17 @@ function Send-Payload {
 	}
 
 	process {
+		if (-not $NoConvertJson) {
+			$Payload = $Payload | ConvertTo-Json -Depth 11
+		}
+
 		$postParams = @{
 			Uri         = $Uri
+			Body        = $Payload
 			Method      = $Method
+			ContentType = $ContentType
 			UserAgent   = "VeeamNotify; PowerShell/$psVersion"
 			ErrorAction = 'Stop'
-		}
-		if (-not $Ping) {
-			if ($JSONPayload) {
-				$Payload = $Payload | ConvertTo-Json -Depth 11
-			}
-
-			$postParams += @{
-				Body        = $Payload
-				ContentType = $ContentType
-			}
 		}
 
 		try {
@@ -120,7 +104,7 @@ function Send-WebhookNotification {
 
 	# Create payload and send notification
 	try {
-		$response = New-Payload -Service $Service -Parameters $Parameters | Send-Payload -Uri $ServiceConfig.webhook -JSONPayload
+		$response = New-Payload -Service $Service -Parameters $Parameters | Send-Payload -Uri $ServiceConfig.webhook
 		return $response
 	}
 	catch {
@@ -169,7 +153,7 @@ function Send-TelegramNotification {
 	try {
 		$uri = "https://api.telegram.org/bot$($ServiceConfig.bot_token)/sendMessage"
 		$Parameters.ChatId = $ServiceConfig.chat_id
-		$response = New-Payload -Service 'Telegram' -Parameters $Parameters | Send-Payload -Uri $uri -ContentType 'application/x-www-form-urlencoded'
+		$response = New-Payload -Service 'Telegram' -Parameters $Parameters | Send-Payload -Uri $uri -ContentType 'application/x-www-form-urlencoded' -NoConvertJson
 		return $response
 	}
 	catch {
@@ -181,10 +165,12 @@ function Send-TelegramNotification {
 	}
 }
 
-function Send-PingNotification {
+function Send-HttpNotification {
 	[CmdletBinding()]
 	[OutputType([NotificationResult])]
 	param (
+		[Parameter(Mandatory)]
+		[Hashtable]$Parameters,
 		[Parameter(Mandatory)]
 		[PSCustomObject]$ServiceConfig
 	)
@@ -193,19 +179,27 @@ function Send-PingNotification {
 	if (-not $ServiceConfig.url -or -not $ServiceConfig.url.StartsWith('http')) {
 		return [NotificationResult]@{
 			Success = $false
-			Message = 'Ping service is unconfigured (invalid URL). Skipping HTTP Ping.'
+			Message = 'HTTP service is unconfigured (invalid URL). Skipping HTTP notification.'
 		}
 	}
 
-	# Create payload and send notification
 	try {
-		$response = Send-Payload -Ping -Uri $ServiceConfig.url -Method $ServiceConfig.method
+		$payloadParams = @{
+			Uri    = $ServiceConfig.url
+			Method = $ServiceConfig.method
+		}
+
+		if ($ServiceConfig.method.ToLower() -eq 'post') {
+			$payloadParams.Payload = $Parameters
+		}
+
+		$response = Send-Payload @payloadParams
 		return $response
 	}
 	catch {
 		return [NotificationResult]@{
 			Success = $false
-			Message = 'Unable to send HTTP Ping'
+			Message = 'Unable to send HTTP notification'
 			Detail  = $_.Exception.Message
 		}
 	}

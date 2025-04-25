@@ -353,8 +353,8 @@ try {
 				'Telegram' {
 					$result = Send-TelegramNotification -Parameters $payloadParams -ServiceConfig $service.Value
 				}
-				'Ping' {
-					$result = Send-PingNotification -ServiceConfig $service.Value
+				'Http' {
+					$result = Send-HttpNotification -Parameters $payloadParams -ServiceConfig $service.Value
 				}
 				default {
 					Write-LogMessage -Tag 'WARN' -Message "Skipping unknown service: $serviceName"
