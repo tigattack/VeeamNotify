@@ -32,14 +32,17 @@ function Send-Payload {
 	)
 
 	begin {
-		$psVersion = $PSVersionTable.PSVersion -join '.'
+		# Referencing these directly in the $psVersion string didn't work, hence this.
+		$psMajor = $PSVersionTable.PSVersion.Major
+		$psMinor = $PSVersionTable.PSVersion.Minor
+		$psVersion = "${psMajor}.${psMinor}"
 	}
 
 	process {
 		$postParams = @{
 			Uri         = $Uri
 			Method      = $Method
-			UserAgent   = "VeeamNotify; $psVersion"
+			UserAgent   = "VeeamNotify; PowerShell/$psVersion"
 			ErrorAction = 'Stop'
 		}
 		if (-not $Ping) {
