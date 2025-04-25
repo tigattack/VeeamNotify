@@ -66,9 +66,7 @@ function Start-Logging {
 	)]
 	param(
 		[Parameter(Mandatory)]
-		$Path,
-		[Switch]
-		$Append
+		[String]$Path
 	)
 	if ($PSCmdlet.ShouldProcess($Path, 'Start-Transcript')) {
 		try {
