@@ -43,7 +43,7 @@
     "update": {
         "notify": true,
         "auto_update": false,
-        "auto_update_comment": "auto_update will NOT work. Leave as 'false'"
+        "auto_update_comment": "auto_update is not yet implemented. This will do nothing even if 'true'."
     },
     "thumbnail": "https://raw.githubusercontent.com/tigattack/VeeamNotify/master/asset/thumb01.png"
 }
