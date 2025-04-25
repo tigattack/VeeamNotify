@@ -128,7 +128,7 @@ function Send-TelegramNotification {
 	if ($ServiceConfig.bot_token -eq 'TelegramBotToken' -or $ServiceConfig.chat_id -eq 'TelegramChatID') {
 		return [NotificationResult]@{
 			Success = $false
-			Message = "Telegram is unconfigured (invalid bot_token or chat_id). Skipping Telegram notification."
+			Message = 'Telegram is unconfigured (invalid bot_token or chat_id). Skipping Telegram notification.'
 		}
 	}
 
@@ -157,7 +157,7 @@ function Send-TelegramNotification {
 	catch {
 		return [NotificationResult]@{
 			Success = $false
-			Message = "Unable to send Telegram notification"
+			Message = 'Unable to send Telegram notification'
 			Detail  = $_.Exception.Message
 		}
 	}
@@ -175,7 +175,7 @@ function Send-PingNotification {
 	if (-not $ServiceConfig.url -or -not $ServiceConfig.url.StartsWith('http')) {
 		return [NotificationResult]@{
 			Success = $false
-			Message = "Ping service is unconfigured (invalid URL). Skipping HTTP Ping."
+			Message = 'Ping service is unconfigured (invalid URL). Skipping HTTP Ping.'
 		}
 	}
 
@@ -188,7 +188,7 @@ function Send-PingNotification {
 	catch {
 		return [NotificationResult]@{
 			Success = $false
-			Message = "Unable to send HTTP Ping"
+			Message = 'Unable to send HTTP Ping'
 			Detail  = $_.Exception.Message
 		}
 	}
