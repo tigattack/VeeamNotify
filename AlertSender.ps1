@@ -214,7 +214,7 @@ try {
 	# Job timings
 
 	## Calculate difference between job start and end time.
-	$duration = $endTime - $startTime
+	$duration = $session.Info.Progress.Duration
 
 	## Switch for job duration; define pretty output.
 	switch ($duration) {
