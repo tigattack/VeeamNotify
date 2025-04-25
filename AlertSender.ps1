@@ -330,12 +330,12 @@ try {
 
 			# Skip if service is not enabled
 			if (-not $service.Value.enabled) {
-				Write-LogMessage -Tag 'DEBUG' -Message "$serviceName is not enabled. Skipping $serviceName notification."
+				Write-LogMessage -Tag 'DEBUG' -Message "Skipping $($serviceName) notification as it is not enabled."
 				return
 			}
 
 			# Log that we're attempting to send notification
-			$logId_service = $vbrSessionLogger.AddLog("[VeeamNotify] Sending notification to $($serviceName)...")
+			$logId_service = $vbrSessionLogger.AddLog("[VeeamNotify] Sending $($serviceName) notification...")
 
 			# Call the appropriate notification sender function based on service name
 			switch ($serviceName) {
@@ -367,7 +367,7 @@ try {
 					Write-LogMessage -Tag 'DEBUG' -Message "$serviceName notification response: $($result.Message)"
 				}
 				else {
-					Write-LogMessage -Tag 'DEBUG' -Message "$serviceName did not return a response."
+					Write-LogMessage -Tag 'DEBUG' -Message "No response received from $serviceName notification."
 				}
 			}
 			else {
