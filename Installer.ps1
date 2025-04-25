@@ -401,7 +401,7 @@ function Install-DownloadedProject {
 	else {
 		# Necessary to handle branch downloads, which come as a ZIP containing a directory named similarly to "tigattack-VeeamNotify-2100906".
 		# Look for a directory less than 5 minutes old which matches the example name stated above.
-        (Get-ChildItem $InstallParentPath | Where-Object {
+		(Get-ChildItem $InstallParentPath | Where-Object {
 			$_.LastWriteTime -gt (Get-Date).AddMinutes(-5) -and
 			$_.Name -match "tigattack-$Project-.*" -and
 			$_.PsIsContainer
