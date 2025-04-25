@@ -1,6 +1,6 @@
 function New-Payload {
 	[CmdletBinding()]
-	[OutputType([System.Collections.Hashtable])]
+	[OutputType([PSCustomObject])]
 	param (
 		[Parameter(Mandatory=$true)]
 		[ValidateSet('Discord', 'Slack', 'Teams', 'Telegram')]
@@ -31,7 +31,7 @@ function New-Payload {
 
 function New-DiscordPayload {
 	[CmdletBinding()]
-	[OutputType([System.Collections.Hashtable])]
+	[OutputType([PSCustomObject])]
 	param (
 		[string]$JobName,
 		[string]$JobType,
@@ -212,7 +212,7 @@ function New-DiscordPayload {
 
 function New-TeamsPayload {
 	[CmdletBinding()]
-	[OutputType([System.Collections.Hashtable])]
+	[OutputType([PSCustomObject])]
 	param (
 		[string]$JobName,
 		[string]$JobType,
@@ -488,7 +488,7 @@ function New-TeamsPayload {
 
 function New-SlackPayload {
 	[CmdletBinding()]
-	[OutputType([System.Collections.Hashtable])]
+	[OutputType([PSCustomObject])]
 	param (
 		[string]$JobName,
 		[string]$JobType,
@@ -685,7 +685,7 @@ function New-SlackPayload {
 
 function New-TelegramPayload {
 	[CmdletBinding()]
-	[OutputType([string])]
+	[OutputType([PSCustomObject])]
 	param (
 		[string]$JobName,
 		[string]$JobType,
