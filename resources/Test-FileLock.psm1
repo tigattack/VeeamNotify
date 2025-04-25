@@ -1,9 +1,14 @@
+class FileLockResult {
+	[ValidateNotNullOrEmpty()][bool]$IsLocked
+	[ValidateNotNullOrEmpty()][string]$File
+}
+
 # I believe the source of the original implementation of this function (since changed) was:
 # https://mcpmag.com/articles/2018/07/10/check-for-locked-file-using-powershell.aspx
 # Written by Boe Prox, Microsoft MVP.
 function Test-FileLock {
 	[CmdletBinding()]
-	[OutputType([PSCustomObject])]
+	[OutputType([FileLockResult])]
 	param (
 		[Parameter(Mandatory, ValueFromPipeline, ValueFromPipelineByPropertyName)]
 		[Alias('FullName', 'PSPath')]
@@ -27,8 +32,8 @@ function Test-FileLock {
 				$IsLocked = $True
 			}
 
-			[pscustomobject]@{
-				File     = $Item
+			return [FileLockResult]@{
+				File     = $Path
 				IsLocked = $IsLocked
 			}
 		}
