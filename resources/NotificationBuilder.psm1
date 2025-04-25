@@ -711,7 +711,7 @@ function New-TelegramPayload {
 	# Mention user if configured to do so.
 	# Must be done at early stage to ensure this section is at the top of the embed object.
 	if ($mention) {
-		$message =  "[$UserName](tg://user?id=$UserId) Job $($Status.ToLower())!`n"
+		$message = "[$UserName](tg://user?id=$UserId) Job $($Status.ToLower())!`n"
 	}
 	else {
 		$message = ''
