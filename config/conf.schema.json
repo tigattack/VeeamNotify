@@ -72,6 +72,13 @@
                         },
                         "url": {
                             "type" :"string"
+                        },
+                        "method": {
+                            "type": "string",
+                            "enum": [
+                                "GET",
+                                "POST"
+                            ]
                         }
                     }
                 }

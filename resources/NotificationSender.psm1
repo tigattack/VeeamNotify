@@ -199,8 +199,7 @@ function Send-PingNotification {
 
 	# Create payload and send notification
 	try {
-		# TODO: support different methods
-		$response = Send-Payload -Ping -Uri $ServiceConfig.url
+		$response = Send-Payload -Ping -Uri $ServiceConfig.url -Method $ServiceConfig.method
 		return $response
 	}
 	catch {
