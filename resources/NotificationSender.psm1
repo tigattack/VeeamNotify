@@ -151,13 +151,8 @@ function Send-TelegramNotification {
 	# Create payload and send notification
 	try {
 		$uri = "https://api.telegram.org/bot$($ServiceConfig.bot_token)/sendMessage"
-		$notificationText = New-Payload -Service 'Telegram' -Parameters $Parameters
-		$payload = [PSCustomObject]@{
-			chat_id    = "$($ServiceConfig.chat_id)"
-			parse_mode = 'MarkdownV2'
-			text       = $notificationText
-		}
-		$response = Send-Payload -Uri $uri -Payload $payload -ContentType 'application/x-www-form-urlencoded'
+		$Parameters.ChatId = $ServiceConfig.chat_id
+		$response = New-Payload -Service 'Telegram' -Parameters $Parameters | Send-Payload -Uri $uri -ContentType 'application/x-www-form-urlencoded'
 		return $response
 	}
 	catch {

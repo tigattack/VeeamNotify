@@ -687,6 +687,8 @@ function New-TelegramPayload {
 	[CmdletBinding()]
 	[OutputType([PSCustomObject])]
 	param (
+		[ValidateNotNullOrEmpty()]
+		[string]$ChatId,
 		[string]$JobName,
 		[string]$JobType,
 		[string]$Status,
@@ -767,5 +769,11 @@ function New-TelegramPayload {
 		$message = $message.Replace("$char", "\$char")
 	}
 
-	return $message
+	[PSCustomObject]$payload = @{
+		chat_id    = $ChatId
+		parse_mode = 'MarkdownV2'
+		text       = $message
+	}
+
+	return $payload
 }
