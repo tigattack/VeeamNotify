@@ -16,8 +16,8 @@ function Get-Bottleneck {
 
 	$bottleneck = ($Logger.GetLog() | `
 				Select-Object -ExpandProperty UpdatedRecords | `
-					Where-Object {$_.Title -match 'Primary bottleneck:.*'} | `
-						Select-Object -ExpandProperty Title) `
+				Where-Object {$_.Title -match 'Primary bottleneck:.*'} | `
+				Select-Object -ExpandProperty Title) `
 		-replace 'Primary bottleneck:', ''
 
 	if ($bottleneck.Length -eq 0) {
