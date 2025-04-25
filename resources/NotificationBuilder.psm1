@@ -686,6 +686,11 @@ function New-SlackPayload {
 function New-TelegramPayload {
 	[CmdletBinding()]
 	[OutputType([PSCustomObject])]
+	[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+		'PSReviewUnusedParameter',
+		'ThumbnailUrl',
+		Justification='ThumbnailUrl is part of standard notification parameters'
+	)]
 	param (
 		[ValidateNotNullOrEmpty()]
 		[string]$ChatId,
