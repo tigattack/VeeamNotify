@@ -124,8 +124,8 @@ try {
 		[Float]$dataSize 		= $session.BackupStats.DataSize
 		[Float]$transferSize 	= $session.BackupStats.BackupSize
 		[Float]$speed 			= $session.Info.Progress.AvgSpeed
-		$endTime 				= $session.Info.EndTime
-		$startTime 				= $session.Info.CreationTime
+		[DateTime]$endTime 		= $session.Info.EndTime
+		[DateTime]$startTime 	= $session.Info.CreationTime
 		[string]$dedupRatio 	= $session.BackupStats.DedupRatio
 		[string]$compressRatio	= $session.BackupStats.CompressRatio
 		[string]$bottleneck 	= Get-Bottleneck -Logger $vbrSessionLogger
