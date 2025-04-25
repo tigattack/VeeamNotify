@@ -12,30 +12,45 @@ function Send-Payload {
 	param (
 		[Parameter(Mandatory, ParameterSetName = 'Notification', Position = 0, ValueFromPipeline)]
 		[PSCustomObject]$Payload,
+
 		[Parameter(Mandatory, ParameterSetName = 'Ping', Position = 0)]
 		[Switch]$Ping,
+
 		[Parameter(Mandatory, ParameterSetName = 'Notification', Position = 1)]
 		[Parameter(Mandatory, ParameterSetName = 'Ping', Position = 1, ValueFromPipeline)]
 		[String]$Uri,
+
 		[Parameter(ParameterSetName = 'Notification', Position = 2)]
 		[String]$ContentType = 'application/json',
+
 		[Parameter(ParameterSetName = 'Notification', Position = 3)]
+		[Parameter(ParameterSetName = 'Ping', Position = 2)]
 		[String]$Method = 'Post',
+
 		[Parameter(ParameterSetName = 'Notification', Position = 4)]
 		[Switch]$JSONPayload
 	)
 
-	process {
-		if ($JSONPayload) {
-			$Payload = $Payload | ConvertTo-Json -Depth 11
-		}
+	begin {
+		$psVersion = $PSVersionTable.PSVersion -join '.'
+	}
 
+	process {
 		$postParams = @{
 			Uri         = $Uri
-			Body        = $Payload
 			Method      = $Method
-			ContentType = $ContentType
+			UserAgent   = "VeeamNotify; $psVersion"
 			ErrorAction = 'Stop'
+		}
+		if (-not $Ping) {
+			if ($JSONPayload) {
+				$Payload = $Payload | ConvertTo-Json -Depth 11
+			}
+
+			$postParams += @{
+				Body        = $Payload
+				ContentType = $ContentType
+			}
 		}
 
 		try {
