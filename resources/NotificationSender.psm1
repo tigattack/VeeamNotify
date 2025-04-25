@@ -184,6 +184,9 @@ function Send-HttpNotification {
 	}
 
 	try {
+		# Drop unwanted parameters for HTTP
+		$('ThumbnailUrl', 'FooterMessage') | ForEach-Object { $Parameters.Remove($_) }
+
 		$payloadParams = @{
 			Uri    = $ServiceConfig.url
 			Method = $ServiceConfig.method
