@@ -15,12 +15,13 @@ function Get-VBRSessionInfo {
 	# Import VBR module
 	Import-Module Veeam.Backup.PowerShell -DisableNameChecking
 
+	# TODO: use correct cmdlet for each job type
 	switch ($JobType) {
 		# VM job
 		{$_ -in 'Backup', 'Replica'} {
 
 			# Get the session details.
-			$session = Get-VBRBackupSession | Where-Object {$_.Id.Guid -eq $SessionId}
+			$session = Get-VBRBackupSession -Id $SessionId
 
 			# Get the job's name from the session details.
 			$jobName = $session.Name

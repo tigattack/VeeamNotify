@@ -42,7 +42,7 @@ As much relevant information as I've been able to discover from such backup sess
 ## Installation
 
 Requirements:
-* Veeam Backup & Replication 11 or higher.
+* Veeam Backup & Replication 12 or higher.
 * PowerShell 5.1 or higher.
 
 Please see the [How to Install](https://github.com/tigattack/VeeamNotify/wiki/%F0%9F%94%A7-How-to-Install) wiki page.
