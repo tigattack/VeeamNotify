@@ -132,9 +132,9 @@ try {
 		[string]$bottleneck 	= Get-Bottleneck -Logger $vbrSessionLogger
 
 		# Convert bytes to closest unit.
-		$dataSizeRound 		= ConvertTo-ByteUnit -Data $dataSize
-		$transferSizeRound	= ConvertTo-ByteUnit -Data $transferSize
-		$speedRound 		= (ConvertTo-ByteUnit -Data $speed).ToString() + '/s'
+		$dataSizeRound 		= Format-Bytes -Data $dataSize
+		$transferSizeRound	= Format-Bytes -Data $transferSize
+		$speedRound 		= (Format-Bytes -Data $speed) + '/s'
 
 		# Set processing speed "Unknown" if 0B/s to avoid confusion.
 		if ($speedRound -eq '0 B/s') {
@@ -197,9 +197,9 @@ try {
 		[string]$bottleneck 	= Get-Bottleneck -Logger $vbrSessionLogger
 
 		# Convert bytes to closest unit.
-		$processedSizeRound	= ConvertTo-ByteUnit -Data $processedSize
-		$transferSizeRound	= ConvertTo-ByteUnit -Data $transferSize
-		$speedRound 		= (ConvertTo-ByteUnit -Data $speed).ToString() + '/s'
+		$processedSizeRound	= Format-Bytes -Data $processedSize
+		$transferSizeRound	= Format-Bytes -Data $transferSize
+		$speedRound 		= (Format-Bytes -Data $speed) + '/s'
 
 		# Set processing speed "Unknown" if 0B/s to avoid confusion.
 		if ($speedRound -eq '0 B/s') {
