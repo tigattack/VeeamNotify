@@ -16,7 +16,7 @@ function Format-Bytes {
 	param (
 		[Parameter (Mandatory, ValueFromPipeline)]$Data
 	)
-	
+
 	process {
 		switch ($Data) {
 			{$_ -ge 1TB } {
