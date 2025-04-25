@@ -79,22 +79,21 @@ try {
 	$vbrSessionLogger = $session.Logger
 
 	## Wait for the backup session to finish.
-	if ($session.State -ne 'Stopped') {
-		$nonStoppedStates = 'Idle', 'Pausing', 'Postprocessing', 'Resuming', 'Starting', 'Stopping', 'WaitingRepository', 'WaitingTape ', 'Working'
+	if ($false -eq $session.Info.IsCompleted) {
 		$timeout = New-TimeSpan -Minutes 5
 		$stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 		do {
-			Write-LogMessage -Tag 'INFO' -Message 'Session not finished. Sleeping...'
+			Write-LogMessage -Tag 'INFO' -Message 'Session not completed. Sleeping...'
 			Start-Sleep -Seconds 10
 			$session = (Get-VBRSessionInfo -SessionId $id -JobType $jobType).Session
 		}
-		while ($session.State -in $nonStoppedStates -and $stopwatch.elapsed -lt $timeout)
+		while ($false -eq $session.Info.IsCompleted -and $stopwatch.Elapsed -lt $timeout)
 		$stopwatch.Stop()
 	}
 
 	## Quit if still not stopped
-	if ($session.State -ne 'Stopped') {
-		Write-LogMessage -Tag 'ERROR' -Message 'Session not stopped. Aborting.'
+	if ($false -eq $session.Info.IsCompleted) {
+		Write-LogMessage -Tag 'ERROR' -Message 'Session still not completed after timeout. Aborting.'
 		exit 1
 	}
 
