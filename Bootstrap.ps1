@@ -58,7 +58,7 @@ Write-LogMessage -Tag 'INFO' -Message 'Getting VBR job details'
 $job = Get-VBRJob -WarningAction SilentlyContinue | Where-Object {$_.Id.Guid -eq $jobId}
 if (!$job) {
 	# Can't locate non tape job so check if it's a tape job
-	$job = Get-VBRTapejob -WarningAction SilentlyContinue | Where-Object {$_.Id.Guid -eq $jobId}
+	$job = Get-VBRTapeJob -WarningAction SilentlyContinue | Where-Object {$_.Id.Guid -eq $jobId}
 	$JobType = $job.Type
 }
 else {
