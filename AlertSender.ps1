@@ -159,9 +159,7 @@ try {
 				$sessionObjectFails++
 			}
 		}
-		#>
 
-		<# TODO: utilise this.
 		# Add object warns/fails to fieldArray if any.
 		if ($sessionObjectWarns -gt 0) {
 			$fieldArray += @(
