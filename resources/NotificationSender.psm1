@@ -48,7 +48,6 @@ function Send-Payload {
 		}
 		catch {
 			return [NotificationResult]@{
-				foo = "bar"
 				Success = $false
 				Message = 'Unable to send payload'
 				Detail  = @{
