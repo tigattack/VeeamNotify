@@ -171,7 +171,7 @@ function New-DiscordPayload {
 	}
 
 	# Build payload object.
-	[PSCustomObject]$payload = @{
+	$payload = [PSCustomObject]@{
 		embeds = @(
 			[PSCustomObject]@{
 				title       = $JobName
@@ -448,7 +448,7 @@ function New-TeamsPayload {
 		}
 	)
 
-	[PSCustomObject]$payload = @{
+	$payload = [PSCustomObject]@{
 		type        = 'message'
 		attachments = @(
 			@{
@@ -511,25 +511,22 @@ function New-SlackPayload {
 		[string]$LatestVersion
 	)
 
+	$payload = [PSCustomObject]@{
+		blocks = @()
+	}
+
 	# Mention user if configured to do so.
 	# Must be done at early stage to ensure this section is at the top of the embed object.
 	if ($mention) {
-		$payload = @{
-			blocks = @(
-				@{
-					type = 'section'
-					text = @{
-						type = 'mrkdwn'
-						text = "<@$UserId> Job $($Status.ToLower())!"
-					}
+		$payload.blocks = @(
+			@{
+				type = 'section'
+				text = @{
+					type = 'mrkdwn'
+					text = "<@$UserId> Job $($Status.ToLower())!"
 				}
-			)
-		}
-	}
-	else {
-		$payload = @{
-			blocks = @()
-		}
+			}
+		)
 	}
 
 	# Set timestamps
@@ -612,7 +609,7 @@ function New-SlackPayload {
 	}
 
 	# Build payload object.
-	[PSCustomObject]$payload.blocks += @(
+	$payload.blocks += @(
 		@{
 			type      = 'section'
 			text      = @{
@@ -774,7 +771,7 @@ function New-TelegramPayload {
 		$message = $message.Replace("$char", "\$char")
 	}
 
-	[PSCustomObject]$payload = @{
+	$payload = [PSCustomObject]@{
 		chat_id    = $ChatId
 		parse_mode = 'MarkdownV2'
 		text       = $message
