@@ -61,7 +61,7 @@ if ($Config.logging.enabled) {
 	}
 
 	## Start logging to file
-	Start-Logging -Path $Logfile -Append
+	Start-Logging -Path $Logfile
 }
 
 
