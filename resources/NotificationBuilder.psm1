@@ -175,7 +175,7 @@ function New-DiscordPayload {
 		embeds = @(
 			[PSCustomObject]@{
 				title       = $JobName
-				description	= "Session result: $Status`nJob type: $JobType"
+				description	= "**Session result:** $Status`n**Job type:** $JobType"
 				color       = $Colour
 				thumbnail   = $thumbObject
 				fields      = $fieldArray
@@ -617,7 +617,7 @@ function New-SlackPayload {
 			type      = 'section'
 			text      = @{
 				type = 'mrkdwn'
-				text = "*$JobName*`n`nSession result: $Status`nJob type: $JobType"
+				text = "*$JobName*`n`n*Session result:* $Status`n*Job type:* $JobType"
 			}
 			accessory = @{
 				type      = 'image'
