@@ -111,6 +111,7 @@ function Test-InstallationPrerequisites {
 
 function Get-GitHubReleaseInfo {
 	[CmdletBinding()]
+	[OutputType([hashtable])]
 	param (
 		[Parameter(Mandatory)]
 		[string]$Project
@@ -358,10 +359,7 @@ function Install-DownloadedProject {
 		[string]$OutFile,
 
 		[Parameter(Mandatory)]
-		[string]$ReleaseName,
-
-		[Parameter(Mandatory)]
-		[bool]$IsBranch
+		[string]$ReleaseName
 	)
 
 	# Download parameters
@@ -463,6 +461,7 @@ function Set-ProjectConfiguration {
 
 function Set-NotificationService {
 	[CmdletBinding()]
+	[OutputType([Object[]])]
 	param (
 		[Parameter(Mandatory)]
 		[PSCustomObject]$Config
@@ -572,10 +571,7 @@ function Invoke-DeploymentTool {
 		[string]$InstallParentPath,
 
 		[Parameter(Mandatory)]
-		[string]$Project,
-
-		[Parameter(Mandatory)]
-		[string]$ConfigPath
+		[string]$Project
 	)
 
 	# Query for configuration deployment script.
@@ -627,7 +623,6 @@ Install-DownloadedProject -Project $project `
 	-DownloadUrl $downloadProperties.DownloadUrl `
 	-OutFile $downloadProperties.OutFile `
 	-ReleaseName $downloadProperties.ReleaseName `
-	-IsBranch $downloadProperties.IsBranch
 
 # Configure the installation if not running in non-interactive mode
 if (-not $NonInteractive) {
