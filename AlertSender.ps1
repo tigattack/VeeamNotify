@@ -418,13 +418,13 @@ try {
 		if ($Config.update.auto_update) {
 			Write-LogMessage -Tag 'WARN' -Message 'An update is available and auto_update was enabled in config, but the feature is not yet implemented.'
 
-		#	# Copy update script out of working directory.
-		#	Copy-Item $PSScriptRoot\Updater.ps1 $PSScriptRoot\..\VDNotifs-Updater.ps1
-		#	Unblock-File $PSScriptRoot\..\VDNotifs-Updater.ps1
+			# # Copy update script out of working directory.
+			# Copy-Item $PSScriptRoot\Updater.ps1 $PSScriptRoot\..\VDNotifs-Updater.ps1
+			# Unblock-File $PSScriptRoot\..\VDNotifs-Updater.ps1
 
-		#	# Run update script.
-		#	$updateArgs = "-file $PSScriptRoot\..\VDNotifs-Updater.ps1", "-LatestVersion $($updateStatus.LatestStable)"
-		#	Start-Process -FilePath 'powershell' -Verb runAs -ArgumentList $updateArgs -WindowStyle hidden
+			# # Run update script.
+			# $updateArgs = "-file $PSScriptRoot\..\VDNotifs-Updater.ps1", "-LatestVersion $($updateStatus.LatestStable)"
+			# Start-Process -FilePath 'powershell' -Verb runAs -ArgumentList $updateArgs -WindowStyle hidden
 		}
 	}
 }
