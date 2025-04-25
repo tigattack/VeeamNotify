@@ -1,8 +1,7 @@
 # Define parameters
 param(
-	[String]$jobName,
-	[String]$id,
-	[String]$jobType,
+	[String]$SessionId,
+	[String]$JobType,
 	$Config,
 	$Logfile
 )
@@ -73,7 +72,7 @@ try {
 	# Job info preparation
 
 	## Get the backup session.
-	$session = (Get-VBRSessionInfo -SessionId $id -JobType $jobType).Session
+	$session = (Get-VBRSessionInfo -SessionId $SessionId -JobType $JobType).Session
 
 	## Initiate logger variable
 	$vbrSessionLogger = $session.Logger
@@ -85,7 +84,7 @@ try {
 		do {
 			Write-LogMessage -Tag 'INFO' -Message 'Session not completed. Sleeping...'
 			Start-Sleep -Seconds 10
-			$session = (Get-VBRSessionInfo -SessionId $id -JobType $jobType).Session
+			$session = (Get-VBRSessionInfo -SessionId $SessionId -JobType $JobType).Session
 		}
 		while ($false -eq $session.Info.IsCompleted -and $stopwatch.Elapsed -lt $timeout)
 		$stopwatch.Stop()
@@ -119,7 +118,7 @@ try {
 	# Define session statistics for the report.
 
 	## If VM backup/replica, gather and include session info.
-	if ($jobType -in 'Backup', 'Replica') {
+	if ($JobType -in 'Backup', 'Replica') {
 		# Gather session data sizes and timing.
 		[Float]$dataSize 		= $session.BackupStats.DataSize
 		[Float]$transferSize 	= $session.BackupStats.BackupSize
@@ -186,7 +185,7 @@ try {
 	}
 
 	# If agent backup, gather and include session info.
-	if ($jobType -in 'EpAgentBackup', 'BackupToTape', 'FileToTape') {
+	if ($JobType -in 'EpAgentBackup', 'BackupToTape', 'FileToTape') {
 		# Gather session data sizes and timings.
 		[Float]$processedSize	= $session.Info.Progress.ProcessedSize
 		[Float]$transferSize 	= $session.Info.Progress.TransferedSize
@@ -240,7 +239,7 @@ try {
 	}
 
 	# Define nice job type name
-	switch ($jobType) {
+	switch ($JobType) {
 		Backup { $jobTypeNice = 'VM Backup' }
 		Replica { $jobTypeNice = 'VM Replication' }
 		EpAgentBackup	{
@@ -287,7 +286,7 @@ try {
 
 	# Build embed parameters
 	$payloadParams = [ordered]@{
-		JobName       = $jobName
+		JobName       = $session.Name
 		JobType       = $jobTypeNice
 		Status        = $status
 		Speed         = $speedRound
@@ -300,7 +299,7 @@ try {
 		FooterMessage = $footerMessage
 	}
 
-	if ($jobType -in 'EpAgentBackup', 'BackupToTape', 'FileToTape') {
+	if ($JobType -in 'EpAgentBackup', 'BackupToTape', 'FileToTape') {
 		$payloadParams.Insert('3', 'ProcessedSize', $processedSizeRound)
 		$payloadParams.Insert('4', 'TransferSize', $transferSizeRound)
 	}

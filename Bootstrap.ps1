@@ -94,10 +94,9 @@ $newLogfile = "$PSScriptRoot\log\$($date)-$($logJobName).log"
 
 # Build argument string for the alert sender script.
 $powershellArguments = "-NoProfile -File $PSScriptRoot\AlertSender.ps1", `
-	"-JobName `"$jobName`"", `
-	"-Id `"$sessionId`"", `
-	"-JobType `"$($JobType)`"", `
-	"-Config `"$($configRaw)`"", `
+	"-SessionId `"$sessionId`"", `
+	"-JobType `"$JobType`"", `
+	"-Config `"$configRaw`"", `
 	"-Logfile `"$newLogfile`""
 
 $vbrSessionLogger.UpdateSuccess($vbrLogEntry, '[VeeamNotify] Parsed job & session information.') | Out-Null
