@@ -338,20 +338,20 @@ try {
 			$logId_service = $vbrSessionLogger.AddLog("[VeeamNotify] Sending $($serviceName) notification...")
 
 			# Call the appropriate notification sender function based on service name
-			switch ($serviceName) {
-				'Discord' {
+			switch ($serviceName.ToLower()) {
+				'discord' {
 					$result = Send-WebhookNotification -Service 'Discord' -Parameters $payloadParams -ServiceConfig $service.Value
 				}
-				'Slack' {
+				'slack' {
 					$result = Send-WebhookNotification -Service 'Slack' -Parameters $payloadParams -ServiceConfig $service.Value
 				}
-				'Teams' {
+				'teams' {
 					$result = Send-WebhookNotification -Service 'Teams' -Parameters $payloadParams -ServiceConfig $service.Value
 				}
-				'Telegram' {
+				'telegram' {
 					$result = Send-TelegramNotification -Parameters $payloadParams -ServiceConfig $service.Value
 				}
-				'Http' {
+				'http' {
 					$result = Send-HttpNotification -Parameters $payloadParams -ServiceConfig $service.Value
 				}
 				default {
