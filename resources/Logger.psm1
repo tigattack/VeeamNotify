@@ -51,7 +51,7 @@ function Write-LogMessage {
 	$Severity = $Severities[$Tag]
 
 	# Gets correct severity integer dependant on severity in config.
-	$ConfigSeverity = $Severities[$Config.logging.level]
+	$ConfigSeverity = $Severities[$config.logging.level]
 
 	if (($PSCmdlet.ShouldProcess('Output stream', 'Write log message')) -and ($ConfigSeverity -ge $Severity)) {
 		Write-Output "$time [$($Tag.ToUpper())] $Message"
