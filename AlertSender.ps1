@@ -316,8 +316,8 @@ try {
 	}
 	if ($updateStatus.Status -eq 'Behind' -and $config.update.notify) {
 		$payloadParams += @{
-			UpdateNotification = $true
-			LatestVersion      = $updateStatus.LatestStable
+			UpdateAvailable = $true
+			LatestVersion   = $updateStatus.LatestStable
 		}
 	}
 
