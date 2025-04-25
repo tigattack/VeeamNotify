@@ -387,7 +387,8 @@ try {
 		$vbrSessionLogger.UpdateSuccess($logId_notification, '[VeeamNotify] Notification(s) sent successfully.') | Out-Null
 	}
 	catch {
-		Write-LogMessage -Tag 'WARN' -Message "Unable to send notification(s): ${_}"
+		Write-LogMessage -Tag 'WARN' -Message "Unable to send notification(s): ${_Exception.Message}"
+		$_
 		$vbrSessionLogger.UpdateErr($logId_notification, '[VeeamNotify] An error occured while sending notification(s).', "Please check the log: $Logfile") | Out-Null
 	}
 
@@ -428,7 +429,7 @@ try {
 	}
 }
 catch {
-	Write-LogMessage -Tag 'ERROR' -Message 'A terminating error occured:'
+	Write-LogMessage -Tag 'ERROR' -Message "A terminating error occured: ${_Exception.Message}"
 	$vbrSessionLogger.UpdateErr($logId_start, '[VeeamNotify] An error occured.', "Please check the log: $Logfile") | Out-Null
 	$_
 }
