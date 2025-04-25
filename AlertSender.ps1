@@ -281,7 +281,7 @@ try {
 	$footerMessage = "tigattack's VeeamNotify $($updateStatus.CurrentVersion)"
 	switch ($updateStatus.Status) {
 		Current {$footerMessage += ' - Up to date.'}
-		Behind {$footerMessage += ' - Update to $($updateStatus.LatestStable) is available!'}
+		Behind {$footerMessage += " - Update to $($updateStatus.LatestStable) is available!"}
 		Ahead {$footerMessage += ' - Pre-release.'}
 	}
 
