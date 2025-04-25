@@ -327,13 +327,10 @@ try {
 	# Build embed and send iiiit.
 	try {
 		$Config.services.PSObject.Properties | ForEach-Object {
-
-			# Create variable from current pipeline object to simplify usability.
 			$service = $_
 
-			# Create variable for service name in TitleCase format.
-			$textInfo = (Get-Culture).TextInfo
-			$serviceName = $textInfo.ToTitleCase($service.Name)
+			# Make service name TitleCase
+			$serviceName = (Get-Culture).TextInfo.ToTitleCase($service.Name)
 
 			# Skip if service is not enabled
 			if (-not $service.Value.enabled) {
@@ -370,11 +367,19 @@ try {
 			if ($result.Success) {
 				$vbrSessionLogger.UpdateSuccess($logId_service, "[VeeamNotify] Sent notification to $($serviceName).") | Out-Null
 				Write-LogMessage -Tag 'INFO' -Message "$serviceName notification sent successfully."
-				Write-LogMessage -Tag 'DEBUG' -Message "$serviceName notification response: $($result.Result)"
+				if ($result.Message) {
+					Write-LogMessage -Tag 'DEBUG' -Message "$serviceName notification response: $($result.Message)"
+				}
+				else {
+					Write-LogMessage -Tag 'DEBUG' -Message "$serviceName did not return a response."
+				}
 			}
 			else {
 				$vbrSessionLogger.UpdateErr($logId_service, "[VeeamNotify] $serviceName notification could not be sent.", "Please check the log: $Logfile") | Out-Null
-				Write-LogMessage -Tag 'ERROR' -Message "$serviceName notification could not be sent: $($result.Result)"
+
+				[System.Collections.ArrayList]$errors = @()
+				$result.Detail.GetEnumerator().ForEach({ $errors.Add("$($service.Name)=$($service.Value)") | Out-Null })
+				Write-LogMessage -Tag 'ERROR' -Message "$serviceName notification could not be sent: $($errors -Join '; ')"
 			}
 		}
 
@@ -382,7 +387,7 @@ try {
 		$vbrSessionLogger.UpdateSuccess($logId_notification, '[VeeamNotify] Notification(s) sent successfully.') | Out-Null
 	}
 	catch {
-		Write-LogMessage -Tag 'WARN' -Message "Unable to send notification(s): $_"
+		Write-LogMessage -Tag 'WARN' -Message "Unable to send notification(s): ${_}"
 		$vbrSessionLogger.UpdateErr($logId_notification, '[VeeamNotify] An error occured while sending notification(s).', "Please check the log: $Logfile") | Out-Null
 	}
 
