@@ -430,8 +430,11 @@ try {
 }
 catch {
 	Write-LogMessage -Tag 'ERROR' -Message "A terminating error occured: ${_Exception.Message}"
-	$vbrSessionLogger.UpdateErr($logId_start, '[VeeamNotify] An error occured.', "Please check the log: $Logfile") | Out-Null
 	$_
+	# Add Veeam session log entry if logger is available
+	if ($vbrSessionLogger) {
+		$vbrSessionLogger.UpdateErr($logId_start, '[VeeamNotify] A terminating error occured.', "Please check the log: $Logfile") | Out-Null
+	}
 }
 finally {
 	# Stop logging.
