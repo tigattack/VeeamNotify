@@ -35,7 +35,7 @@ $Config = $Config | ConvertFrom-Json
 
 # Import modules.
 Import-Module Veeam.Backup.PowerShell -DisableNameChecking
-Get-Item "$PSScriptRoot\resources\*.psm1" | Import-Module #-Global
+Get-Item "$PSScriptRoot\resources\*.psm1" | Import-Module
 Add-Type -AssemblyName System.Web
 
 
