@@ -6,14 +6,17 @@
 		1) Latest release;
 		2) Latest prerelease;
 		3) Specific version;
-		4) A named branch.
+		4) A named branch;
+		5) A fork pull request.
 	This script can also optionally launch a deployment script to apply the VeeamNotify configuration to all or selected Veeam jobs. You will be prompted for this after installation.
 	.PARAMETER Latest
 	Choose between "Release" or "Prerelease" to install the latest release or prerelease.
 	.PARAMETER Version
 	Specify a version to install (e.g. 'v1.0').
 	.PARAMETER Branch
-	Specify a branch name to install from. Useful for testing.
+	Specify a branch name to install - TESTING ONLY
+	.PARAMETER PullRequest
+	Specify a pull request ID to install - TESTING ONLY
 	.PARAMETER NonInteractive
 	Switch for noninteractive installation. No prompts to choose versions or configurations will appear when specified, and one of the above parameters must also be specified.
 	.PARAMETER InstallParentPath
@@ -28,6 +31,8 @@
 	PS> Installer.ps1 -Latest release
 	.EXAMPLE
 	PS> Installer.ps1 -Version 'v1.0' -NonInteractive
+	.EXAMPLE
+	PS> Installer.ps1 -PullRequest '123'
 	.NOTES
 	Authors: tigattack, philenst
 	.LINK
@@ -50,15 +55,20 @@ param(
 
 	[Parameter(ParameterSetName = 'Branch', Position = 0, Mandatory)]
 	[String]$Branch,
+	
+	[Parameter(ParameterSetName = 'PullRequest', Position = 0, Mandatory)]
+	[String]$PullRequest,
 
 	[Parameter(ParameterSetName = 'Version', Position = 1)]
 	[Parameter(ParameterSetName = 'Release', Position = 1)]
 	[Parameter(ParameterSetName = 'Branch', Position = 1)]
+	[Parameter(ParameterSetName = 'PullRequest', Position = 1)]
 	[String]$InstallParentPath = 'C:\VeeamScripts',
 
 	[Parameter(ParameterSetName = 'Version', Position = 2)]
 	[Parameter(ParameterSetName = 'Release', Position = 2)]
 	[Parameter(ParameterSetName = 'Branch', Position = 2)]
+	[Parameter(ParameterSetName = 'PullRequest', Position = 2)]
 	[Switch]$NonInteractive
 )
 
@@ -152,6 +162,32 @@ function Get-GitHubReleaseInfo {
 	}
 }
 
+function Get-GitHubPRInfo {
+	[CmdletBinding()]
+	[OutputType([hashtable])]
+	param (
+		[Parameter(Mandatory)]
+		[string]$Project,
+		
+		[Parameter(Mandatory)]
+		[string]$PullRequestId
+	)
+
+	try {
+		$prInfo = Invoke-RestMethod -Uri "https://api.github.com/repos/tigattack/$Project/pulls/$PullRequestId" -Method Get
+		return $prInfo
+	}
+	catch {
+		if ($_.Exception.Response.StatusCode.value__ -eq 404) {
+			Write-Warning "Pull request $PullRequestId not found."
+		}
+		else {
+			Write-Warning "Failed to query GitHub for pull request $PullRequestId."
+		}
+		throw
+	}
+}
+
 function Get-InstallationSource {
 	[CmdletBinding()]
 	param (
@@ -168,6 +204,9 @@ function Get-InstallationSource {
 		[string]$Branch,
 
 		[Parameter()]
+		[string]$PullRequest,
+
+		[Parameter()]
 		[switch]$NonInteractive,
 
 		[Parameter(Mandatory)]
@@ -180,13 +219,14 @@ function Get-InstallationSource {
 	$latestPrerelease = $GitHubInfo.LatestPrerelease
 
 	# If no installation source provided and interactive mode enabled, query user
-	if (-not $Version -and -not $Latest -and -not $Branch -and -not $NonInteractive) {
+	if (-not $Version -and -not $Latest -and -not $Branch -and -not $PullRequest -and -not $NonInteractive) {
 		# Query download type / release stream
 		if ($releases) {
 			[System.Management.Automation.Host.ChoiceDescription[]]$downloadQuery_opts = @()
 			$downloadQuery_opts += New-Object System.Management.Automation.Host.ChoiceDescription '&Release', "Download the latest release or prerelease. You will be prompted if there's a choice between the two."
 			$downloadQuery_opts += New-Object System.Management.Automation.Host.ChoiceDescription '&Version', 'Download a specific version.'
-			$downloadQuery_opts += New-Object System.Management.Automation.Host.ChoiceDescription '&Branch', 'Download a branch.'
+			$downloadQuery_opts += New-Object System.Management.Automation.Host.ChoiceDescription '&Branch', '[TESTING ONLY] Download a branch.'
+			$downloadQuery_opts += New-Object System.Management.Automation.Host.ChoiceDescription '&PullRequest', '[TESTING ONLY] Download a pull request.'
 			$downloadQuery_result = $host.UI.PromptForChoice(
 				'Download type',
 				"Please select how you would like to download $Project.",
@@ -277,6 +317,22 @@ function Get-InstallationSource {
 					$branches -contains $Branch
 				)
 			}
+			3 {
+				do {
+					# Get PR source in format owner:branch
+					$PullRequest = ($host.UI.Prompt(
+						'Pull Request Source',
+						"Please enter the pull request number (e.g. '123')",
+						'PullRequest'
+					)).PullRequest
+
+					if ($PullRequest -notmatch '^\d+$') {
+						Write-Output "`nPull request ID must be a number (e.g. '123'). Please try again."
+					}
+				} until (
+					$PullRequest -match '^\d+$'
+				)
+			}
 		}
 	}
 
@@ -295,7 +351,19 @@ function Get-InstallationSource {
 
 		# Define download URL
 		$downloadUrl = "https://api.github.com/repos/tigattack/$Project/zipball/$Branch"
-		$downloadProperties.IsBranch = $true
+		$downloadProperties.IsBranch = $true # TODO: needed?
+	}
+	# Download pull request if specified
+	elseif ($PullRequest) {
+		try {
+			$prInfo = Get-GitHubPRInfo -Project $Project -PullRequestId $PullRequest
+			$prCreator = $prInfo.user.login
+			$prRepoName = $prInfo.head.repo.name
+			$prSrcBranch = $prInfo.head.ref
+		}
+		catch { exit 1 }
+		$downloadUrl = "https://api.github.com/repos/${prCreator}/${prRepoName}/zipball/$prSrcBranch"
+		$releaseName = "PR #$PullRequest by $prCreator"
 	}
 	# Otherwise work with versions
 	else {
@@ -325,11 +393,11 @@ function Get-InstallationSource {
 				$_.assets[0].browser_download_url
 			}
 		}
-		$downloadProperties.IsBranch = $false
+		$downloadProperties.IsBranch = $false # TODO: needed?
 	}
 
-	# Sanitise releaseName for OutFile if installing from branch
-	if ($Branch) {
+	# Sanitise releaseName for OutFile if installing from branch or pull request
+	if ($Branch -or $PullRequest) {
 		$outFile = "$Project-$($releaseName -replace '[\W]','-')"
 	}
 	else {
@@ -400,10 +468,10 @@ function Install-DownloadedProject {
 	}
 	else {
 		# Necessary to handle branch downloads, which come as a ZIP containing a directory named similarly to "tigattack-VeeamNotify-2100906".
-		# Look for a directory less than 5 minutes old which matches the example name stated above.
+		# Look for a directory less than 5 minutes old which matches the pattern described above.
 		(Get-ChildItem $InstallParentPath | Where-Object {
 			$_.LastWriteTime -gt (Get-Date).AddMinutes(-5) -and
-			$_.Name -match "tigattack-$Project-.*" -and
+			$_.Name -match ".*-$Project-.*" -and
 			$_.PsIsContainer
 		})[0] | Rename-Item -NewName "$Project"
 	}
@@ -615,7 +683,7 @@ if (-not $validPrereqs) { exit 1 }
 $gitHubInfo = Get-GitHubReleaseInfo -Project $project
 
 # Determine what to download and install
-$downloadProperties = Get-InstallationSource -Project $project -Version $Version -Latest $Latest -Branch $Branch -NonInteractive:$NonInteractive -GitHubInfo $gitHubInfo
+$downloadProperties = Get-InstallationSource -Project $project -Version $Version -Latest $Latest -Branch $Branch -PullRequest $PullRequest -NonInteractive:$NonInteractive -GitHubInfo $gitHubInfo
 
 # Download and install the project
 Install-DownloadedProject -Project $project `
