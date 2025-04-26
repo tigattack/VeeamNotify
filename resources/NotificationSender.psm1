@@ -70,7 +70,7 @@ function Send-WebhookNotification {
 		[ValidateSet('Discord', 'Slack', 'Teams')]
 		[string]$Service,
 		[Parameter(Mandatory)]
-		[Hashtable]$Parameters,
+		[System.Collections.Specialized.OrderedDictionary]$Parameters,
 		[Parameter(Mandatory)]
 		[PSCustomObject]$ServiceConfig
 	)
@@ -121,7 +121,7 @@ function Send-TelegramNotification {
 	[OutputType([NotificationResult])]
 	param (
 		[Parameter(Mandatory)]
-		[Hashtable]$Parameters,
+		[System.Collections.Specialized.OrderedDictionary]$Parameters,
 		[Parameter(Mandatory)]
 		[PSCustomObject]$ServiceConfig
 	)
@@ -170,7 +170,7 @@ function Send-HttpNotification {
 	[OutputType([NotificationResult])]
 	param (
 		[Parameter(Mandatory)]
-		[Hashtable]$Parameters,
+		[System.Collections.Specialized.OrderedDictionary]$Parameters,
 		[Parameter(Mandatory)]
 		[PSCustomObject]$ServiceConfig
 	)

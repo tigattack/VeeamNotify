@@ -7,7 +7,7 @@ function New-Payload {
 		[string]$Service,
 
 		[Parameter(Mandatory)]
-		[Hashtable]$Parameters
+		[System.Collections.Specialized.OrderedDictionary]$Parameters
 	)
 
 	switch ($Service) {
