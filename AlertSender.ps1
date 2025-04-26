@@ -7,7 +7,9 @@ param(
 )
 
 # Function to get a session's bottleneck from the session logs
-# See https://github.com/tigattack/VeeamNotify/issues/19 for more details.
+# See for more details:
+# https://github.com/tigattack/VeeamNotify/issues/19
+# https://forums.veeam.com/powershell-f26/accessing-bottleneck-info-via-veeam-backup-model-cbottleneckinfo-bottleneck-t80127.html
 function Get-Bottleneck {
 	param(
 		$Logger
