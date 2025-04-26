@@ -98,7 +98,9 @@ function Send-WebhookNotification {
 		return [NotificationResult]@{
 			Success = $false
 			Message = 'Unable to add user information for mention'
-			Detail  = $_.Exception.Message
+			Detail  = @{
+				Message = $_.Exception.Message
+			}
 		}
 	}
 
@@ -111,7 +113,9 @@ function Send-WebhookNotification {
 		return [NotificationResult]@{
 			Success = $false
 			Message = "Unable to send $Service notification"
-			Detail  = $_.Exception.Message
+			Detail  = @{
+				Message = $_.Exception.Message
+			}
 		}
 	}
 }
@@ -145,7 +149,9 @@ function Send-TelegramNotification {
 		return [NotificationResult]@{
 			Success = $false
 			Message = 'Unable to add user information for mention'
-			Detail  = $_.Exception.Message
+			Detail  = @{
+				Message = $_.Exception.Message
+			}
 		}
 	}
 
@@ -160,7 +166,9 @@ function Send-TelegramNotification {
 		return [NotificationResult]@{
 			Success = $false
 			Message = 'Unable to send Telegram notification'
-			Detail  = $_.Exception.Message
+			Detail  = @{
+				Message = $_.Exception.Message
+			}
 		}
 	}
 }
@@ -200,7 +208,9 @@ function Send-HttpNotification {
 		return [NotificationResult]@{
 			Success = $false
 			Message = 'Unable to send HTTP notification'
-			Detail  = $_.Exception.Message
+			Detail  = @{
+				Message = $_.Exception.Message
+			}
 		}
 	}
 }
