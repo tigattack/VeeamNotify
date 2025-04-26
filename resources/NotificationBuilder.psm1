@@ -3,7 +3,7 @@ function New-Payload {
 	[OutputType([PSCustomObject])]
 	param (
 		[Parameter(Mandatory)]
-		[ValidateSet('Discord', 'Slack', 'Teams', 'Telegram')]
+		[ValidateSet('Discord', 'Slack', 'Teams', 'Telegram', 'HTTP')]
 		[string]$Service,
 
 		[Parameter(Mandatory)]
@@ -22,6 +22,9 @@ function New-Payload {
 		}
 		'Telegram' {
 			New-TelegramPayload @Parameters
+		}
+		'HTTP' {
+			New-HttpPayload -Parameters $Parameters
 		}
 		default {
 			Write-LogMessage -Tag 'ERROR' -Message "Unknown service: $Service"
@@ -782,4 +785,27 @@ function New-TelegramPayload {
 	}
 
 	return $payload
+}
+
+function New-HttpPayload {
+	[CmdletBinding()]
+	[OutputType([PSCustomObject])]
+	param (
+		[Parameter(Mandatory)]
+		[System.Collections.Specialized.OrderedDictionary]$Parameters
+	)
+
+	# Set timestamps
+	$Parameters.StartTime = ([System.DateTimeOffset]$(Get-Date $Parameters.StartTime)).ToUnixTimeSeconds()
+	$Parameters.EndTime = ([System.DateTimeOffset]$(Get-Date $Parameters.EndTime)).ToUnixTimeSeconds()
+
+	# Drop unwanted parameters for HTTP
+	$(
+		'Mention',
+		'NotifyUpdate',
+		'ThumbnailUrl',
+		'FooterMessage'
+	) | ForEach-Object { $Parameters.Remove($_) }
+
+	return $Parameters
 }

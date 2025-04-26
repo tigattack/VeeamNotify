@@ -10,10 +10,10 @@ function Send-Payload {
 	[CmdletBinding()]
 	[OutputType([NotificationResult])]
 	param (
-		[Parameter(Mandatory, ValueFromPipeline)]
-		[PSCustomObject]$Payload,
 		[Parameter(Mandatory)]
 		[String]$Uri,
+		[Parameter(ValueFromPipeline)]
+		[PSCustomObject]$Payload,
 		[String]$ContentType = 'application/json',
 		[String]$Method = 'Post',
 		[Switch]$NoConvertJson
@@ -184,16 +184,13 @@ function Send-HttpNotification {
 	}
 
 	try {
-		# Drop unwanted parameters for HTTP
-		$('ThumbnailUrl', 'FooterMessage') | ForEach-Object { $Parameters.Remove($_) }
-
 		$payloadParams = @{
 			Uri    = $ServiceConfig.url
 			Method = $ServiceConfig.method
 		}
 
 		if ($ServiceConfig.method.ToLower() -eq 'post') {
-			$payloadParams.Payload = $Parameters
+			$payloadParams.Payload = New-Payload -Service 'HTTP' -Parameters $Parameters
 		}
 
 		$response = Send-Payload @payloadParams
