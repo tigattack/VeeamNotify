@@ -75,6 +75,8 @@ function Send-WebhookNotification {
 		[PSCustomObject]$ServiceConfig
 	)
 
+	$params = New-OrderedDictionary -InputDictionary $Parameters
+
 	# Return early if webhook is not configured or appears incorrect
 	if (-not $ServiceConfig.webhook -or -not $ServiceConfig.webhook.StartsWith('http')) {
 		return [NotificationResult]@{
@@ -85,12 +87,12 @@ function Send-WebhookNotification {
 
 	# Check if user should be mentioned
 	try {
-		if ($Parameters.Mention) {
+		if ($params.Mention) {
 			$Parameters.UserId = $ServiceConfig.user_id
 
 			# Set username if exists (Teams specific)
 			if ($Service -eq 'Teams' -and $ServiceConfig.user_name -and $ServiceConfig.user_name -ne 'Your Name') {
-				$Parameters.UserName = $ServiceConfig.user_name
+				$params.UserName = $ServiceConfig.user_name
 			}
 		}
 	}
@@ -106,7 +108,7 @@ function Send-WebhookNotification {
 
 	# Create payload and send notification
 	try {
-		$response = New-Payload -Service $Service -Parameters $Parameters | Send-Payload -Uri $ServiceConfig.webhook
+		$response = New-Payload -Service $Service -Parameters $params | Send-Payload -Uri $ServiceConfig.webhook
 		return $response
 	}
 	catch {
@@ -130,6 +132,8 @@ function Send-TelegramNotification {
 		[PSCustomObject]$ServiceConfig
 	)
 
+	$params = New-OrderedDictionary -InputDictionary $Parameters
+
 	# Return early if bot token or chat ID is not configured or appears incorrect
 	if ($ServiceConfig.bot_token -eq 'TelegramBotToken' -or $ServiceConfig.chat_id -eq 'TelegramChatID') {
 		return [NotificationResult]@{
@@ -140,9 +144,9 @@ function Send-TelegramNotification {
 
 	# Check if user should be mentioned
 	try {
-		if ($Parameters.Mention) {
-			$Parameters.UserId = $ServiceConfig.user_id
-			$Parameters.UserName = $ServiceConfig.user_name
+		if ($params.Mention) {
+			$params.UserId = $ServiceConfig.user_id
+			$params.UserName = $ServiceConfig.user_name
 		}
 	}
 	catch {
@@ -158,8 +162,8 @@ function Send-TelegramNotification {
 	# Create payload and send notification
 	try {
 		$uri = "https://api.telegram.org/bot$($ServiceConfig.bot_token)/sendMessage"
-		$Parameters.ChatId = $ServiceConfig.chat_id
-		$response = New-Payload -Service 'Telegram' -Parameters $Parameters | Send-Payload -Uri $uri -ContentType 'application/x-www-form-urlencoded' -NoConvertJson
+		$params.ChatId = $ServiceConfig.chat_id
+		$response = New-Payload -Service 'Telegram' -Parameters $params | Send-Payload -Uri $uri -ContentType 'application/x-www-form-urlencoded' -NoConvertJson
 		return $response
 	}
 	catch {

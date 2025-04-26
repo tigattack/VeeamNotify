@@ -795,9 +795,11 @@ function New-HttpPayload {
 		[System.Collections.Specialized.OrderedDictionary]$Parameters
 	)
 
+	$params = New-OrderedDictionary -InputDictionary $Parameters
+
 	# Set timestamps
-	$Parameters.StartTime = ([System.DateTimeOffset]$(Get-Date $Parameters.StartTime)).ToUnixTimeSeconds()
-	$Parameters.EndTime = ([System.DateTimeOffset]$(Get-Date $Parameters.EndTime)).ToUnixTimeSeconds()
+	$params.StartTime = ([System.DateTimeOffset]$(Get-Date $params.StartTime)).ToUnixTimeSeconds()
+	$params.EndTime = ([System.DateTimeOffset]$(Get-Date $params.EndTime)).ToUnixTimeSeconds()
 
 	# Drop unwanted parameters for HTTP
 	$(
@@ -805,7 +807,7 @@ function New-HttpPayload {
 		'NotifyUpdate',
 		'ThumbnailUrl',
 		'FooterMessage'
-	) | ForEach-Object { $Parameters.Remove($_) }
+	) | ForEach-Object { $params.Remove($_) }
 
-	return $Parameters
+	return $params
 }
