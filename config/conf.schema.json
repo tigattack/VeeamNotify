@@ -17,7 +17,11 @@
                         "user_id": {
                             "type": "string"
                         }
-                    }
+                    },
+                    "required": [
+                        "enabled",
+                        "webhook"
+                    ]
                 },
                 "slack": {
                     "type": "object",
@@ -31,7 +35,11 @@
                         "user_id": {
                             "type": "string"
                         }
-                    }
+                    },
+                    "required": [
+                        "enabled",
+                        "webhook"
+                    ]
                 },
                 "teams": {
                     "type": "object",
@@ -48,7 +56,11 @@
                         "user_name": {
                             "type": "string"
                         }
-                    }
+                    },
+                    "required": [
+                        "enabled",
+                        "webhook"
+                    ]
                 },
                 "telegram": {
                     "type": "object",
@@ -62,7 +74,12 @@
                         "chat_id": {
                             "type": "string"
                         }
-                    }
+                    },
+                    "required": [
+                        "enabled",
+                        "bot_token",
+                        "chat_id"
+                    ]
                 },
                 "http": {
                     "type": "object",
@@ -80,7 +97,12 @@
                                 "POST"
                             ]
                         }
-                    }
+                    },
+                    "required": [
+                        "enabled",
+                        "url",
+                        "method"
+                    ]
                 }
             },
             "required": [
