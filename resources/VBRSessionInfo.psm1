@@ -15,7 +15,6 @@ function Get-VBRSessionInfo {
 	# Import VBR module
 	Import-Module Veeam.Backup.PowerShell -DisableNameChecking
 
-	# TODO: use correct cmdlet for each job type
 	switch ($JobType) {
 		# VM job
 		{$_ -in 'Backup', 'Replica'} {
