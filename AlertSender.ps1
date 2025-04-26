@@ -312,11 +312,14 @@ try {
 	if ($config.update | Get-Member -Name 'notify') {
 		$config.update.notify = $true
 	}
-	if ($updateStatus.Status -eq 'Behind' -and $config.update.notify) {
-		$payloadParams += @{
-			UpdateAvailable = $true
-			LatestVersion   = $updateStatus.LatestStable
-		}
+
+	# Add update status
+	$payloadParams.NotifyUpdate = $config.update.notify
+	$payloadParams.UpdateAvailable	= $updateStatus.Status -eq 'Behind'
+
+	# Add latest version if update is available
+	if ($payloadParams.UpdateAvailable) {
+		$payloadParams.LatestVersion = $updateStatus.LatestStable
 	}
 
 

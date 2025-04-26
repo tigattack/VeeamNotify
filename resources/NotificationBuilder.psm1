@@ -50,6 +50,7 @@ function New-DiscordPayload {
 		[string]$UserId,
 		[string]$ThumbnailUrl,
 		[string]$FooterMessage,
+		[boolean]$NotifyUpdate,
 		[boolean]$UpdateAvailable,
 		[string]$LatestVersion
 	)
@@ -193,7 +194,7 @@ function New-DiscordPayload {
 	}
 
 	# Add update notice if relevant and configured to do so.
-	if ($UpdateAvailable) {
+	if ($UpdateAvailable -and $NotifyUpdate) {
 		# Add embed to payload.
 		$payload.embeds += @(
 			@{
@@ -232,6 +233,7 @@ function New-TeamsPayload {
 		[string]$UserName,
 		[string]$ThumbnailUrl,
 		[string]$FooterMessage,
+		[boolean]$NotifyUpdate,
 		[boolean]$UpdateAvailable,
 		[string]$LatestVersion
 	)
@@ -267,7 +269,7 @@ function New-TeamsPayload {
 	)
 
 	# Add URL to update notice if relevant and configured to do so.
-	if ($UpdateAvailable) {
+	if ($UpdateAvailable -and $NotifyUpdate) {
 		# Add URL to update notice.
 		$FooterMessage += "  `n[See release **$LatestVersion** on GitHub.](https://github.com/tigattack/VeeamNotify/releases/$LatestVersion)"
 	}
@@ -507,6 +509,7 @@ function New-SlackPayload {
 		[string]$UserId,
 		[string]$ThumbnailUrl,
 		[string]$FooterMessage,
+		[boolean]$NotifyUpdate,
 		[boolean]$UpdateAvailable,
 		[string]$LatestVersion
 	)
@@ -650,7 +653,7 @@ function New-SlackPayload {
 	)
 
 	# Add update notice if relevant and configured to do so.
-	if ($UpdateAvailable) {
+	if ($UpdateAvailable -and $NotifyUpdate) {
 		# Add block to payload.
 		$payload.blocks += @(
 			@{
@@ -708,6 +711,7 @@ function New-TelegramPayload {
 		[string]$UserId,
 		[string]$ThumbnailUrl,
 		[string]$FooterMessage,
+		[boolean]$NotifyUpdate,
 		[boolean]$UpdateAvailable,
 		[string]$LatestVersion
 	)
@@ -759,7 +763,7 @@ function New-TelegramPayload {
 	$message += "`n`n$FooterMessage"
 
 	# Add update notice if relevant and configured to do so.
-	if ($UpdateAvailable) {
+	if ($UpdateAvailable -and $NotifyUpdate) {
 		# Add block to payload.
 		$message += "`nA new version of VeeamNotify is available! See release [*$LatestVersion* on GitHub](https://github.com/tigattack/VeeamNotify/releases/$LatestVersion)."
 	}
