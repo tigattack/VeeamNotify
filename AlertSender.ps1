@@ -190,8 +190,8 @@ try {
 		[Float]$processedSize	= $session.Info.Progress.ProcessedSize
 		[Float]$transferSize 	= $session.Info.Progress.TransferedSize
 		[Float]$speed			= $session.Info.Progress.AvgSpeed
-		$endTime				= $session.EndTime
-		$startTime				= $session.CreationTime
+		[DateTime]$endTime		= $session.EndTime
+		[DateTime]$startTime	= $session.CreationTime
 		[string]$bottleneck 	= Get-Bottleneck -Logger $vbrSessionLogger
 
 		# Convert bytes to closest unit.
