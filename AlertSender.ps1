@@ -379,7 +379,7 @@ try {
 				$vbrSessionLogger.UpdateErr($logId_service, "[VeeamNotify] $serviceName notification could not be sent.", "Please check the log: $Logfile") | Out-Null
 
 				[System.Collections.ArrayList]$errors = @()
-				$result.Detail.GetEnumerator().ForEach({ $errors.Add("$($service.Name)=$($service.Value)") | Out-Null })
+				$result.Detail.GetEnumerator().ForEach({ $errors.Add("$($_.Name)=$($_.Value)") | Out-Null })
 				Write-LogMessage -Tag 'ERROR' -Message "$serviceName notification could not be sent: $($errors -Join '; ')"
 			}
 		}
