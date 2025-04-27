@@ -46,8 +46,8 @@ jobs:
             Write-Host "Running tests for PR #$($containerData.PrId)"
           } else {
             # Push event - pass branch data only
-            $containerData.CurrentBranch = '${{ steps.detect.outputs.BRANCH }}'
-            Write-Host "Running tests for branch: $($containerData.CurrentBranch)"
+            $containerData.Branch = '${{ steps.detect.outputs.BRANCH }}'
+            Write-Host "Running tests for branch: $($containerData.Branch)"
           }
           
           # Create and run the container
