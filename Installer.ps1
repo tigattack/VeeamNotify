@@ -55,7 +55,7 @@ param(
 
 	[Parameter(ParameterSetName = 'Branch', Position = 0, Mandatory)]
 	[String]$Branch,
-	
+
 	[Parameter(ParameterSetName = 'PullRequest', Position = 0, Mandatory)]
 	[String]$PullRequest,
 
@@ -168,7 +168,7 @@ function Get-GitHubPRInfo {
 	param (
 		[Parameter(Mandatory)]
 		[string]$Project,
-		
+
 		[Parameter(Mandatory)]
 		[string]$PullRequestId
 	)
