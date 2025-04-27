@@ -74,13 +74,7 @@ Describe 'Installer.ps1' {
 		Invoke-Command -ScriptBlock $expectedFilesCheck
 	}
 
-	It 'Install from current branch' {
-		# Skip if PR or current branch is main
-		if ($IsPr -or $Branch -eq 'main' -or [string]::IsNullOrEmpty($Branch)) {
-			Set-ItResult -Skipped -Because "Current branch is main, unspecified, or is a PR"
-			return
-		}
-
+	It 'Install from current branch' -Skip:($IsPr -or $Branch -eq 'main' -or [string]::IsNullOrEmpty($Branch)) {
 		Write-Host "Installing from branch: $Branch"
 		# Call installer with branch parameter
 		& $installerPath -Branch $Branch @installerParams
@@ -89,13 +83,7 @@ Describe 'Installer.ps1' {
 		Invoke-Command -ScriptBlock $expectedFilesCheck
 	}
 
-	It 'Install from PR' {
-		# Skip if not a PR
-		if (-not $IsPr) {
-			Set-ItResult -Skipped -Because "Not a PR"
-			return
-		}
-
+	It 'Install from PR' -Skip:(-not $IsPr) {
 		Write-Host "Installing from PR #$PrId"
 		# Call installer with PR parameter
 		& $installerPath -PullRequest $PrId @installerParams
