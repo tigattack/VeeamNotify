@@ -59,4 +59,4 @@ jobs:
         if: success() || failure()
         with:
           name: Pester-Results
-          path: PesterResults.xml
+          path: testResults.xml
