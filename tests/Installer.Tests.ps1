@@ -1,7 +1,18 @@
+param (
+	[Parameter(ParameterSetName = 'Branch')]
+	[Parameter(ParameterSetName = 'PR')]
+    [string]$Branch,
+	[Parameter(ParameterSetName = 'PR')]
+	[switch]$IsPr,
+	[Parameter(Mandatory, ParameterSetName = 'PR')]
+	[string]$PrId
+)
+
 Describe 'Installer.ps1' {
 	BeforeAll {
 		# Create temp install dir
-		$installDir = New-Item -Path (Join-Path -Path $PSScriptRoot -ChildPath 'test-install') -Type Directory -Force
+		$tempDir = [System.IO.Path]::GetTempPath()
+		$installDir = New-Item -Path (Join-Path -Path $tempDir -ChildPath 'veeamnotify-installer-test') -Type Directory -Force
 
 		# Get installer path
 		$installerPath = (Get-ChildItem -Path (Split-Path -Path $PSScriptRoot -Parent) -Filter 'Installer.ps1').FullName
@@ -50,9 +61,39 @@ Describe 'Installer.ps1' {
 		Invoke-Command -ScriptBlock $expectedFilesCheck
 	}
 
-	It 'Install from branch' {
+	It 'Install from main branch' {
 		# Run installer
-		& $installerPath -Branch main @installerParams
+		& $installerPath -Branch 'main' @installerParams
+
+		# Check for expected files
+		Invoke-Command -ScriptBlock $expectedFilesCheck
+	}
+
+	It 'Install from current branch' {
+		# Skip if PR or current branch is main
+		if ($IsPr -or $Branch -eq 'main' -or [string]::IsNullOrEmpty($Branch)) {
+			Set-ItResult -Skipped -Because "Current branch is main, unspecified, or is a PR"
+			return
+		}
+
+		Write-Host "Installing from branch: $Branch"
+		# Call installer with branch parameter
+		& $installerPath -Branch $Branch @installerParams
+
+		# Check for expected files
+		Invoke-Command -ScriptBlock $expectedFilesCheck
+	}
+
+	It 'Install from PR' {
+		# Skip if not a PR
+		if (-not $IsPr) {
+			Set-ItResult -Skipped -Because "Not a PR"
+			return
+		}
+
+		Write-Host "Installing from PR #$PrId"
+		# Call installer with PR parameter
+		& $installerPath -PullRequest $PrId @installerParams
 
 		# Check for expected files
 		Invoke-Command -ScriptBlock $expectedFilesCheck
