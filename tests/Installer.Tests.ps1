@@ -46,14 +46,17 @@ Describe 'Installer.ps1' {
 	}
 
 	It 'Install from specific version' {
+		$defaultVersion = 'v1.1.1'
+		Write-Host "Installing from version: $defaultVersion"
 		# Run installer
-		& $installerPath -Version 'v1.1.1' @installerParams
+		& $installerPath -Version $defaultVersion @installerParams
 
 		# Check for expected files
 		Invoke-Command -ScriptBlock $expectedFilesCheck
 	}
 
 	It 'Install from latest release' {
+		Write-Host "Installing from latest release"
 		# Run installer
 		& $installerPath -Latest Release @installerParams
 
@@ -62,8 +65,10 @@ Describe 'Installer.ps1' {
 	}
 
 	It 'Install from main branch' {
+		$defaultBranch = 'main'
+		Write-Host "Installing from branch: $defaultBranch"
 		# Run installer
-		& $installerPath -Branch 'main' @installerParams
+		& $installerPath -Branch $defaultBranch @installerParams
 
 		# Check for expected files
 		Invoke-Command -ScriptBlock $expectedFilesCheck
