@@ -20,7 +20,7 @@
 	.PARAMETER NonInteractive
 	Switch for noninteractive installation. No prompts to choose versions or configurations will appear when specified, and one of the above parameters must also be specified.
 	.PARAMETER InstallParentPath
-	Path to Telegraf destination directory. Defaults to 'C:\VeeamScripts'.
+	Path to VeeamNotify destination directory. Defaults to 'C:\VeeamScripts'.
 	.INPUTS
 	None.
 	.OUTPUTS
