@@ -42,7 +42,7 @@ jobs:
           if ('${{ steps.detect.outputs.IS_PR }}' -eq 'true') {
             # PR event - pass PR data only
             $containerData.IsPr = $true
-            $containerData.PrId = '${{ steps.detect.outputs.PR_ID }}'
+            $containerData.PrId = ${{ steps.detect.outputs.PR_ID }}
             Write-Host "Running tests for PR #$($containerData.PrId)"
           } else {
             # Push event - pass branch data only

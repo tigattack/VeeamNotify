@@ -5,7 +5,7 @@ param (
 	[Parameter(ParameterSetName = 'PR')]
 	[switch]$IsPr,
 	[Parameter(Mandatory, ParameterSetName = 'PR')]
-	[string]$PrId
+	[int]$PrId
 )
 
 Describe 'Installer.ps1' {
