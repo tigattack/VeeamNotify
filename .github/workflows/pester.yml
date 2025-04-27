@@ -52,7 +52,7 @@ jobs:
           
           # Create and run the container
           $container = New-PesterContainer -Path '.\tests' -Data $containerData
-          Invoke-Pester -Container $container -Configuration $pesterConfig
+          Invoke-Pester -CI -Container $container
 
       - name: Upload test report
         uses: actions/upload-artifact@v4
