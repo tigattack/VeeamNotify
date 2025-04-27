@@ -321,10 +321,10 @@ function Get-InstallationSource {
 				do {
 					# Get PR source in format owner:branch
 					$PullRequest = ($host.UI.Prompt(
-						'Pull Request Source',
-						"Please enter the pull request number (e.g. '123')",
-						'PullRequest'
-					)).PullRequest
+							'Pull Request Source',
+							"Please enter the pull request number (e.g. '123')",
+							'PullRequest'
+						)).PullRequest
 
 					if ($PullRequest -notmatch '^\d+$') {
 						Write-Output "`nPull request ID must be a number (e.g. '123'). Please try again."
