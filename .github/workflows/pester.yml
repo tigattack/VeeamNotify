@@ -21,6 +21,7 @@ jobs:
               PR_ID=${BASH_REMATCH[1]}
               echo "IS_PR=true" >> $GITHUB_OUTPUT
               echo "PR_ID=$PR_ID" >> $GITHUB_OUTPUT
+              echo "Current PR ID: $PR_ID"
             fi
           else
             # For pushes, extract the branch name from GITHUB_REF
