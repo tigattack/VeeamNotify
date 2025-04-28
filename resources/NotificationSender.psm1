@@ -14,9 +14,7 @@ function Send-Payload {
 		[String]$Uri,
 		[Parameter(ValueFromPipeline)]
 		[PSCustomObject]$Payload,
-		[String]$ContentType = 'application/json',
-		[String]$Method = 'Post',
-		[Switch]$NoConvertJson
+		[String]$Method = 'Post'
 	)
 
 	begin {
@@ -27,21 +25,20 @@ function Send-Payload {
 	}
 
 	process {
-		if (-not $NoConvertJson) {
-			$Payload = $Payload | ConvertTo-Json -Depth 11
-		}
 
 		$postParams = @{
 			Uri         = $Uri
-			Body        = $Payload
 			Method      = $Method
-			ContentType = $ContentType
 			UserAgent   = "VeeamNotify; PowerShell/$psVersion"
 			ErrorAction = 'Stop'
 		}
 
+		if ($Method -eq 'Post' -and $Payload) {
+			$postParams.Body        = $Payload | ConvertTo-Json -Depth 10
+			$postParams.ContentType = 'application/json'
+		}
+
 		try {
-			# Post payload
 			$request = Invoke-RestMethod @postParams
 			return [NotificationResult]@{
 				Success = $true
@@ -162,7 +159,7 @@ function Send-TelegramNotification {
 	try {
 		$uri = "https://api.telegram.org/bot$($ServiceConfig.bot_token)/sendMessage"
 		$params.ChatId = $ServiceConfig.chat_id
-		$response = New-Payload -Service 'Telegram' -Parameters $params | Send-Payload -Uri $uri -ContentType 'application/x-www-form-urlencoded' -NoConvertJson
+		$response = New-Payload -Service 'Telegram' -Parameters $params | Send-Payload -Uri $uri
 		return $response
 	}
 	catch {
