@@ -711,7 +711,7 @@ function New-TelegramPayload {
 		[DateTime]$StartTime,
 		[DateTime]$EndTime,
 		[boolean]$Mention,
-		[string]$UserId,
+		[string]$UserName,
 		[string]$ThumbnailUrl,
 		[string]$FooterMessage,
 		[boolean]$NotifyUpdate,
@@ -719,25 +719,46 @@ function New-TelegramPayload {
 		[string]$LatestVersion
 	)
 
-	# Mention user if configured to do so.
-	# Must be done at early stage to ensure this section is at the top of the embed object.
-	if ($mention) {
-		$message = "[$UserName](tg://user?id=$UserId) Job $($Status.ToLower())!`n"
-	}
-	else {
-		$message = ''
+	function escapeTGChars {
+		[CmdletBinding()]
+		[OutputType([string])]
+		param ([Parameter(Mandatory)][string]$text)
+		# Escape characters for Telegram MarkdownV2
+		# https://core.telegram.org/bots/api#markdownv2-style
+		foreach ($char in '_', '[', ']', '(', ')', '~', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!') {
+			$text = $text.Replace("$char", "\$char")
+		}
+		return $text
 	}
 
-	# Build payload object.
-	$message += "*$JobName*`n`n*Session result:* $Status`n*Job type:* $JobType`n`n"
+	$PSBoundParameters.GetEnumerator() | ForEach-Object {
+		# Escape characters for Telegram MarkdownV2
+		if ($_.Value -is [string]) {
+			Set-Variable -Name $_.Key -Value (escapeTGChars $_.Value) -Scope 0
+		}
+	}
+
+	# Build user mention string
+	$mentionStr = ""
+	if ($Mention) {
+		$mentionStr = "[$UserName](tg://user?id=$ChatId) Job $($Status.ToLower())\!`n`n"
+	}
 
 	# Set timestamps
 	$timestampStart = $(Get-Date $StartTime -UFormat '%d %B %Y %R').ToString()
 	$timestampEnd = $(Get-Date $EndTime -UFormat '%d %B %Y %R').ToString()
 
-	# Build blocks object.
+	# Build session info string
+	$sessionInfo = @"
+*$JobName*
+
+*Session result:* $Status
+*Job type:* $JobType
+
+"@
+
 	if (-not ($JobType.EndsWith('Agent Backup'))) {
-		$message += @"
+		$sessionInfo += @"
 *Backup Size:* $DataSize
 *Transferred Data:* $TransferSize
 *Dedup Ratio:* $DedupRatio
@@ -751,7 +772,7 @@ function New-TelegramPayload {
 	}
 
 	elseif ($JobType.EndsWith('Agent Backup') -or $JobType.EndsWith('Tape Backup')) {
-		$message += @"
+		$sessionInfo += @"
 *Processed Size:* $ProcessedSize
 *Transferred Data:* $TransferSize
 *Processing Rate:* $Speed
@@ -762,21 +783,13 @@ function New-TelegramPayload {
 "@
 	}
 
-	# Add footer to payload object.
-	$message += "`n`n$FooterMessage"
-
-	# Add update notice if relevant and configured to do so.
+	# Add update notice if required
 	if ($UpdateAvailable -and $NotifyUpdate) {
-		# Add block to payload.
-		$message += "`nA new version of VeeamNotify is available! See release [*$LatestVersion* on GitHub](https://github.com/tigattack/VeeamNotify/releases/$LatestVersion)."
+		$message += "`nA new version of VeeamNotify is available! See release [*$LatestVersion* on GitHub](https://github.com/tigattack/VeeamNotify/releases/$LatestVersion)\."
 	}
 
-	# https://core.telegram.org/bots/api#markdownv2-style
-	$escapes = '_', '[', ']', '(', ')', '~', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!'
-
-	foreach ($char in $escapes) {
-		$message = $message.Replace("$char", "\$char")
-	}
+	# Compile message parts
+	$message = $mentionStr + $sessionInfo + "`n`n$FooterMessage"
 
 	$payload = [PSCustomObject]@{
 		chat_id    = $ChatId

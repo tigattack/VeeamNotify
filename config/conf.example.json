@@ -19,7 +19,8 @@
         "telegram": {
             "enabled": false,
             "bot_token": "TelegramBotToken",
-            "chat_id": "TelegramChatID"
+            "chat_id": "TelegramChatID",
+            "user_name": "yourusername"
         },
         "http": {
             "enabled": false,

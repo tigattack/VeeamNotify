@@ -145,7 +145,6 @@ function Send-TelegramNotification {
 	# Check if user should be mentioned
 	try {
 		if ($params.Mention) {
-			$params.UserId = $ServiceConfig.user_id
 			$params.UserName = $ServiceConfig.user_name
 		}
 	}
