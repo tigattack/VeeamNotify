@@ -99,15 +99,15 @@ function Copy-DllFile {
 	try {
 		$dllPath = Get-ChildItem -Path $ExtractPath -Recurse -Filter $DllName |
 			Where-Object { $_.FullName -match '(/|\\)net45(/|\\)' } |
-				Select-Object -First 1 -ExpandProperty FullName
+			Select-Object -First 1 -ExpandProperty FullName
 
 		if ($dllPath) {
 			Copy-Item -Path $dllPath -Destination $Destination -Force
 			# Get actual assembly version from the DLL
 			Write-Host "Successfully updated $DllName to version $Version"
 			return @{
-				Success         = $true
-				Version         = $Version
+				Success = $true
+				Version = $Version
 			}
 		}
 		else {
