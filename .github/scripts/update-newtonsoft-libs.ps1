@@ -99,7 +99,7 @@ function Copy-DllFile {
 	try {
 		$dllPath = Get-ChildItem -Path $ExtractPath -Recurse -Filter $DllName |
 			Where-Object { $_.FullName -match '(/|\\)net45(/|\\)' } |
-			Select-Object -First 1 -ExpandProperty FullName
+				Select-Object -First 1 -ExpandProperty FullName
 
 		if ($dllPath) {
 			Copy-Item -Path $dllPath -Destination $Destination -Force
