@@ -1,7 +1,7 @@
 param (
 	[Parameter(ParameterSetName = 'Branch')]
 	[Parameter(ParameterSetName = 'PR')]
-    [string]$Branch,
+	[string]$Branch,
 	[Parameter(ParameterSetName = 'PR')]
 	[switch]$IsPr,
 	[Parameter(Mandatory, ParameterSetName = 'PR')]
@@ -56,7 +56,7 @@ Describe 'Installer.ps1' {
 	}
 
 	It 'Install from latest release' {
-		Write-Host "Installing from latest release"
+		Write-Host 'Installing from latest release'
 		# Run installer
 		& $installerPath -Latest Release @installerParams
 
