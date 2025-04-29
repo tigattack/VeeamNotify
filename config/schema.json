@@ -60,7 +60,13 @@
                     "required": [
                         "enabled",
                         "webhook"
-                    ]
+                    ],
+                    "not": {
+                        "required": [
+                            "user_name",
+                            "display_name"
+                        ]
+                    }
                 },
                 "telegram": {
                     "type": "object",
@@ -91,7 +97,7 @@
                             "type": "boolean"
                         },
                         "url": {
-                            "type" :"string"
+                            "type": "string"
                         },
                         "method": {
                             "type": "string",
