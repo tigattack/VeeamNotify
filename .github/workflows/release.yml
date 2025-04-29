@@ -20,6 +20,19 @@ jobs:
             exit 1
           fi
 
+      - name: Ensure config passes schema validation
+        if: success() || failure()
+        shell: powershell
+        run: |
+          Import-Module resources/JsonValidator.psm1
+          $schemaPath = "config/schema.json"
+          $configPath = "config/config.example.json"
+          $result = Test-JsonValid -JsonPath "$configPath" -SchemaPath "$schemaPath"
+          if ($result -ne $true) {
+            Write-Host "Config file does not pass schema validation: $($result.Message)"
+            exit 1
+          }
+
       - name: Create release asset
         run: |
           shopt -s extglob
