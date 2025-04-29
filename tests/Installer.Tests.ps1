@@ -30,7 +30,7 @@ Describe 'Installer.ps1' {
 		)
 		$expectedFiles += $(
 			foreach ($dir in 'resources', 'config') {
-				$files = Get-ChildItem -Path "$(Split-Path -Path $PSScriptRoot -Parent)\$dir"
+				$files = Get-ChildItem -Path "$(Split-Path -Path $PSScriptRoot -Parent)\$dir" -File -Recurse
 				foreach ($file in $files) {
 					[string](Join-Path -Path $file.Directory.Name -ChildPath $file.Name)
 				}
