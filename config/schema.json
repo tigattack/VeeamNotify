@@ -1,5 +1,6 @@
 {
-	"$schema": "http://json-schema.org/draft-07/schema#",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "VeeamNotify Configuration Schema",
     "type": "object",
     "properties": {
         "services": {
