@@ -10,6 +10,8 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Detect PR or branch
         id: detect
@@ -36,10 +38,10 @@ jobs:
         run: |
           Get-Module -Name 'Pester' -ListAvailable | Sort-Object -Property 'Version' -Descending | Select-Object -First 1 | Import-Module
           $pesterConfig = Get-Content .\tests\PesterPreference.ps1 -Raw | Invoke-Expression
-          
+
           # Create container data based on event type
           $containerData = @{}
-          
+
           if ('${{ steps.detect.outputs.IS_PR }}' -eq 'true') {
             # PR event - pass PR data only
             $containerData.IsPr = $true
@@ -50,7 +52,7 @@ jobs:
             $containerData.Branch = '${{ steps.detect.outputs.BRANCH }}'
             Write-Host "Running tests for branch: $($containerData.Branch)"
           }
-          
+
           # Create and run the container
           $container = New-PesterContainer -Path '.\tests' -Data $containerData
           Invoke-Pester -CI -Container $container
