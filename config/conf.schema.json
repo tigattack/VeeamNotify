@@ -53,7 +53,7 @@
                         "user_id": {
                             "type": "string"
                         },
-                        "user_name": {
+                        "display_name": {
                             "type": "string"
                         }
                     },

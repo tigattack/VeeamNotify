@@ -88,8 +88,9 @@ function Send-WebhookNotification {
 			$Parameters.UserId = $ServiceConfig.user_id
 
 			# Set username if exists (Teams specific)
-			if ($Service -eq 'Teams' -and $ServiceConfig.user_name -and $ServiceConfig.user_name -ne 'Your Name') {
-				$params.UserName = $ServiceConfig.user_name
+			$teamsDisplayName = $ServiceConfig.display_name ? $ServiceConfig.display_name : $ServiceConfig.user_name
+			if ($Service -eq 'Teams' -and $teamsDisplayName -and $teamsDisplayName -ne 'Your Name') {
+				$params.UserName = $teamsDisplayName
 			}
 		}
 	}

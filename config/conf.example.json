@@ -14,7 +14,7 @@
             "enabled": false,
             "webhook": "TeamsWebhook",
             "user_id": "user@domain.tld",
-            "user_name": "Your Name"
+            "display_name": "Your Name"
         },
         "telegram": {
             "enabled": false,
