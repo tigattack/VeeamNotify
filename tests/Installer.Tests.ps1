@@ -10,9 +10,9 @@ param (
 
 Describe 'Installer.ps1' {
 	BeforeAll {
-		# Create temp install dir
-		$tempDir = [System.IO.Path]::GetTempPath()
-		$installDir = New-Item -Path (Join-Path -Path $tempDir -ChildPath 'veeamnotify-installer-test') -Type Directory -Force
+		# Use TestDrive for installation directory
+		$installDir = (Join-Path -Path $TestDrive -ChildPath 'VeeamNotifyInstall')
+		New-Item -Path $installDir -ItemType Directory -Force | Out-Null
 
 		# Get installer path
 		$installerPath = (Get-ChildItem -Path (Split-Path -Path $PSScriptRoot -Parent) -Filter 'Installer.ps1').FullName
