@@ -1,6 +1,7 @@
 # Import modules
 Import-Module Veeam.Backup.PowerShell -DisableNameChecking
 Import-Module "$PSScriptRoot\resources\Logger.psm1"
+Import-Module "$PSScriptRoot\resources\JsonValidator.psm1"
 Import-Module "$PSScriptRoot\resources\VBRSessionInfo.psm1"
 
 # Set vars
@@ -31,17 +32,12 @@ if (-not $config.logging.enabled) {
 $configRaw = (Get-Content -Raw $configFile).Replace('"', '\"').Replace("`n", '').Replace("`t", '').Replace('  ', ' ')
 
 ## Test config.
-try {
-	$configSchema = Get-Content -Raw "$PSScriptRoot\config\conf.schema.json" | ConvertFrom-Json
-	foreach ($i in $configSchema.required) {
-		if (-not (Get-Member -InputObject $config -Name "$i" -MemberType NoteProperty)) {
-			throw "Required configuration property is missing. Property: $i"
-		}
-	}
+$validationResult = Test-JsonValid -JsonPath $configFile -SchemaPath "$PSScriptRoot\config\schema.json"
+if ($validationResult.IsValid) {
+	Write-LogMessage -Tag 'INFO' -Message 'Configuration validated successfully.'
 }
-catch {
-	Write-LogMessage -Tag 'ERROR' -Message "Failed to validate configuration: $_"
-	exit 1
+else {
+	Write-LogMessage -Tag 'ERROR' -Message "Failed to validate configuration: $($validationResult.Message)"
 }
 
 # Get the command line used to start the Veeam session.
