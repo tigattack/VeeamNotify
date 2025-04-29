@@ -4,7 +4,8 @@
 		'PSAvoidLongLines',
 		'PSUseSingularNouns',
 		'PSUseShouldProcessForStateChangingFunctions',
-		'PSUseDeclaredVarsMoreThanAssignments' # Buggy - https://github.com/PowerShell/PSScriptAnalyzer/issues/1641
+		'PSUseDeclaredVarsMoreThanAssignments', # Buggy - https://github.com/PowerShell/PSScriptAnalyzer/issues/1641
+		'PSAvoidUsingWriteHost'
 	)
 	Rules        = @{
 		PSAvoidUsingDoubleQuotesForConstantString = @{
