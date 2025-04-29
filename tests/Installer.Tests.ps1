@@ -25,14 +25,14 @@ Describe 'Installer.ps1' {
 
 		# Define required files
 		$expectedFiles = @(
-			'Bootstrap.ps1',
-			'AlertSender.ps1'
+			'.\Bootstrap.ps1',
+			'.\AlertSender.ps1'
 		)
 		$expectedFiles += $(
 			foreach ($dir in 'resources', 'config') {
 				$files = Get-ChildItem -Path "$(Split-Path -Path $PSScriptRoot -Parent)\$dir" -File -Recurse
 				foreach ($file in $files) {
-					[string](Join-Path -Path $file.Directory.Name -ChildPath $file.Name)
+					[string]($file | Resolve-Path -Relative)
 				}
 			}
 		)
