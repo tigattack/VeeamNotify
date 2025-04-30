@@ -93,8 +93,8 @@ function Test-InstallationPrerequisites {
 	# Check if this project is already installed and if so, exit
 	if (Test-Path "$InstallPath\$Project\resources\version.txt") {
 		$installedVersion = (Get-Content -Raw "$InstallPath\$Project\resources\version.txt").Trim()
-		Write-Host "`n$Project $installedVersion is already installed. This script cannot update an existing installation."
-		Write-Host "Please manually update or delete/rename the existing installation and retry.`n`n"
+		Write-Host -ForegroundColor Yellow "`n$Project $installedVersion is already installed. This script cannot update an existing installation."
+		Write-Host -ForegroundColor Yellow "Please manually update or delete/rename the existing installation and retry.`n`n"
 		return $false
 	}
 	elseif ((Test-Path "$InstallPath\$Project") -and (Get-ChildItem "$InstallPath\$Project").Count -gt 0) {
