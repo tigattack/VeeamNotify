@@ -510,10 +510,10 @@ function Set-ProjectConfiguration {
 	$config = Get-Content "$configPath" -Raw | ConvertFrom-Json
 
 	# Configure service
-	$config = Set-NotificationService -Config $config
+	$config, $serviceType = Set-NotificationService -Config $config
 
 	# Configure mentions
-	$config = Set-MentionPreference -Config $config
+	$config = Set-MentionPreference -Config $config -ServiceType $serviceType
 
 	# Write config
 	try {
@@ -533,7 +533,7 @@ function Set-ProjectConfiguration {
 
 function Set-NotificationService {
 	[CmdletBinding()]
-	[OutputType([Object[]])]
+	[OutputType([PSCustomObject], [int])]
 	param (
 		[Parameter(Mandatory)]
 		[PSCustomObject]$Config
@@ -573,6 +573,7 @@ function Set-NotificationService {
 
 function Set-MentionPreference {
 	[CmdletBinding()]
+	[OutputType([PSCustomObject])]
 	param (
 		[Parameter(Mandatory)]
 		[PSCustomObject]$Config,
