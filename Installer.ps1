@@ -430,10 +430,13 @@ function Install-DownloadedProject {
 		[string]$ReleaseName
 	)
 
+	$tempDir = [System.IO.Path]::GetTempPath()
+	$downloadPath = Join-Path -Path $tempDir -ChildPath "${OutFile}.zip"
+
 	# Download parameters
 	$DownloadParams = @{
 		Uri     = $DownloadUrl
-		OutFile = "$env:TEMP\$OutFile.zip"
+		OutFile = $downloadPath
 	}
 
 	# Download project from GitHub
@@ -450,7 +453,7 @@ function Install-DownloadedProject {
 	# Unblock downloaded ZIP
 	try {
 		Write-Host 'Unblocking ZIP...'
-		Unblock-File -Path "$env:TEMP\$OutFile.zip"
+		Unblock-File -Path $downloadPath
 	}
 	catch {
 		Write-Warning 'Failed to unblock downloaded files. You will need to run the following commands manually once installation is complete:'
@@ -459,12 +462,15 @@ function Install-DownloadedProject {
 
 	# Extract release to destination path
 	Write-Host "Extracting files to '$InstallParentPath'..."
-	Expand-Archive -Path "$env:TEMP\$OutFile.zip" -DestinationPath "$InstallParentPath" -Force
+	Expand-Archive -Path $downloadPath -DestinationPath "$InstallParentPath" -Force
 
 	# Rename destination and tidy up
 	Write-Host 'Renaming directory and removing download artefact...'
-	if (Test-Path "$InstallParentPath\$OutFile") {
-		Rename-Item -Path "$InstallParentPath\$OutFile" -NewName "$Project"
+
+	$destinationPath = Join-Path -Path $InstallParentPath -ChildPath $OutFile
+
+	if (Test-Path $destinationPath) {
+		Rename-Item -Path $destinationPath -NewName "$Project"
 	}
 	else {
 		# Necessary to handle branch downloads, which come as a ZIP containing a directory named similarly to "tigattack-VeeamNotify-2100906".
@@ -477,7 +483,7 @@ function Install-DownloadedProject {
 	}
 
 	# Clean up temp files
-	Remove-Item -Path "$env:TEMP\$OutFile.zip"
+	Remove-Item -Path $downloadPath
 }
 
 function Set-ProjectConfiguration {
