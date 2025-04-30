@@ -43,27 +43,27 @@
 
 [CmdletBinding(DefaultParameterSetName = 'None')]
 param(
-	[Parameter(ParameterSetName = 'Version', Position = 0, Mandatory)]
+	[Parameter(ParameterSetName = 'Version', Position = 0)]
+	[Parameter(ParameterSetName = 'Release', Position = 0)]
+	[Parameter(ParameterSetName = 'Branch', Position = 0)]
+	[Parameter(ParameterSetName = 'PullRequest', Position = 0)]
+	[String]$InstallParentPath = 'C:\VeeamScripts',
+
+	[Parameter(ParameterSetName = 'Version', Position = 1, Mandatory)]
 	# Built-in parameter validation disabled - See https://github.com/tigattack/VeeamNotify/issues/50
 	# [ValidatePattern('^v(\d+\.)?(\d+\.)?(\*|\d+)$')]
 	[String]$Version,
 
-	[Parameter(ParameterSetName = 'Release', Position = 0, Mandatory)]
+	[Parameter(ParameterSetName = 'Release', Position = 1, Mandatory)]
 	# Built-in parameter validation disabled - See https://github.com/tigattack/VeeamNotify/issues/50
 	# [ValidateSet('Release', 'Prerelease')]
 	[String]$Latest,
 
-	[Parameter(ParameterSetName = 'Branch', Position = 0, Mandatory)]
+	[Parameter(ParameterSetName = 'Branch', Position = 1, Mandatory)]
 	[String]$Branch,
 
-	[Parameter(ParameterSetName = 'PullRequest', Position = 0, Mandatory)]
+	[Parameter(ParameterSetName = 'PullRequest', Position = 1, Mandatory)]
 	[String]$PullRequest,
-
-	[Parameter(ParameterSetName = 'Version', Position = 1)]
-	[Parameter(ParameterSetName = 'Release', Position = 1)]
-	[Parameter(ParameterSetName = 'Branch', Position = 1)]
-	[Parameter(ParameterSetName = 'PullRequest', Position = 1)]
-	[String]$InstallParentPath = 'C:\VeeamScripts',
 
 	[Parameter(ParameterSetName = 'Version', Position = 2)]
 	[Parameter(ParameterSetName = 'Release', Position = 2)]
