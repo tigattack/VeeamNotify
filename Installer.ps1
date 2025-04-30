@@ -517,7 +517,7 @@ function Set-ProjectConfiguration {
 
 	# Write config
 	try {
-		ConvertTo-Json $config | Set-Content "$configPath"
+		ConvertTo-Json $config -Depth 10 | Set-Content "$configPath"
 		Write-Host "`nConfiguration set successfully."
 		Write-Host "Further options than those available in this script can be found in the config file at:`n${configPath}."
 	}
