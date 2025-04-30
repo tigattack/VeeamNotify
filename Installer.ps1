@@ -535,8 +535,8 @@ function Set-ProjectConfiguration {
 		Write-Warning "Failed to write configuration file at `"$configPath`". Please open the file and complete configuration manually."
 	}
 
-	# Run configuration deployment tool if requested
-	Invoke-DeploymentTool -InstallParentPath $InstallParentPath -Project $Project -ConfigPath $configPath
+	# Run configuration deployment tool
+	Invoke-DeploymentTool -InstallParentPath $InstallParentPath -Project $Project
 
 	return $configPath
 }
