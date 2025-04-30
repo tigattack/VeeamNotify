@@ -93,14 +93,14 @@ function Test-InstallationPrerequisites {
 	# Check if this project is already installed and if so, exit
 	if (Test-Path "$InstallPath\$Project\resources\version.txt") {
 		$installedVersion = (Get-Content -Raw "$InstallPath\$Project\resources\version.txt").Trim()
-		Write-Output "`n$Project ($installedVersion) is already installed. This script cannot update an existing installation."
-		Write-Output "Please manually update or delete/rename the existing installation and retry.`n`n"
+		Write-Host "`n$Project $installedVersion is already installed. This script cannot update an existing installation."
+		Write-Host "Please manually update or delete/rename the existing installation and retry.`n`n"
 		return $false
 	}
 	elseif ((Test-Path "$InstallPath\$Project") -and (Get-ChildItem "$InstallPath\$Project").Count -gt 0) {
 		"`nThe install path ($InstallPath\$Project) already exists with children, " `
-			+ "but an existing installation couldn't be detected (looking for $InstallPath\$Project\resources\version.txt)." | Write-Output
-		Write-Output "Please remove the install path and retry.`n`n"
+			+ "but an existing installation couldn't be detected (looking for $InstallPath\$Project\resources\version.txt)." | Write-Host
+		Write-Host "Please remove the install path and retry.`n`n"
 		return $false
 	}
 
@@ -300,7 +300,7 @@ function Get-InstallationSource {
 							"Please enter the version you wish to install.`nAvailable versions:`n $(foreach ($tag in $releases.tag_name) {"$tag`n"})",
 							'Version'
 						)).Version
-					if ($releases.tag_name -notcontains $Version) { Write-Output "`nInvalid version, please try again." }
+					if ($releases.tag_name -notcontains $Version) { Write-Host "`nInvalid version, please try again." }
 				} until (
 					$releases.tag_name -contains $Version
 				)
@@ -312,7 +312,7 @@ function Get-InstallationSource {
 							"Please enter the name of the branch you wish to install.`nAvailable branches:`n $(foreach ($branch in $branches) {"$branch`n"})",
 							'Branch'
 						)).Branch
-					if ($branches -notcontains $Branch) { Write-Output "`nInvalid branch name, please try again." }
+					if ($branches -notcontains $Branch) { Write-Host "`nInvalid branch name, please try again." }
 				} until (
 					$branches -contains $Branch
 				)
@@ -327,7 +327,7 @@ function Get-InstallationSource {
 						)).PullRequest
 
 					if ($PullRequest -notmatch '^\d+$') {
-						Write-Output "`nPull request ID must be a number (e.g. '123'). Please try again."
+						Write-Host "`nPull request ID must be a number (e.g. '123'). Please try again."
 					}
 				} until (
 					$PullRequest -match '^\d+$'
@@ -438,7 +438,7 @@ function Install-DownloadedProject {
 
 	# Download project from GitHub
 	try {
-		Write-Output "`nDownloading $Project $ReleaseName from GitHub..."
+		Write-Host "`nDownloading $Project $ReleaseName from GitHub..."
 		Invoke-WebRequest @DownloadParams
 	}
 	catch {
@@ -449,20 +449,20 @@ function Install-DownloadedProject {
 
 	# Unblock downloaded ZIP
 	try {
-		Write-Output 'Unblocking ZIP...'
+		Write-Host 'Unblocking ZIP...'
 		Unblock-File -Path "$env:TEMP\$OutFile.zip"
 	}
 	catch {
 		Write-Warning 'Failed to unblock downloaded files. You will need to run the following commands manually once installation is complete:'
-		Write-Output "Get-ChildItem -Path $InstallParentPath -Filter *.ps* -Recurse | Unblock-File"
+		Write-Host "Get-ChildItem -Path $InstallParentPath -Filter *.ps* -Recurse | Unblock-File"
 	}
 
 	# Extract release to destination path
-	Write-Output "Extracting files to '$InstallParentPath'..."
+	Write-Host "Extracting files to '$InstallParentPath'..."
 	Expand-Archive -Path "$env:TEMP\$OutFile.zip" -DestinationPath "$InstallParentPath" -Force
 
 	# Rename destination and tidy up
-	Write-Output 'Renaming directory and tidying up...'
+	Write-Host 'Renaming directory and removing download artefact...'
 	if (Test-Path "$InstallParentPath\$OutFile") {
 		Rename-Item -Path "$InstallParentPath\$OutFile" -NewName "$Project"
 	}
@@ -490,14 +490,12 @@ function Set-ProjectConfiguration {
 		[string]$InstallParentPath
 	)
 
-	Write-Output "`nBeginning configuration..."
-
 	# Join config path
 	$configPath = Join-Path -Path $InstallParentPath -ChildPath $Project | Join-Path -ChildPath 'config\conf.json'
 
 	# Create config from example if it doesn't exist
 	if (-not (Test-Path $configPath)) {
-		Write-Output "`nCreating configuration file..."
+		Write-Host "`nCreating configuration file..."
 		$exampleConfig = Join-Path -Path $InstallParentPath -ChildPath $Project | Join-Path -ChildPath 'config\conf.example.json'
 		Copy-Item -Path $exampleConfig -Destination $configPath
 	}
@@ -513,9 +511,9 @@ function Set-ProjectConfiguration {
 
 	# Write config
 	try {
-		Write-Output "`nSetting configuration..."
 		ConvertTo-Json $config | Set-Content "$configPath"
-		Write-Output "`nConfiguration set successfully. Configuration can be found in `"$configPath`"."
+		Write-Host "`nConfiguration set successfully."
+		Write-Host "Further options than those available in this script can be found in the config file at:`n${configPath}."
 	}
 	catch {
 		Write-Warning "Failed to write configuration file at `"$configPath`". Please open the file and complete configuration manually."
@@ -603,7 +601,7 @@ function Set-MentionPreference {
 			}
 			2 {
 				$Config.services.teams.user_id = Read-Host -Prompt "`nPlease enter your Teams email address"
-				Write-Output "`nTeams also requires a name to be specified for mentions.`nIf you do not specify anything, your username (from your email address) will be used."
+				Write-Host "`nTeams also requires a name to be specified for mentions.`nIf you do not specify anything, your username (from your email address) will be used."
 				$Config.services.teams.user_name = Read-Host -Prompt 'Please enter your name on Teams (e.g. John Smith)'
 			}
 		}
@@ -655,7 +653,7 @@ function Invoke-DeploymentTool {
 		0
 	) | ForEach-Object {
 		if ($_ -eq 0) {
-			Write-Output "`nRunning configuration deployment script...`n"
+			Write-Host "`nRunning configuration deployment script...`n"
 			& "$InstallParentPath\$Project\resources\DeployVeeamConfiguration.ps1" -InstallParentPath $InstallParentPath
 		}
 	}
@@ -667,7 +665,7 @@ function Invoke-DeploymentTool {
 $project = 'VeeamNotify'
 $ErrorActionPreference = 'Stop'
 
-Write-Output @'
+Write-Host -ForegroundColor Green @'
 #######################################
 #                                     #
 #        VeeamNotify Installer        #
@@ -698,8 +696,8 @@ if (-not $NonInteractive) {
 }
 else {
 	$configPath = Join-Path -Path $InstallParentPath -ChildPath $project | Join-Path -ChildPath 'config\conf.json'
-	Write-Output "`nWill not prompt for VeeamNotify configuration, or to run Veeam configuration deployment script in non-interactive mode.`n"
-	Write-Output "`nConfiguration can be found in `"$configPath`"."
+	Write-Host "`nWill not prompt for VeeamNotify configuration, or to run Veeam configuration deployment script in non-interactive mode."
+	Write-Host "`nConfiguration can be found in:`n$configPath."
 }
 
-Write-Output "`nInstallation complete!`n"
+Write-Host -ForegroundColor Green "`nInstallation complete!`n"
