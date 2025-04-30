@@ -447,7 +447,12 @@ function Install-DownloadedProject {
 	catch {
 		$downloadStatusCode = $_.Exception.Response.StatusCode.value__
 		Write-Warning "Failed to download $Project $ReleaseName."
-		throw "HTTP status code: $downloadStatusCode"
+		if ($_.Exception.Response) {
+			throw "HTTP status code: $downloadStatusCode"
+		}
+		else {
+			throw $_
+		}
 	}
 
 	# Unblock downloaded ZIP
