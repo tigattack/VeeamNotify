@@ -543,7 +543,7 @@ function Set-ProjectConfiguration {
 
 function Set-NotificationService {
 	[CmdletBinding()]
-	[OutputType([PSCustomObject], [int])]
+	[OutputType([object[]])]
 	param (
 		[Parameter(Mandatory)]
 		[PSCustomObject]$Config
