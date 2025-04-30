@@ -739,7 +739,7 @@ function New-TelegramPayload {
 	}
 
 	# Build user mention string
-	$mentionStr = ""
+	$mentionStr = ''
 	if ($Mention) {
 		$mentionStr = "[$UserName](tg://user?id=$ChatId) Job $($Status.ToLower())\!`n`n"
 	}
