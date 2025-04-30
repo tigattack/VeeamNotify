@@ -518,7 +518,7 @@ function Set-ProjectConfiguration {
 	$config, $serviceType = Set-NotificationService -Config $config
 
 	# Configure mentions
-	if ($serviceType -notin (3, 4)) {
+	if ($serviceType -ne 4) {
 		$config = Set-MentionPreference -Config $config -ServiceType $serviceType
 	}
 	else {
@@ -646,6 +646,9 @@ function Set-MentionPreference {
 				$Config.services.teams.user_id = Read-Host -Prompt "`nPlease enter your Teams email address"
 				Write-Host "`nTeams also requires a name to be specified for mentions.`nIf you do not specify anything, your username (from your email address) will be used."
 				$Config.services.teams.display_name = Read-Host -Prompt 'Please enter your Teams display name (e.g. John Smith)'
+			}
+			3 {
+				$Config.services.telegram.user_name = Read-Host -Prompt "`nPlease enter your Telegram username"
 			}
 		}
 	}
