@@ -552,7 +552,7 @@ function Set-NotificationService {
 	# Prompt user with config options
 	$servicePrompt_discord = New-Object System.Management.Automation.Host.ChoiceDescription '&Discord', 'Send notifications to Discord.'
 	$servicePrompt_slack = New-Object System.Management.Automation.Host.ChoiceDescription '&Slack', 'Send notifications to Slack.'
-	$servicePrompt_teams = New-Object System.Management.Automation.Host.ChoiceDescription '&Teams', 'Send notifications to Teams.'
+	$servicePrompt_teams = New-Object System.Management.Automation.Host.ChoiceDescription '&Microsoft Teams', 'Send notifications to Microsoft Teams.'
 	$servicePrompt_telegram = New-Object System.Management.Automation.Host.ChoiceDescription '&Telegram', 'Send notifications to Telegram.'
 	$servicePrompt_http = New-Object System.Management.Automation.Host.ChoiceDescription '&HTTP', 'Send job data to HTTP endpoint.'
 	$servicePrompt_result = $host.UI.PromptForChoice(
