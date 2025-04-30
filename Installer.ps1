@@ -548,28 +548,54 @@ function Set-NotificationService {
 	$servicePrompt_discord = New-Object System.Management.Automation.Host.ChoiceDescription '&Discord', 'Send notifications to Discord.'
 	$servicePrompt_slack = New-Object System.Management.Automation.Host.ChoiceDescription '&Slack', 'Send notifications to Slack.'
 	$servicePrompt_teams = New-Object System.Management.Automation.Host.ChoiceDescription '&Teams', 'Send notifications to Teams.'
+	$servicePrompt_telegram = New-Object System.Management.Automation.Host.ChoiceDescription '&Telegram', 'Send notifications to Telegram.'
+	$servicePrompt_http = New-Object System.Management.Automation.Host.ChoiceDescription '&HTTP', 'Send job data to HTTP endpoint.'
 	$servicePrompt_result = $host.UI.PromptForChoice(
 		'Notification Service',
 		'Which service do you wish to send notifications to?',
 		@(
 			$servicePrompt_discord,
 			$servicePrompt_slack,
-			$servicePrompt_teams
+			$servicePrompt_teams,
+			$servicePrompt_telegram,
+			$servicePrompt_http
 		),
 		-1
 	)
 
-	# TODO: support Telegram & ping
+	# Prompt for webhook URL based on selected service
 	$webhookPrompt = "`nPlease enter your webhook URL"
 	switch ($servicePrompt_result) {
 		0 {
+			$Config.services.discord.enabled = $true
 			$Config.services.discord.webhook = Read-Host -Prompt $webhookPrompt
 		}
 		1 {
+			$Config.services.slack.enabled = $true
 			$Config.services.slack.webhook = Read-Host -Prompt $webhookPrompt
 		}
 		2 {
+			$Config.services.teams.enabled = $true
 			$Config.services.teams.webhook = Read-Host -Prompt $webhookPrompt
+		}
+		3 {
+			$Config.services.telegram.enabled = $true
+			$Config.services.telegram.bot_token = Read-Host -Prompt "`nPlease enter your Telegram bot token"
+			$Config.services.telegram.chat_id = Read-Host -Prompt "`nPlease enter your Telegram chat ID"
+		}
+		4 {
+			$Config.services.http.enabled = $true
+			$Config.services.http.url = Read-Host -Prompt "`nPlease enter your HTTP endpoint URL"
+			Write-Host "`nNow select the HTTP method to use. Note:"
+			Write-Host "- If POST is selected, the job data will be sent as a JSON payload.`n- If GET is selected, the job data will be sent as query parameters."
+			$Config.services.http.method = Read-Host -Prompt "`nPOST or GET [POST]"
+			$methodEmpty = [string]::IsNullOrWhitespace($Config.services.http.method)
+			if ($methodEmpty -or $Config.services.http.method -notmatch '^(POST|GET)$') {
+				if (-not $methodEmpty) {
+					Write-Warning "Invalid HTTP method specified. Defaulting to POST."
+				}
+				$Config.services.http.method = 'POST'
+			}
 		}
 	}
 
