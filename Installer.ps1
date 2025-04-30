@@ -597,7 +597,7 @@ function Set-NotificationService {
 			$methodEmpty = [string]::IsNullOrWhitespace($Config.services.http.method)
 			if ($methodEmpty -or $Config.services.http.method -notmatch '^(POST|GET)$') {
 				if (-not $methodEmpty) {
-					Write-Warning "Invalid HTTP method specified. Defaulting to POST."
+					Write-Warning 'Invalid HTTP method specified. Defaulting to POST.'
 				}
 				$Config.services.http.method = 'POST'
 			}
