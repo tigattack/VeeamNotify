@@ -518,7 +518,12 @@ function Set-ProjectConfiguration {
 	$config, $serviceType = Set-NotificationService -Config $config
 
 	# Configure mentions
-	$config = Set-MentionPreference -Config $config -ServiceType $serviceType
+	if ($serviceType -notin (3, 4)) {
+		$config = Set-MentionPreference -Config $config -ServiceType $serviceType
+	}
+	else {
+		Write-Verbose 'Skipping mention preference configuration as mentions are not supported for the chosen service.'
+	}
 
 	# Write config
 	try {
