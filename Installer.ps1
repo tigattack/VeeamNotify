@@ -10,9 +10,9 @@
 		5) A pull request.
 	This script can also optionally launch a deployment script to apply the VeeamNotify configuration to all or selected Veeam jobs. You will be prompted for this after installation.
 	.PARAMETER Latest
-	Choose between "Release" or "Prerelease" to install the latest release or prerelease.
+	Choose between "Release" or "Prerelease" to install the latest release or pre-release.
 	.PARAMETER Version
-	Specify a version to install (e.g. 'v1.0').
+	Specify a version to install (e.g. 'v1.0')
 	.PARAMETER Branch
 	Specify a branch name to install - TESTING ONLY
 	.PARAMETER PullRequest
@@ -20,11 +20,11 @@
 	.PARAMETER NonInteractive
 	Switch for noninteractive installation. No prompts to choose versions or configurations will appear when specified, and one of the above parameters must also be specified.
 	.PARAMETER InstallParentPath
-	Path to VeeamNotify destination directory. Defaults to 'C:\VeeamScripts'.
+	Path to VeeamNotify destination directory. Default: 'C:\VeeamScripts'
 	.INPUTS
-	None.
+	None
 	.OUTPUTS
-	None.
+	None
 	.EXAMPLE
 	PS> Installer.ps1
 	.EXAMPLE
