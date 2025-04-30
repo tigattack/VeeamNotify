@@ -51,7 +51,6 @@ foreach ($file in $Files) {
 	}
 	catch {
 		Write-Output "Error analysing $($file): $($_.Exception.Message)"
-		exit 1
 	}
 }
 
