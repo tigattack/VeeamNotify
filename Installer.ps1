@@ -645,7 +645,7 @@ function Set-MentionPreference {
 			2 {
 				$Config.services.teams.user_id = Read-Host -Prompt "`nPlease enter your Teams email address"
 				Write-Host "`nTeams also requires a name to be specified for mentions.`nIf you do not specify anything, your username (from your email address) will be used."
-				$Config.services.teams.user_name = Read-Host -Prompt 'Please enter your name on Teams (e.g. John Smith)'
+				$Config.services.teams.display_name = Read-Host -Prompt 'Please enter your Teams display name (e.g. John Smith)'
 			}
 		}
 	}
