@@ -7,7 +7,7 @@
 		2) Latest prerelease;
 		3) Specific version;
 		4) A named branch;
-		5) A fork pull request.
+		5) A pull request.
 	This script can also optionally launch a deployment script to apply the VeeamNotify configuration to all or selected Veeam jobs. You will be prompted for this after installation.
 	.PARAMETER Latest
 	Choose between "Release" or "Prerelease" to install the latest release or prerelease.
