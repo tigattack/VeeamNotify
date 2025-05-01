@@ -139,7 +139,7 @@ try {
 			$speedRound = 'Unknown'
 		}
 
-		<# TODO: utilise this.
+		<# TODO: utilise this - shows warnings and errors per backed up machine.
 		# Get objects in session.
 		$sessionObjects = $session.GetTaskSessions()
 
