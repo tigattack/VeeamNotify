@@ -20,6 +20,29 @@ function DeploymentError {
 	exit 1
 }
 
+function Set-VeeamJobOptions {
+	param(
+		[Parameter(Mandatory)]$Job,
+		[Parameter(Mandatory)]$Options
+	)
+
+	try {
+		# Agent jobs require their own cmdlet
+		if ($Job.JobType -eq 'EpAgentBackup') {
+			Set-VBRComputerBackupJob -Job $Job -ScriptOptions $Options.JobScriptCommand | Out-Null
+		}
+		else {
+			# For 'regular' (e.g. backup, replica) jobs
+			Set-VBRJobOptions -Job $Job -Options $Options | Out-Null
+		}
+		return $true
+	}
+	catch {
+		DeploymentError
+		return $false
+	}
+}
+
 # Post-job script for VeeamNotify
 # Get PowerShell path
 try {
@@ -113,7 +136,7 @@ if ($configChoice_result -eq 1) {
 					$PostScriptFullPSPath = $postScriptCmd -replace 'Powershell.exe', "$powershellExePath"
 					# Set job to use modified post script path
 					$jobOptions.JobScriptCommand.PostScriptCommandLine = $PostScriptFullPSPath
-					Set-VBRJobOptions -Job $job -Options $jobOptions | Out-Null
+					Set-VeeamJobOptions -Job $job -Options $jobOptions
 
 					Write-Output "$($jobName) is now updated."
 					continue
@@ -149,7 +172,7 @@ if ($configChoice_result -eq 1) {
 
 							# Script is not the same. Update the script command line.
 							$jobOptions.JobScriptCommand.PostScriptCommandLine = $newPostScriptCmd
-							Set-VBRJobOptions -Job $job -Options $jobOptions | Out-Null
+							Set-VeeamJobOptions -Job $job -Options $jobOptions
 
 							Write-Output "Updated post-job script for job $($jobName).`nOld: $postScriptCmd`nNew: $newPostScriptCmd"
 							Write-Output "$($jobName) is now configured for VeeamNotify."
@@ -183,7 +206,7 @@ if ($configChoice_result -eq 1) {
 						# Sets post-job script to Enabled and sets the command line to full command including path.
 						$jobOptions.JobScriptCommand.PostScriptEnabled = $true
 						$jobOptions.JobScriptCommand.PostScriptCommandLine = $newPostScriptCmd
-						Set-VBRJobOptions -Job $job -Options $jobOptions | Out-Null
+						Set-VeeamJobOptions -Job $job -Options $jobOptions
 
 						Write-Output "`n$($jobName) is now configured for VeeamNotify."
 					}
@@ -222,7 +245,7 @@ elseif ($configChoice_result -eq 0) {
 					$PostScriptFullPSPath = $postScriptCmd -replace 'Powershell.exe', "$powershellExePath"
 					# Set job to use modified post script path
 					$jobOptions.JobScriptCommand.PostScriptCommandLine = $PostScriptFullPSPath
-					Set-VBRJobOptions -Job $job -Options $jobOptions | Out-Null
+					Set-VeeamJobOptions -Job $job -Options $jobOptions
 
 					Write-Output "$($jobName) is now updated."
 					continue
@@ -250,7 +273,7 @@ elseif ($configChoice_result -eq 0) {
 
 					# Script is not the same. Update the script command line.
 					$jobOptions.JobScriptCommand.PostScriptCommandLine = $newPostScriptCmd
-					Set-VBRJobOptions -Job $job -Options $jobOptions | Out-Null
+					Set-VeeamJobOptions -Job $job -Options $jobOptions
 
 					Write-Output "Updated post-job script for job $($jobName).`nOld: $postScriptCmd`nNew: $newPostScriptCmd"
 					Write-Output "$($jobName) is now configured for VeeamNotify."
@@ -269,7 +292,7 @@ elseif ($configChoice_result -eq 0) {
 				# Sets post-job script to Enabled and sets the command line to full command including path.
 				$jobOptions.JobScriptCommand.PostScriptEnabled = $true
 				$jobOptions.JobScriptCommand.PostScriptCommandLine = $newPostScriptCmd
-				Set-VBRJobOptions -Job $job -Options $jobOptions | Out-Null
+				Set-VeeamJobOptions -Job $job -Options $jobOptions
 
 				Write-Output "`n$($jobName) is now configured for VeeamNotify."
 			}
