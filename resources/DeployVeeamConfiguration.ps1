@@ -158,8 +158,8 @@ if ($configChoice_result -eq 1) {
 			Write-Output "`n$($jobName) has an existing post-job script.`nScript: $postScriptCmd"
 			Write-Output "`nIf you wish to receive notifications for this job, you must overwrite the existing post-job script."
 
-			$overwriteCurrentCmd_yes = New-Object System.Management.Automation.Host.ChoiceDescription '&yes', 'Overwrite the current post-job script.'
-			$overwriteCurrentCmd_no = New-Object System.Management.Automation.Host.ChoiceDescription '&no', 'Skip configuration of this job, leaving it as-is.'
+			$overwriteCurrentCmd_yes = New-Object System.Management.Automation.Host.ChoiceDescription '&Yes', 'Overwrite the current post-job script.'
+			$overwriteCurrentCmd_no = New-Object System.Management.Automation.Host.ChoiceDescription '&No', 'Skip configuration of this job, leaving it as-is.'
 			$overwriteCurrentCmd_opts = [System.Management.Automation.Host.ChoiceDescription[]]($overwriteCurrentCmd_yes, $overwriteCurrentCmd_no)
 			$overwriteCurrentCmd_result = $host.UI.PromptForChoice('Overwrite Job Configuration', 'Do you wish to overwrite the existing post-job script?', $overwriteCurrentCmd_opts, -1)
 
