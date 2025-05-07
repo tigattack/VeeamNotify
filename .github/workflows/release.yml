@@ -27,8 +27,16 @@ jobs:
           Import-Module ./resources/JsonValidator.psm1
           $schemaPath = "./config/schema.json"
           $configPath = "./config/conf.example.json"
+
+          Write-Host "Testing config file: $configPath"
+          Write-Host "Against schema file: $schemaPath"
+
           $result = Test-JsonValid -JsonPath "$configPath" -SchemaPath "$schemaPath"
-          if ($result -ne $true) {
+
+          Write-Host 'Validation result:'
+          Write-Host $result
+
+          if ($result.IsValid -ne $true) {
             Write-Host "Config file does not pass schema validation: $($result.Message)"
             exit 1
           }
