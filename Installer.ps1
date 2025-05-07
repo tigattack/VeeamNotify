@@ -190,6 +190,7 @@ function Get-GitHubPRInfo {
 
 function Get-InstallationSource {
 	[CmdletBinding()]
+	[OutputType([System.Collections.Hashtable])]
 	param (
 		[Parameter(Mandatory)]
 		[string]$Project,
@@ -384,10 +385,17 @@ function Get-InstallationSource {
 		}
 
 		# Define download URL
-		$downloadUrl = Invoke-RestMethod "https://api.github.com/repos/tigattack/$Project/releases" | ForEach-Object {
-			if ($_.tag_name -eq $releaseName) {
-				$_.assets[0].browser_download_url
+		$releases = Invoke-RestMethod "https://api.github.com/repos/tigattack/$Project/releases"
+		foreach ($i in $releases) {
+			if ($i.tag_name -eq $releaseName) {
+				$downloadUrl = $i.assets[0].browser_download_url
+				break
 			}
+		}
+
+		if (-not $downloadUrl) {
+			Write-Warning "No download URL found for release '$releaseName'."
+			exit
 		}
 	}
 
