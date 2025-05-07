@@ -1,14 +1,15 @@
 # Import modules
 Import-Module Veeam.Backup.PowerShell -DisableNameChecking
 Import-Module "$PSScriptRoot\resources\Logger.psm1"
+Import-Module "$PSScriptRoot\resources\JsonValidator.psm1"
 Import-Module "$PSScriptRoot\resources\VBRSessionInfo.psm1"
 
 # Set vars
 $configFile = "$PSScriptRoot\config\conf.json"
-$date = (Get-Date -UFormat %Y-%m-%d_%T).Replace(':','.')
+$date = (Get-Date -UFormat %Y-%m-%d_%T).Replace(':', '.')
 $logFile = "$PSScriptRoot\log\$($date)_Bootstrap.log"
 $idRegex = '[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}'
-$supportedTypes = 'Backup', 'EpAgentBackup','Replica','BackupToTape','FileToTape'
+$supportedTypes = 'Backup', 'EpAgentBackup', 'Replica', 'BackupToTape', 'FileToTape'
 
 # Start logging to file
 Start-Logging -Path $logFile
@@ -28,20 +29,15 @@ if (-not $config.logging.enabled) {
 
 ## Pull raw config and format for later.
 ## This is necessary since $config as a PSCustomObject was not passed through correctly with Start-Process and $powershellArguments.
-$configRaw = (Get-Content -Raw $configFile).Replace('"','\"').Replace("`n",'').Replace("`t",'').Replace('  ',' ')
+$configRaw = (Get-Content -Raw $configFile).Replace('"', '\"').Replace("`n", '').Replace("`t", '').Replace('  ', ' ')
 
 ## Test config.
-try {
-	$configSchema = Get-Content -Raw "$PSScriptRoot\config\conf.schema.json" | ConvertFrom-Json
-	foreach ($i in $configSchema.required) {
-		if (-not (Get-Member -InputObject $config -Name "$i" -MemberType NoteProperty)) {
-			throw "Required configuration property is missing. Property: $i"
-		}
-	}
+$validationResult = Test-JsonValid -JsonPath $configFile -SchemaPath "$PSScriptRoot\config\schema.json"
+if ($validationResult.IsValid) {
+	Write-LogMessage -Tag 'INFO' -Message 'Configuration validated successfully.'
 }
-catch {
-	Write-LogMessage -Tag 'ERROR' -Message "Failed to validate configuration: $_"
-	exit 1
+else {
+	Write-LogMessage -Tag 'ERROR' -Message "Failed to validate configuration: $($validationResult.Message)"
 }
 
 # Get the command line used to start the Veeam session.
@@ -58,7 +54,7 @@ Write-LogMessage -Tag 'INFO' -Message 'Getting VBR job details'
 $job = Get-VBRJob -WarningAction SilentlyContinue | Where-Object {$_.Id.Guid -eq $jobId}
 if (!$job) {
 	# Can't locate non tape job so check if it's a tape job
-	$job = Get-VBRTapejob -WarningAction SilentlyContinue | Where-Object {$_.Id.Guid -eq $jobId}
+	$job = Get-VBRTapeJob -WarningAction SilentlyContinue | Where-Object {$_.Id.Guid -eq $jobId}
 	$JobType = $job.Type
 }
 else {
@@ -93,17 +89,21 @@ else {
 $newLogfile = "$PSScriptRoot\log\$($date)-$($logJobName).log"
 
 # Build argument string for the alert sender script.
-$powershellArguments = "-file $PSScriptRoot\AlertSender.ps1", "-JobName `"$jobName`"", "-Id `"$sessionId`"","-JobType `"$($JobType)`"", `
-	"-Config `"$($configRaw)`"", "-Logfile `"$newLogfile`""
+$powershellArguments = "-NoProfile -File $PSScriptRoot\AlertSender.ps1", `
+	"-SessionId `"$sessionId`"", `
+	"-JobType `"$JobType`"", `
+	"-Config `"$configRaw`"", `
+	"-Logfile `"$newLogfile`""
 
 $vbrSessionLogger.UpdateSuccess($vbrLogEntry, '[VeeamNotify] Parsed job & session information.') | Out-Null
 
 # Start a new new script in a new process with some of the information gathered here.
 # This allows Veeam to finish the current session faster and allows us gather information from the completed job.
 try {
+	$powershellExePath = (Get-Command -Name 'powershell.exe' -ErrorAction Stop).Path
 	Write-LogMessage -Tag 'INFO' -Message 'Launching AlertSender.ps1...'
 	$vbrLogEntry = $vbrSessionLogger.AddLog('[VeeamNotify] Launching Alert Sender...')
-	Start-Process -FilePath 'powershell' -Verb runAs -ArgumentList $powershellArguments -WindowStyle hidden -ErrorAction Stop
+	Start-Process -FilePath "$powershellExePath" -Verb runAs -ArgumentList $powershellArguments -WindowStyle hidden -ErrorAction Stop
 	Write-LogMessage -Tag 'INFO' -Message 'AlertSender.ps1 launched successfully.'
 	$vbrSessionLogger.UpdateSuccess($vbrLogEntry, '[VeeamNotify] Launched Alert Sender.') | Out-Null
 }

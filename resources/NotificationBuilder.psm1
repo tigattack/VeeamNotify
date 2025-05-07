@@ -1,13 +1,13 @@
 function New-Payload {
 	[CmdletBinding()]
-	[OutputType([System.Collections.Hashtable])]
+	[OutputType([PSCustomObject])]
 	param (
-		[Parameter(Mandatory=$true)]
-		[ValidateSet('Discord', 'Slack', 'Teams', 'Telegram')]
+		[Parameter(Mandatory)]
+		[ValidateSet('Discord', 'Slack', 'Teams', 'Telegram', 'HTTP')]
 		[string]$Service,
 
-		[Parameter(Mandatory=$true)]
-		[Hashtable]$Parameters
+		[Parameter(Mandatory)]
+		[System.Collections.Specialized.OrderedDictionary]$Parameters
 	)
 
 	switch ($Service) {
@@ -23,6 +23,9 @@ function New-Payload {
 		'Telegram' {
 			New-TelegramPayload @Parameters
 		}
+		'HTTP' {
+			New-HttpPayload -Parameters $Parameters
+		}
 		default {
 			Write-LogMessage -Tag 'ERROR' -Message "Unknown service: $Service"
 		}
@@ -31,7 +34,7 @@ function New-Payload {
 
 function New-DiscordPayload {
 	[CmdletBinding()]
-	[OutputType([System.Collections.Hashtable])]
+	[OutputType([PSCustomObject])]
 	param (
 		[string]$JobName,
 		[string]$JobType,
@@ -50,7 +53,8 @@ function New-DiscordPayload {
 		[string]$UserId,
 		[string]$ThumbnailUrl,
 		[string]$FooterMessage,
-		[boolean]$UpdateNotification,
+		[boolean]$NotifyUpdate,
+		[boolean]$UpdateAvailable,
 		[string]$LatestVersion
 	)
 
@@ -171,11 +175,11 @@ function New-DiscordPayload {
 	}
 
 	# Build payload object.
-	[PSCustomObject]$payload = @{
+	$payload = [PSCustomObject]@{
 		embeds = @(
 			[PSCustomObject]@{
 				title       = $JobName
-				description	= "Session result: $Status`nJob type: $JobType"
+				description	= "**Session result:** $Status`n**Job type:** $JobType"
 				color       = $Colour
 				thumbnail   = $thumbObject
 				fields      = $fieldArray
@@ -193,7 +197,7 @@ function New-DiscordPayload {
 	}
 
 	# Add update notice if relevant and configured to do so.
-	if ($UpdateNotification) {
+	if ($UpdateAvailable -and $NotifyUpdate) {
 		# Add embed to payload.
 		$payload.embeds += @(
 			@{
@@ -212,7 +216,7 @@ function New-DiscordPayload {
 
 function New-TeamsPayload {
 	[CmdletBinding()]
-	[OutputType([System.Collections.Hashtable])]
+	[OutputType([PSCustomObject])]
 	param (
 		[string]$JobName,
 		[string]$JobType,
@@ -232,7 +236,8 @@ function New-TeamsPayload {
 		[string]$UserName,
 		[string]$ThumbnailUrl,
 		[string]$FooterMessage,
-		[boolean]$UpdateNotification,
+		[boolean]$NotifyUpdate,
+		[boolean]$UpdateAvailable,
 		[string]$LatestVersion
 	)
 
@@ -267,7 +272,7 @@ function New-TeamsPayload {
 	)
 
 	# Add URL to update notice if relevant and configured to do so.
-	if ($UpdateNotification) {
+	if ($UpdateAvailable -and $NotifyUpdate) {
 		# Add URL to update notice.
 		$FooterMessage += "  `n[See release **$LatestVersion** on GitHub.](https://github.com/tigattack/VeeamNotify/releases/$LatestVersion)"
 	}
@@ -448,7 +453,7 @@ function New-TeamsPayload {
 		}
 	)
 
-	[PSCustomObject]$payload = @{
+	$payload = [PSCustomObject]@{
 		type        = 'message'
 		attachments = @(
 			@{
@@ -488,7 +493,7 @@ function New-TeamsPayload {
 
 function New-SlackPayload {
 	[CmdletBinding()]
-	[OutputType([System.Collections.Hashtable])]
+	[OutputType([PSCustomObject])]
 	param (
 		[string]$JobName,
 		[string]$JobType,
@@ -507,29 +512,27 @@ function New-SlackPayload {
 		[string]$UserId,
 		[string]$ThumbnailUrl,
 		[string]$FooterMessage,
-		[boolean]$UpdateNotification,
+		[boolean]$NotifyUpdate,
+		[boolean]$UpdateAvailable,
 		[string]$LatestVersion
 	)
+
+	$payload = [PSCustomObject]@{
+		blocks = @()
+	}
 
 	# Mention user if configured to do so.
 	# Must be done at early stage to ensure this section is at the top of the embed object.
 	if ($mention) {
-		$payload = @{
-			blocks = @(
-				@{
-					type = 'section'
-					text = @{
-						type = 'mrkdwn'
-						text = "<@$UserId> Job $($Status.ToLower())!"
-					}
+		$payload.blocks = @(
+			@{
+				type = 'section'
+				text = @{
+					type = 'mrkdwn'
+					text = "<@$UserId> Job $($Status.ToLower())!"
 				}
-			)
-		}
-	}
-	else {
-		$payload = @{
-			blocks = @()
-		}
+			}
+		)
 	}
 
 	# Set timestamps
@@ -612,12 +615,12 @@ function New-SlackPayload {
 	}
 
 	# Build payload object.
-	[PSCustomObject]$payload.blocks += @(
+	$payload.blocks += @(
 		@{
 			type      = 'section'
 			text      = @{
 				type = 'mrkdwn'
-				text = "*$JobName*`n`nSession result: $Status`nJob type: $JobType"
+				text = "*$JobName*`n`n*Session result:* $Status`n*Job type:* $JobType"
 			}
 			accessory = @{
 				type      = 'image'
@@ -653,7 +656,7 @@ function New-SlackPayload {
 	)
 
 	# Add update notice if relevant and configured to do so.
-	if ($UpdateNotification) {
+	if ($UpdateAvailable -and $NotifyUpdate) {
 		# Add block to payload.
 		$payload.blocks += @(
 			@{
@@ -685,8 +688,15 @@ function New-SlackPayload {
 
 function New-TelegramPayload {
 	[CmdletBinding()]
-	[OutputType([string])]
+	[OutputType([PSCustomObject])]
+	[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+		'PSReviewUnusedParameter',
+		'ThumbnailUrl',
+		Justification = 'ThumbnailUrl is part of standard notification parameters'
+	)]
 	param (
+		[ValidateNotNullOrEmpty()]
+		[string]$ChatId,
 		[string]$JobName,
 		[string]$JobType,
 		[string]$Status,
@@ -701,32 +711,54 @@ function New-TelegramPayload {
 		[DateTime]$StartTime,
 		[DateTime]$EndTime,
 		[boolean]$Mention,
-		[string]$UserId,
+		[string]$UserName,
 		[string]$ThumbnailUrl,
 		[string]$FooterMessage,
-		[boolean]$UpdateNotification,
+		[boolean]$NotifyUpdate,
+		[boolean]$UpdateAvailable,
 		[string]$LatestVersion
 	)
 
-	# Mention user if configured to do so.
-	# Must be done at early stage to ensure this section is at the top of the embed object.
-	if ($mention) {
-		$message =  "[$UserName](tg://user?id=$UserId) Job $($Status.ToLower())!`n"
-	}
-	else {
-		$message = ''
+	function escapeTGChars {
+		[CmdletBinding()]
+		[OutputType([string])]
+		param ([Parameter(Mandatory)][string]$text)
+		# Escape characters for Telegram MarkdownV2
+		# https://core.telegram.org/bots/api#markdownv2-style
+		foreach ($char in '_', '[', ']', '(', ')', '~', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!') {
+			$text = $text.Replace("$char", "\$char")
+		}
+		return $text
 	}
 
-	# Build payload object.
-	$message += "*$JobName*`n`n*Session result:* $Status`n*Job type:* $JobType`n`n"
+	$PSBoundParameters.GetEnumerator() | ForEach-Object {
+		# Escape characters for Telegram MarkdownV2
+		if ($_.Value -is [string]) {
+			Set-Variable -Name $_.Key -Value (escapeTGChars $_.Value) -Scope 0
+		}
+	}
+
+	# Build user mention string
+	$mentionStr = ''
+	if ($Mention) {
+		$mentionStr = "[$UserName](tg://user?id=$ChatId) Job $($Status.ToLower())\!`n`n"
+	}
 
 	# Set timestamps
 	$timestampStart = $(Get-Date $StartTime -UFormat '%d %B %Y %R').ToString()
 	$timestampEnd = $(Get-Date $EndTime -UFormat '%d %B %Y %R').ToString()
 
-	# Build blocks object.
+	# Build session info string
+	$sessionInfo = @"
+*$JobName*
+
+*Session result:* $Status
+*Job type:* $JobType
+
+"@
+
 	if (-not ($JobType.EndsWith('Agent Backup'))) {
-		$message += @"
+		$sessionInfo += @"
 *Backup Size:* $DataSize
 *Transferred Data:* $TransferSize
 *Dedup Ratio:* $DedupRatio
@@ -740,7 +772,7 @@ function New-TelegramPayload {
 	}
 
 	elseif ($JobType.EndsWith('Agent Backup') -or $JobType.EndsWith('Tape Backup')) {
-		$message += @"
+		$sessionInfo += @"
 *Processed Size:* $ProcessedSize
 *Transferred Data:* $TransferSize
 *Processing Rate:* $Speed
@@ -751,64 +783,44 @@ function New-TelegramPayload {
 "@
 	}
 
-	# Add footer to payload object.
-	$message += "`n`n$FooterMessage"
-
-	# Add update notice if relevant and configured to do so.
-	if ($UpdateNotification) {
-		# Add block to payload.
-		$message += "`nA new version of VeeamNotify is available! See release [*$LatestVersion* on GitHub](https://github.com/tigattack/VeeamNotify/releases/$LatestVersion)."
+	# Add update notice if required
+	if ($UpdateAvailable -and $NotifyUpdate) {
+		$message += "`nA new version of VeeamNotify is available! See release [*$LatestVersion* on GitHub](https://github.com/tigattack/VeeamNotify/releases/$LatestVersion)\."
 	}
 
-	# https://core.telegram.org/bots/api#markdownv2-style
-	$escapes = '_', '[', ']', '(', ')', '~', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!'
+	# Compile message parts
+	$message = $mentionStr + $sessionInfo + "`n`n$FooterMessage"
 
-	foreach ($char in $escapes) {
-		$message = $message.Replace("$char", "\$char")
+	$payload = [PSCustomObject]@{
+		chat_id    = $ChatId
+		parse_mode = 'MarkdownV2'
+		text       = $message
 	}
 
-	return $message
+	return $payload
 }
 
-function Send-Payload {
+function New-HttpPayload {
 	[CmdletBinding()]
+	[OutputType([PSCustomObject])]
 	param (
-		[Parameter(ValueFromPipeline,Mandatory=$true)]
-		$Payload,
-		$Uri,
-		$JSONPayload = $false
+		[Parameter(Mandatory)]
+		[System.Collections.Specialized.OrderedDictionary]$Parameters
 	)
 
-	process {
-		# Build post parameters
-		if ($JSONPayload) {
-			$postParams = @{
-				Uri         = $Uri
-				Body        = ($Payload | ConvertTo-Json -Depth 11)
-				Method      = 'Post'
-				ContentType = 'application/json'
-				ErrorAction = 'Stop'
-			}
-		}
-		else {
-			$postParams = @{
-				Body        = $Payload
-				Method      = 'Post'
-				ContentType = 'application/x-www-form-urlencoded'
-				ErrorAction = 'Stop'
-			}
-		}
+	$params = New-OrderedDictionary -InputDictionary $Parameters
 
-		try {
-			# Post payload
-			$request = Invoke-RestMethod @postParams
+	# Set timestamps
+	$params.StartTime = ([System.DateTimeOffset]$(Get-Date $params.StartTime)).ToUnixTimeSeconds()
+	$params.EndTime = ([System.DateTimeOffset]$(Get-Date $params.EndTime)).ToUnixTimeSeconds()
 
-			# Return request object
-			return $request
-		}
-		catch [System.Net.WebException] {
-			Write-LogMessage -Tag 'ERROR' -Message 'Unable to send Payload. Check your Payload or network connection.'
-			throw
-		}
-	}
+	# Drop unwanted parameters for HTTP
+	$(
+		'Mention',
+		'NotifyUpdate',
+		'ThumbnailUrl',
+		'FooterMessage'
+	) | ForEach-Object { $params.Remove($_) }
+
+	return $params
 }

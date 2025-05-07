@@ -42,7 +42,7 @@ As much relevant information as I've been able to discover from such backup sess
 ## Installation
 
 Requirements:
-* Veeam Backup & Replication 11 or higher.
+* Veeam Backup & Replication 12 or higher.
 * PowerShell 5.1 or higher.
 
 Please see the [How to Install](https://github.com/tigattack/VeeamNotify/wiki/%F0%9F%94%A7-How-to-Install) wiki page.
@@ -59,7 +59,7 @@ Details and examples can be found in the [Configuration Options](https://github.
 
 [MelonSmasher](https://github.com/MelonSmasher)//[TheSageColleges](https://github.com/TheSageColleges) for [the project](https://github.com/TheSageColleges/VeeamSlackNotifications) which inspired me to make this.  
 [dantho281](https://github.com/dantho281) for various things - Assistance with silly little issues, the odd bugfix here and there, and the inspiration for and first works on the `Updater.ps1` script.  
-[Lee_Dailey](https://reddit.com/u/Lee_Dailey) for general pointers and the [first revision](https://pastebin.com/srN5CKty) of the `ConvertTo-ByteUnit` function.  
+[Lee_Dailey](https://reddit.com/u/Lee_Dailey) for general pointers and the [first revision](https://pastebin.com/srN5CKty) of the `Format-ByteUnit` function.  
 [philenst](https://github.com/philenst) for committing or assisting with a number of core components of the project.  
 [s0yun](https://github.com/s0yun) for the `Installer.ps1` script.  
 

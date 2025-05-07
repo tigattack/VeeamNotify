@@ -1,21 +1,31 @@
 {
     "services": {
         "discord": {
+            "enabled": false,
             "webhook": "DiscordWebhook",
             "user_id": "123456789"
         },
         "slack": {
+            "enabled": false,
             "webhook": "SlackWebhook",
             "user_id": "A1B2C3D4E5"
         },
         "teams": {
+            "enabled": false,
             "webhook": "TeamsWebhook",
             "user_id": "user@domain.tld",
-            "user_name": "Your Name"
+            "display_name": "Your Name"
         },
         "telegram": {
+            "enabled": false,
             "bot_token": "TelegramBotToken",
-            "chat_id": "TelegramChatID"
+            "chat_id": "TelegramChatID",
+            "user_name": "yourusername"
+        },
+        "http": {
+            "enabled": false,
+            "url": "EndpointURL",
+            "method": "POST"
         }
     },
     "mentions": {
@@ -35,7 +45,7 @@
     "update": {
         "notify": true,
         "auto_update": false,
-        "auto_update_comment": "auto_update will NOT work. Leave as 'false'"
+        "auto_update_comment": "auto_update is not yet implemented. This will do nothing even if 'true'."
     },
-    "thumbnail": "https://raw.githubusercontent.com/tigattack/VeeamDiscordNotifications/master/asset/thumb01.png"
+    "thumbnail": "https://raw.githubusercontent.com/tigattack/VeeamNotify/master/asset/thumb01.png"
 }

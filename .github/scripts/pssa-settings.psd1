@@ -1,11 +1,11 @@
 # Settings for PSScriptAnalyzer invocation.
 @{
 	ExcludeRules = @(
-		'PSReviewUnusedParameter', # Required due to PowerShell/PSScriptAnalyzer#1472.
 		'PSAvoidLongLines',
 		'PSUseSingularNouns',
 		'PSUseShouldProcessForStateChangingFunctions',
-		'PSUseDeclaredVarsMoreThanAssignments' # Buggy - https://github.com/PowerShell/PSScriptAnalyzer/issues/1641
+		'PSUseDeclaredVarsMoreThanAssignments', # Buggy - https://github.com/PowerShell/PSScriptAnalyzer/issues/1641
+		'PSAvoidUsingWriteHost'
 	)
 	Rules        = @{
 		PSAvoidUsingDoubleQuotesForConstantString = @{
@@ -53,7 +53,7 @@
 		PSUseConsistentIndentation                = @{
 			Enable              = $true
 			IndentationSize     = 4
-			PipelineIndentation = 'IncreaseIndentationForFirstPipeline'
+			PipelineIndentation = 'IncreaseIndentationAfterEveryPipeline'
 			Kind                = 'tab'
 		}
 		PSAvoidLongLines                          = @{
@@ -65,6 +65,9 @@
 			CheckHashtable = $true
 		}
 		PSUseCorrectCasing                        = @{
+			Enable = $true
+		}
+		PSAvoidSemicolonsAsLineTerminators        = @{
 			Enable = $true
 		}
 	}

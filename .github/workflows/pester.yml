@@ -9,21 +9,57 @@ jobs:
   test:
     runs-on: windows-latest
     steps:
-
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Detect PR or branch
+        id: detect
+        shell: bash
+        run: |
+          if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
+            # For PRs, extract PR number
+            if [[ "$GITHUB_REF" =~ refs/pull/([0-9]+)/merge ]]; then
+              PR_ID=${BASH_REMATCH[1]}
+              echo "IS_PR=true" >> $GITHUB_OUTPUT
+              echo "PR_ID=$PR_ID" >> $GITHUB_OUTPUT
+              echo "Current PR ID: $PR_ID"
+            fi
+          else
+            # For pushes, extract the branch name from GITHUB_REF
+            BRANCH=${GITHUB_REF#refs/heads/}
+            echo "IS_PR=false" >> $GITHUB_OUTPUT
+            echo "BRANCH=$BRANCH" >> $GITHUB_OUTPUT
+            echo "Current branch: $BRANCH"
+          fi
 
       - name: Run Pester
         shell: powershell
         run: |
           Get-Module -Name 'Pester' -ListAvailable | Sort-Object -Property 'Version' -Descending | Select-Object -First 1 | Import-Module
           $pesterConfig = Get-Content .\tests\PesterPreference.ps1 -Raw | Invoke-Expression
-          Invoke-Pester -Configuration $pesterConfig
+
+          # Create container data based on event type
+          $containerData = @{}
+
+          if ('${{ steps.detect.outputs.IS_PR }}' -eq 'true') {
+            # PR event - pass PR data only
+            $containerData.IsPr = $true
+            $containerData.PrId = ${{ steps.detect.outputs.PR_ID }}
+            Write-Host "Running tests for PR #$($containerData.PrId)"
+          } else {
+            # Push event - pass branch data only
+            $containerData.Branch = '${{ steps.detect.outputs.BRANCH }}'
+            Write-Host "Running tests for branch: $($containerData.Branch)"
+          }
+
+          # Create and run the container
+          $container = New-PesterContainer -Path '.\tests' -Data $containerData
+          Invoke-Pester -CI -Output Detailed -Container $container
 
       - name: Upload test report
         uses: actions/upload-artifact@v4
         if: success() || failure()
         with:
           name: Pester-Results
-          path: PesterResults.xml
+          path: testResults.xml
