@@ -3,27 +3,27 @@ param(
 )
 
 function Write-StatusMessage {
-    param(
-        [string]$Message,
-        [string]$Status = "Info",
-        [string]$JobName = ""
-    )
+	param(
+		[string]$Message,
+		[string]$Status = 'Info',
+		[string]$JobName = ''
+	)
 
-    $prefix = if ($JobName) { "[$JobName] " } else { "" }
+	$prefix = if ($JobName) { "[$JobName] " } else { '' }
 
-    switch ($Status) {
-        "Success" { Write-Host -ForegroundColor Green "`n$prefix$Message" }
-        "Warning" { Write-Host -ForegroundColor Yellow "`n$prefix$Message" }
-        "Error"   { Write-Host -ForegroundColor Red "`n$prefix$Message" }
-        default   { Write-Host "$prefix$Message" }
-    }
+	switch ($Status) {
+		'Success' { Write-Host -ForegroundColor Green "`n$prefix$Message" }
+		'Warning' { Write-Host -ForegroundColor Yellow "`n$prefix$Message" }
+		'Error' { Write-Host -ForegroundColor Red "`n$prefix$Message" }
+		default { Write-Host "$prefix$Message" }
+	}
 }
 
 # Function to be used when an error is encountered
 function DeploymentError {
 	$issues = 'https://github.com/tigattack/VeeamNotify/issues'
 
-	Write-StatusMessage -Status "Error" -Message "An error occured $($_.ScriptStackTrace.Split("`n")[0]): $($_.Exception.Message)"
+	Write-StatusMessage -Status 'Error' -Message "An error occured $($_.ScriptStackTrace.Split("`n")[0]): $($_.Exception.Message)"
 	Write-StatusMessage -Message "`nPlease raise an issue at $issues"
 
 	$launchIssuesPrompt_yes = New-Object System.Management.Automation.Host.ChoiceDescription '&Yes', 'Open a new issue'
@@ -85,7 +85,7 @@ function Update-JobWithFullPowershellPath {
 		[string]$PostScriptCmd
 	)
 
-	Write-StatusMessage -Status "Warning" -JobName $Job.Name -Message "Job is already configured for VeeamNotify, but does not have a full path to PowerShell. Updating..."
+	Write-StatusMessage -Status 'Warning' -JobName $Job.Name -Message 'Job is already configured for VeeamNotify, but does not have a full path to PowerShell. Updating...'
 
 	try {
 		$jobOptions = $Job.GetOptions()
@@ -95,7 +95,7 @@ function Update-JobWithFullPowershellPath {
 		$jobOptions.JobScriptCommand.PostScriptCommandLine = $PostScriptFullPSPath
 		$null = Set-VeeamJobOptions -Job $Job -Options $jobOptions
 
-		Write-StatusMessage -Status "Success" -JobName $Job.Name -Message "Job updated with the full PowerShell path."
+		Write-StatusMessage -Status 'Success' -JobName $Job.Name -Message 'Job updated with the full PowerShell path.'
 	}
 	catch {
 		DeploymentError
@@ -110,7 +110,7 @@ function Update-ExistingPostScript {
 		[bool]$AskBeforeOverwriting = $true
 	)
 
-	Write-StatusMessage -Status "Warning" -JobName $Job.Name -Message "Job has an existing post-job script:"
+	Write-StatusMessage -Status 'Warning' -JobName $Job.Name -Message 'Job has an existing post-job script:'
 	Write-StatusMessage -Message $CurrentPostScriptCmd
 
 	if ($AskBeforeOverwriting) {
@@ -126,7 +126,7 @@ function Update-ExistingPostScript {
 			0 { $shouldUpdate = $true }
 			1 {
 				$shouldUpdate = $false
-				Write-StatusMessage -JobName $Job.Name -Message "Skipping job"
+				Write-StatusMessage -JobName $Job.Name -Message 'Skipping job'
 			}
 		}
 	}
@@ -143,14 +143,14 @@ function Update-ExistingPostScript {
 				$jobOptions.JobScriptCommand.PostScriptCommandLine = $NewPostScriptCmd
 				Set-VeeamJobOptions -Job $Job -Options $jobOptions
 
-				Write-StatusMessage -JobName $Job.Name -Message "Updated post-job script:"
+				Write-StatusMessage -JobName $Job.Name -Message 'Updated post-job script:'
 				Write-StatusMessage -Message "Old: $CurrentPostScriptCmd"
 				Write-StatusMessage -Message "New: $NewPostScriptCmd"
-				Write-StatusMessage -Status "Success" -JobName $Job.Name -Message "Job is now configured for VeeamNotify."
+				Write-StatusMessage -Status 'Success' -JobName $Job.Name -Message 'Job is now configured for VeeamNotify.'
 			}
 			else {
 				# Script hasn't changed. Notify user of this and continue.
-				Write-StatusMessage -Status "Warning" -JobName $Job.Name -Message "Job is already configured for VeeamNotify; Skipping."
+				Write-StatusMessage -Status 'Warning' -JobName $Job.Name -Message 'Job is already configured for VeeamNotify; Skipping.'
 			}
 		}
 		catch {
@@ -171,14 +171,14 @@ function Enable-PostScript {
 		$setNewNo = New-PromptChoice -Label '&No' -HelpMessage 'Skip configuration of this job, leaving it as-is.'
 		$setNewOptions = @($setNewYes, $setNewNo)
 
-		$setNewMessage = "Do you wish to receive notifications for this job?"
+		$setNewMessage = 'Do you wish to receive notifications for this job?'
 		$setNewResult = Show-Prompt -Title "Configure Job: $($Job.Name.ToString()) ($($Job.TypeToString))" -Message $setNewMessage -Choices $setNewOptions
 
 		switch ($setNewResult) {
 			0 { $shouldEnable = $true }
 			1 {
 				$shouldEnable = $false
-				Write-StatusMessage -JobName $Job.Name -Message "Skipping job"
+				Write-StatusMessage -JobName $Job.Name -Message 'Skipping job'
 			}
 		}
 	}
@@ -194,7 +194,7 @@ function Enable-PostScript {
 			$jobOptions.JobScriptCommand.PostScriptCommandLine = $NewPostScriptCmd
 			Set-VeeamJobOptions -Job $Job -Options $jobOptions
 
-			Write-StatusMessage -Status "Success" -JobName $Job.Name -Message "Job is now configured for VeeamNotify."
+			Write-StatusMessage -Status 'Success' -JobName $Job.Name -Message 'Job is now configured for VeeamNotify.'
 		}
 		catch {
 			DeploymentError
@@ -223,7 +223,7 @@ function Set-BackupJobPostScript {
 		}
 
 		# skip if all correct
-		Write-StatusMessage -Status "Warning" -JobName $Job.Name -Message "Job is already configured for VeeamNotify; Skipping."
+		Write-StatusMessage -Status 'Warning' -JobName $Job.Name -Message 'Job is already configured for VeeamNotify; Skipping.'
 		return
 	}
 
@@ -260,7 +260,7 @@ function Get-JobSelection {
 	do {
 		$selection = Read-Host "`nEnter the job number to configure (0 to exit)"
 
-		if ($selection -eq "0") {
+		if ($selection -eq '0') {
 			return $null
 		}
 
@@ -269,7 +269,7 @@ function Get-JobSelection {
 			return $JobMenu[$intSelection]
 		}
 
-		Write-StatusMessage -Status "Error" -Message "Invalid selection. Please enter a valid job number."
+		Write-StatusMessage -Status 'Error' -Message 'Invalid selection. Please enter a valid job number.'
 	} while ($true)
 }
 
@@ -279,17 +279,17 @@ function Start-JobConfiguration {
 		[array]$Jobs,
 		[string]$PostScriptCmd,
 		[string]$PowerShellPath,
-		[ValidateSet("All", "Interactive", "None")]
-		[string]$Mode = "Interactive"
+		[ValidateSet('All', 'Interactive', 'None')]
+		[string]$Mode = 'Interactive'
 	)
 
 	switch ($Mode) {
-		"All" {
+		'All' {
 			foreach ($job in $Jobs) {
 				Set-BackupJobPostScript -Job $job -NewPostScriptCmd $PostScriptCmd -PowershellPath $PowerShellPath -AskBeforeConfiguring $false
 			}
 		}
-		"Interactive" {
+		'Interactive' {
 			$jobMenu = Show-JobSelectionMenu -Jobs $Jobs
 			do {
 				$selectedJob = Get-JobSelection -JobMenu $jobMenu
@@ -298,8 +298,8 @@ function Start-JobConfiguration {
 				Set-BackupJobPostScript -Job $selectedJob -NewPostScriptCmd $PostScriptCmd -PowershellPath $PowerShellPath -AskBeforeConfiguring $true
 			} while ($true)
 		}
-		"None" {
-			Write-StatusMessage -Status "Warning" -Message "Skipping VeeamNotify configuration deployment for all jobs."
+		'None' {
+			Write-StatusMessage -Status 'Warning' -Message 'Skipping VeeamNotify configuration deployment for all jobs.'
 		}
 	}
 }
@@ -328,7 +328,7 @@ $backupJobs = Get-VBRJob -WarningAction SilentlyContinue | Where-Object {
 
 # Make sure we found some jobs
 if ($backupJobs.Count -eq 0) {
-	Write-StatusMessage -Status "Warning" -Message 'No supported jobs found; Exiting.'
+	Write-StatusMessage -Status 'Warning' -Message 'No supported jobs found; Exiting.'
 	Start-Sleep 10
 	exit
 }
@@ -349,7 +349,7 @@ if ($backupResult -eq 0) {
 	Write-StatusMessage -Message "`nCreating backup, please wait..."
 	$backupExecution = Start-VBRConfigurationBackupJob
 	if ($backupExecution.Result -ne 'Failed') {
-		Write-StatusMessage -Status "Success" -Message 'Backup completed successfully.'
+		Write-StatusMessage -Status 'Success' -Message 'Backup completed successfully.'
 	}
 	else {
 		$continueYes = New-PromptChoice -Label '&Yes' -HelpMessage 'Continue anyway.'
@@ -363,7 +363,7 @@ if ($backupResult -eq 0) {
 			exit
 		}
 		else {
-			Write-StatusMessage -Status "Warning" -Message 'Continuing anyway.'
+			Write-StatusMessage -Status 'Warning' -Message 'Continuing anyway.'
 		}
 	}
 }
@@ -377,13 +377,13 @@ $modeMessage = 'How would you like to configure your jobs?'
 $modeResult = Show-Prompt -Title 'Configuration Mode' -Message $modeMessage -Choices $modeOptions -DefaultOption 0
 
 switch ($modeResult) {
-	0 { Start-JobConfiguration -Jobs $backupJobs -PostScriptCmd $newPostScriptCmd -PowerShellPath $powershellExePath -Mode "Interactive" }
-	1 { Start-JobConfiguration -Jobs $backupJobs -PostScriptCmd $newPostScriptCmd -PowerShellPath $powershellExePath -Mode "All" }
-	2 { Start-JobConfiguration -Jobs $backupJobs -PostScriptCmd $newPostScriptCmd -PowerShellPath $powershellExePath -Mode "None" }
+	0 { Start-JobConfiguration -Jobs $backupJobs -PostScriptCmd $newPostScriptCmd -PowerShellPath $powershellExePath -Mode 'Interactive' }
+	1 { Start-JobConfiguration -Jobs $backupJobs -PostScriptCmd $newPostScriptCmd -PowerShellPath $powershellExePath -Mode 'All' }
+	2 { Start-JobConfiguration -Jobs $backupJobs -PostScriptCmd $newPostScriptCmd -PowerShellPath $powershellExePath -Mode 'None' }
 }
 
 if ($MyInvocation.ScriptName -notlike '*Installer.ps1') {
-	Write-StatusMessage -Status "Success" -Message "`nFinished. Exiting."
+	Write-StatusMessage -Status 'Success' -Message "`nFinished. Exiting."
 	Start-Sleep 10
 }
 
