@@ -336,9 +336,6 @@ function Get-InstallationSource {
 		}
 	}
 
-	# Determine download properties
-	$downloadProperties = @{}
-
 	# Download branch if specified
 	if ($Branch) {
 		# Throw if branch not found
@@ -351,7 +348,6 @@ function Get-InstallationSource {
 
 		# Define download URL
 		$downloadUrl = "https://api.github.com/repos/tigattack/$Project/zipball/$Branch"
-		$downloadProperties.IsBranch = $true # TODO: needed?
 	}
 	# Download pull request if specified
 	elseif ($PullRequest) {
@@ -393,7 +389,6 @@ function Get-InstallationSource {
 				$_.assets[0].browser_download_url
 			}
 		}
-		$downloadProperties.IsBranch = $false # TODO: needed?
 	}
 
 	# Sanitise releaseName for OutFile if installing from branch or pull request
@@ -404,11 +399,11 @@ function Get-InstallationSource {
 		$outFile = "$Project-$releaseName"
 	}
 
-	$downloadProperties.ReleaseName = $releaseName
-	$downloadProperties.OutFile = $outFile
-	$downloadProperties.DownloadUrl = $downloadUrl
-
-	return $downloadProperties
+	return @{
+		ReleaseName = $releaseName
+		OutFile     = $outFile
+		DownloadUrl = $downloadUrl
+	}
 }
 
 function Install-DownloadedProject {
