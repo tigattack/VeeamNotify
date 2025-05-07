@@ -27,7 +27,7 @@ Describe 'Installer.ps1' {
 		$criticalFiles = @(
 			'.\Bootstrap.ps1',
 			'.\AlertSender.ps1',
-			'.\resources\version.txt',
+			'.\resources\version.txt'
 		)
 
 		# Define basic check for any installation
