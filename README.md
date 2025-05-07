@@ -4,7 +4,7 @@ Send Veeam Backup & Replication session summary notifications to Discord, Micros
 
 VeeamNotify is a replacement for [VeeamDiscordNotifications](https://github.com/tigattack/VeeamDiscordNotifications) and the respective [Teams](https://github.com/tigattack/VeeamTeamsNotifications) and [Slack](https://github.com/tigattack/VeeamSlackNotifications) projects, featuring improvements across the board and support for all the aforementioned messaging services in one, easy to use project.
 
-<img src="https://github.com/tigattack/VeeamNotify/blob/dev/asset/discord.png?raw=true" width="30%"></img> <img src="https://github.com/tigattack/VeeamNotify/blob/dev/asset/slack.png?raw=true" width="30%"></img> <img src="https://github.com/tigattack/VeeamNotify/blob/dev/asset/teams.png?raw=true" width="30%"></img>
+<img src="https://github.com/tigattack/VeeamNotify/blob/main/asset/discord.png?raw=true" width="30%"></img> <img src="https://github.com/tigattack/VeeamNotify/blob/main/asset/slack.png?raw=true" width="30%"></img> <img src="https://github.com/tigattack/VeeamNotify/blob/main/asset/teams.png?raw=true" width="30%"></img>
 
 ## Supported Notification Services
 
