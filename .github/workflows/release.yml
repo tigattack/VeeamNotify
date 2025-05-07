@@ -22,7 +22,7 @@ jobs:
 
       - name: Ensure config passes schema validation
         if: success() || failure()
-        shell: powershell
+        shell: pwsh
         run: |
           Import-Module resources/JsonValidator.psm1
           $schemaPath = "config/schema.json"
