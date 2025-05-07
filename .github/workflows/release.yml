@@ -24,7 +24,7 @@ jobs:
         if: success() || failure()
         shell: pwsh
         run: |
-          Import-Module resources/JsonValidator.psm1
+          Import-Module ./resources/JsonValidator.psm1
           $schemaPath = "config/schema.json"
           $configPath = "config/config.example.json"
           $result = Test-JsonValid -JsonPath "$configPath" -SchemaPath "$schemaPath"
