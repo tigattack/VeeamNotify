@@ -64,17 +64,7 @@ Describe 'Installer.ps1' {
 		Invoke-Command -ScriptBlock $expectedFilesCheck
 	}
 
-	It 'Install from main branch' {
-		$defaultBranch = 'main'
-		Write-Host "Installing from branch: $defaultBranch"
-		# Run installer
-		& $installerPath -Branch $defaultBranch @installerParams
-
-		# Check for expected files
-		Invoke-Command -ScriptBlock $expectedFilesCheck
-	}
-
-	It 'Install from current branch' -Skip:($IsPr -or $Branch -eq 'main' -or [string]::IsNullOrWhitespace($Branch)) {
+	It 'Install from current branch' -Skip:($IsPr -or [string]::IsNullOrWhitespace($Branch)) {
 		Write-Host "Installing from branch: $Branch"
 		# Call installer with branch parameter
 		& $installerPath -Branch $Branch @installerParams
