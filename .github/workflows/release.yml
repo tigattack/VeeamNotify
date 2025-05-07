@@ -34,7 +34,7 @@ jobs:
           $result = Test-JsonValid -JsonPath "$configPath" -SchemaPath "$schemaPath"
 
           Write-Host 'Validation result:'
-          Write-Host $result
+          $result | Format-Table -AutoSize
 
           if ($result.IsValid -ne $true) {
             Write-Host "Config file does not pass schema validation: $($result.Message)"
