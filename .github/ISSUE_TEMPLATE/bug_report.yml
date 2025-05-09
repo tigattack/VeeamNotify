@@ -2,8 +2,6 @@ name: Bug Report
 description: File a bug report
 title: "[BUG] "
 labels: ["bug"]
-assignees:
-  - tigattack
 body:
   - type: markdown
     attributes:

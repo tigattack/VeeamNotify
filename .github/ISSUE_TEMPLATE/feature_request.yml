@@ -2,8 +2,6 @@ name: Feature Request
 description: Suggest an idea for this project
 title: "[FEAT] "
 labels: ["enhancement"]
-assignees:
-  - tigattack
 body:
   - type: markdown
     attributes:
