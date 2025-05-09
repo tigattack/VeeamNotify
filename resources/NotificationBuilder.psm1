@@ -191,24 +191,26 @@ function New-DiscordPayload {
 
 	# Mention user if configured to do so.
 	if ($mention) {
-		$payload += @{
-			content = "<@!$($UserId)> Job $($Status.ToLower())!"
-		}
+    		# Use Add-Member instead of += to add a property to the PSCustomObject
+    		$payload | Add-Member -MemberType NoteProperty -Name 'content' -Value "<@!$($UserId)> Job $($Status.ToLower())!" -Force
 	}
 
 	# Add update notice if relevant and configured to do so.
 	if ($UpdateAvailable -and $NotifyUpdate) {
-		# Add embed to payload.
-		$payload.embeds += @(
-			@{
-				title       = 'Update Available'
-				description	= "A new version of VeeamNotify is available!`n[See release **$LatestVersion** on GitHub](https://github.com/tigattack/VeeamNotify/releases/$LatestVersion)."
-				color       = 3429867
-				footer      = $footerObject
-				timestamp   = $((Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ss.fffK'))
-			}
-		)
-	}
+    		# Add embed to payload using Add-Member
+    		$currentEmbeds = $payload.embeds
+    		$newEmbed = @{
+        		title       = 'Update Available'
+        		description = "A new version of VeeamNotify is available!`n[See release **$LatestVersion** on GitHub](https://github.com/tigattack/VeeamNotify/releases/$LatestVersion)."
+        		color       = 3429867
+        		footer      = $footerObject
+        		timestamp   = $((Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ss.fffK'))
+    	}
+    $updatedEmbeds = $currentEmbeds + @($newEmbed)
+    $payload | Add-Member -MemberType NoteProperty -Name 'embeds' -Value $updatedEmbeds -Force
+}
+    )
+}
 
 	# Return payload object.
 	return $payload
