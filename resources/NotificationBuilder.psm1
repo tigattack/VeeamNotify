@@ -175,7 +175,7 @@ function New-DiscordPayload {
 	}
 
 	# Build payload object.
-	$payload = [PSCustomObject]@{
+	[PSCustomObject]$payload = @{
 		embeds = @(
 			[PSCustomObject]@{
 				title       = $JobName
@@ -453,7 +453,7 @@ function New-TeamsPayload {
 		}
 	)
 
-	$payload = [PSCustomObject]@{
+	[PSCustomObject]$payload = @{
 		type        = 'message'
 		attachments = @(
 			@{
@@ -517,7 +517,7 @@ function New-SlackPayload {
 		[string]$LatestVersion
 	)
 
-	$payload = [PSCustomObject]@{
+	[PSCustomObject]$payload = @{
 		blocks = @()
 	}
 
@@ -615,7 +615,7 @@ function New-SlackPayload {
 	}
 
 	# Build payload object.
-	$payload.blocks += @(
+	[PSCustomObject]$payload.blocks += @(
 		@{
 			type      = 'section'
 			text      = @{
@@ -791,7 +791,7 @@ function New-TelegramPayload {
 	# Compile message parts
 	$message = $mentionStr + $sessionInfo + "`n`n$FooterMessage"
 
-	$payload = [PSCustomObject]@{
+	[PSCustomObject]$payload = @{
 		chat_id    = $ChatId
 		parse_mode = 'MarkdownV2'
 		text       = $message
