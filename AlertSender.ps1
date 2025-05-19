@@ -74,7 +74,8 @@ function Get-UpdateShouldNotify {
 	# Create or touch the marker file to indicate notification was sent
 	if (Test-Path $markerFilePath) {
 		(Get-Item $markerFilePath).LastWriteTime = Get-Date
-	} else {
+	}
+ else {
 		New-Item -Path $markerFilePath -ItemType File -Force | Out-Null
 		$result.Message = "Created update notification marker file at $markerFilePath"
 	}
