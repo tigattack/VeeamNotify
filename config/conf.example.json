@@ -30,7 +30,8 @@
     },
     "mentions": {
         "on_failure": false,
-        "on_warning": false
+        "on_warning": false,
+        "on_success": false
     },
     "notifications": {
         "on_success": true,

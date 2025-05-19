@@ -131,6 +131,9 @@
                 },
                 "on_warning": {
                     "type": "boolean"
+                },
+                "on_success": {
+                    "type": "boolean"
                 }
             }
         },
