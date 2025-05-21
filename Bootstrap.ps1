@@ -80,10 +80,10 @@ else {
 # Get the Veeam job details and hide warnings to mute the warning regarding deprecation of the use of some cmdlets to get certain job type details.
 # At time of writing, there is no alternative way to discover the job time.
 Write-LogMessage -Tag 'INFO' -Message 'Getting VBR job details'
-$job = Get-VBRJob -WarningAction SilentlyContinue | Where-Object {$_.Id.Guid -eq $jobId}
+$job = Get-VBRJob -WarningAction SilentlyContinue | Where-Object {$_.Id.ToString() -eq $JobId}
 if (!$job) {
 	# Can't locate non tape job so check if it's a tape job
-	$job = Get-VBRTapeJob -WarningAction SilentlyContinue | Where-Object {$_.Id.Guid -eq $jobId}
+	$job = Get-VBRTapeJob -WarningAction SilentlyContinue | Where-Object {$_.Id.ToString() -eq $JobId}
 	$JobType = $job.Type
 }
 else {
