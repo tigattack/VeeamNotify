@@ -1,3 +1,22 @@
+param (
+	# Params allow for manually launching the script for debugging
+	[Parameter(Mandatory = $false)]
+	[string]$JobId = $null,
+	[Parameter(Mandatory = $false)]
+	[string]$SessionId = $null
+)
+
+$IsDebug = $false
+
+if (($JobId -and -not $SessionId) -or (-not $JobId -and $SessionId)) {
+	Write-Output "ERROR: If one of JobId or SessionId is provided, the other must also be specified."
+	exit 1
+}
+elseif ($JobId -and $SessionId) {
+	Write-Output "INFO: JobId and SessionId are provided. Using them to start the script."
+	$IsDebug = $true
+}
+
 # Import modules
 Import-Module Veeam.Backup.PowerShell -DisableNameChecking
 Import-Module "$PSScriptRoot\resources\Logger.psm1"
@@ -11,8 +30,10 @@ $logFile = "$PSScriptRoot\log\$($date)_Bootstrap.log"
 $idRegex = '[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}'
 $supportedTypes = 'Backup', 'EpAgentBackup', 'Replica', 'BackupToTape', 'FileToTape'
 
-# Start logging to file
-Start-Logging -Path $logFile
+if (-not $IsDebug) {
+	# Start logging to file
+	Start-Logging -Path $logFile
+}
 
 # Log version
 Write-LogMessage -Tag 'INFO' -Message "Version: $(Get-Content "$PSScriptRoot\resources\version.txt" -Raw)"
@@ -40,13 +61,21 @@ else {
 	Write-LogMessage -Tag 'ERROR' -Message "Failed to validate configuration: $($validationResult.Message)"
 }
 
-# Get the command line used to start the Veeam session.
-$parentPid = (Get-CimInstance Win32_Process -Filter "processid='$PID'").parentprocessid.ToString()
-$parentCmd = (Get-CimInstance Win32_Process -Filter "processid='$parentPID'").CommandLine
+if ($IsDebug) {
+	Write-LogMessage -Tag 'INFO' -Message "JobId: $JobId"
+	Write-LogMessage -Tag 'INFO' -Message "SessionId: $SessionId"
+}
+else {
+	Write-LogMessage -Tag 'INFO' -Message 'Attempting to retrieve job ID and session ID from the parent process.'
 
-# Get the Veeam job and session IDs
-$jobId = ([regex]::Matches($parentCmd, $idRegex)).Value[0]
-$sessionId = ([regex]::Matches($parentCmd, $idRegex)).Value[1]
+	# Get the command line used to start the Veeam session.
+	$parentPid = (Get-CimInstance Win32_Process -Filter "processid='$PID'").parentprocessid.ToString()
+	$parentCmd = (Get-CimInstance Win32_Process -Filter "processid='$parentPID'").CommandLine
+
+	# Get the Veeam job and session IDs
+	$JobId = ([regex]::Matches($parentCmd, $idRegex)).Value[0]
+	$SessionId = ([regex]::Matches($parentCmd, $idRegex)).Value[1]
+}
 
 # Get the Veeam job details and hide warnings to mute the warning regarding deprecation of the use of some cmdlets to get certain job type details.
 # At time of writing, there is no alternative way to discover the job time.
@@ -64,7 +93,7 @@ else {
 
 # Get the session information and name.
 Write-LogMessage -Tag 'INFO' -Message 'Getting VBR session information'
-$sessionInfo = Get-VBRSessionInfo -SessionId $sessionId -JobType $JobType
+$sessionInfo = Get-VBRSessionInfo -SessionId $SessionId -JobType $JobType
 $jobName = $sessionInfo.JobName
 $vbrSessionLogger = $sessionInfo.Session.Logger
 
@@ -76,7 +105,7 @@ if ($JobType -notin $supportedTypes) {
 	exit 1
 }
 
-Write-LogMessage -Tag 'INFO' -Message "Bootstrap script for Veeam job '$jobName' (job $jobId session $sessionId) - Session & job detection complete."
+Write-LogMessage -Tag 'INFO' -Message "Bootstrap script for Veeam job '$jobName' (job $JobId session $SessionId) - Session & job detection complete."
 
 # Set log file name based on job
 ## Replace spaces if any in the job name
@@ -90,7 +119,7 @@ $newLogfile = "$PSScriptRoot\log\$($date)-$($logJobName).log"
 
 # Build argument string for the alert sender script.
 $powershellArguments = "-NoProfile -File $PSScriptRoot\AlertSender.ps1", `
-	"-SessionId `"$sessionId`"", `
+	"-SessionId `"$SessionId`"", `
 	"-JobType `"$JobType`"", `
 	"-Config `"$configRaw`"", `
 	"-Logfile `"$newLogfile`""
