@@ -119,7 +119,7 @@ if ($config.logging.enabled) {
 
 	# Rename log file to include the job name.
 	try {
-		Rename-Item -Path $logFile -NewName "$(Split-Path $newLogfile -Leaf)"
+		Rename-Item -Path $logFile -NewName "$(Split-Path $newLogfile -Leaf)" -ErrorAction Stop
 	}
 	catch {
 		Write-Output "ERROR: Failed to rename log file: $_" | Out-File $logFile -Append

@@ -87,7 +87,12 @@ function Stop-Logging {
 	param()
 	if ($PSCmdlet.ShouldProcess('log file', 'Stop-Transcript')) {
 		Write-LogMessage -Tag 'INFO' -Message 'Stopping transcript logging.'
-		Stop-Transcript
+		try {
+			Stop-Transcript
+		}
+		catch {
+			Write-LogMessage -Tag 'ERROR' -Message 'Failed to stop transcript logging.'
+		}
 	}
 }
 
