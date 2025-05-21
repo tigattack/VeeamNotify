@@ -9,11 +9,11 @@ param (
 $IsDebug = $false
 
 if (($JobId -and -not $SessionId) -or (-not $JobId -and $SessionId)) {
-	Write-Output "ERROR: If one of JobId or SessionId is provided, the other must also be specified."
+	Write-Output 'ERROR: If one of JobId or SessionId is provided, the other must also be specified.'
 	exit 1
 }
 elseif ($JobId -and $SessionId) {
-	Write-Output "INFO: JobId and SessionId are provided. Using them to start the script."
+	Write-Output 'INFO: JobId and SessionId are provided. Using them to start the script.'
 	$IsDebug = $true
 }
 
