@@ -85,7 +85,7 @@ function Send-WebhookNotification {
 	# Check if user should be mentioned
 	try {
 		if ($params.Mention) {
-			$Parameters.UserId = $ServiceConfig.user_id
+			$params.UserId = $ServiceConfig.user_id
 
 			# Set username if exists (Teams specific)
 			$teamsDisplayName = if ($ServiceConfig.display_name) { $ServiceConfig.display_name } else { $ServiceConfig.user_name }
