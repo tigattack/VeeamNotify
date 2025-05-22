@@ -6,22 +6,34 @@ param (
 	[string]$SessionId = $null
 )
 
-$IsDebug = $false
-
-if (($JobId -and -not $SessionId) -or (-not $JobId -and $SessionId)) {
-	Write-Output 'ERROR: If one of JobId or SessionId is provided, the other must also be specified.'
-	exit 1
-}
-elseif ($JobId -and $SessionId) {
-	Write-Output 'INFO: JobId and SessionId are provided. Using them to start the script.'
-	$IsDebug = $true
-}
-
 # Import modules
 Import-Module Veeam.Backup.PowerShell -DisableNameChecking
 Import-Module "$PSScriptRoot\resources\Logger.psm1"
 Import-Module "$PSScriptRoot\resources\JsonValidator.psm1"
 Import-Module "$PSScriptRoot\resources\VBRSessionInfo.psm1"
+
+$IsDebug = $false
+
+if ($JobId -and -not $SessionId) {
+	Write-Output 'INFO: JobId is provided but not SessionId. Attempting to retrieve the last session ID for the job.'
+	$SessionId = (Get-VBRBackupSession | Where-Object {$_.JobId -eq $JobId} | Sort-Object EndTimeUTC -Descending | Select-Object -First 1).Id.ToString()
+	if ($null -eq $SessionId) {
+		Write-Output 'ERROR: Failed to retrieve the session ID for the provided job ID. Please check the job ID.'
+		exit 1
+	}
+}
+elseif ($SessionId -and -not $JobId) {
+	Write-Output 'INFO: SessionId is provided but not JobId. Attempting to retrieve the last job ID for the session.'
+	$JobId = (Get-VBRBackupSession -Id $SessionId | Sort-Object EndTimeUTC -Descending | Select-Object -First 1).JobId.ToString()
+	if ($null -eq $JobId) {
+		Write-Output 'ERROR: Failed to retrieve the job ID for the provided session ID. Please check the session ID.'
+		exit 1
+	}
+}
+if ($JobId -and $SessionId) {
+	Write-Output 'INFO: JobId and SessionId found. Using them to start the script.'
+	$IsDebug = $true
+}
 
 # Set vars
 $configFile = "$PSScriptRoot\config\conf.json"
@@ -30,10 +42,8 @@ $logFile = "$PSScriptRoot\log\$($date)_Bootstrap.log"
 $idRegex = '[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}'
 $supportedTypes = 'Backup', 'EpAgentBackup', 'Replica', 'BackupToTape', 'FileToTape'
 
-if (-not $IsDebug) {
-	# Start logging to file
-	Start-Logging -Path $logFile
-}
+# Start logging to file
+Start-Logging -Path $logFile
 
 # Log version
 Write-LogMessage -Tag 'INFO' -Message "Version: $(Get-Content "$PSScriptRoot\resources\version.txt" -Raw)"
