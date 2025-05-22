@@ -3,3 +3,4 @@ ExampleData
 /Test-*
 log/*.log
 config/conf.json
+update-notification.marker
