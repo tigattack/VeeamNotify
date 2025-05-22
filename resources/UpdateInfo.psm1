@@ -14,6 +14,7 @@ function Get-UpdateShouldNotify {
 
 	$result = [UpdateShouldNotifyResult]@{
 		ShouldNotify = $true
+		Message      = ''
 	}
 
 	# If no update is available, no need to notify
