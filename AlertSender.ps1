@@ -29,60 +29,6 @@ function Get-Bottleneck {
 	return $bottleneck
 }
 
-class UpdateShouldNotifyResult {
-	[Parameter(Mandatory)]
-	[bool]$ShouldNotify
-	[string]$Message
-}
-
-function Get-UpdateShouldNotify {
-	[CmdletBinding()]
-	[OutputType([bool])]
-	param (
-		[Parameter(Mandatory)]
-		[PSObject]$UpdateStatus
-	)
-
-	$result = [UpdateShouldNotifyResult]@{
-		ShouldNotify = $true
-	}
-
-	# If no update is available, no need to notify
-	if ($UpdateStatus.Status -ne 'Behind') {
-		$result.ShouldNotify = $false
-		$result.Message      = 'No update available.'
-		return $result
-	}
-
-	# Define marker file path
-	$markerFilePath = "$PSScriptRoot\update-notification.marker"
-
-	# Check if marker file exists
-	if (Test-Path $markerFilePath) {
-		$markerFile = Get-Item $markerFilePath
-		$timeSinceLastNotification = (Get-Date) - $markerFile.LastWriteTime
-
-		# If less than 24 hours have passed since last notification, don't notify
-		if ($timeSinceLastNotification.TotalHours -lt 24) {
-			$result.ShouldNotify = $false
-			$result.Message      = "Update notification suppressed. Last notification was $($timeSinceLastNotification.TotalHours.ToString('0.00')) hours ago."
-
-			return $result
-		}
-	}
-
-	# Create or touch the marker file to indicate notification was sent
-	if (Test-Path $markerFilePath) {
-		(Get-Item $markerFilePath).LastWriteTime = Get-Date
-	}
- else {
-		New-Item -Path $markerFilePath -ItemType File -Force | Out-Null
-		$result.Message = "Created update notification marker file at $markerFilePath"
-	}
-
-	return $result
-}
-
 # Convert config from JSON
 $Config = $Config | ConvertFrom-Json
 
