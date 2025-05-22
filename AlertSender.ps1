@@ -272,6 +272,16 @@ try {
 		Write-LogMessage -Tag 'WARN' -Message "Unable to determine 'mention on warning' configuration. User will not be mentioned."
 	}
 
+	## On success
+	try {
+		if ($Config.mentions.on_success -and $status -eq 'Success') {
+			$mention = $true
+		}
+	}
+	catch {
+		Write-LogMessage -Tag 'WARN' -Message "Unable to determine 'mention on success' configuration. User will not be mentioned."
+	}
+
 
 	# Define footer message.
 	$footerMessage = "tigattack's VeeamNotify $($updateStatus.CurrentVersion)"
