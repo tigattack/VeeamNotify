@@ -27,27 +27,46 @@ function Get-UpdateShouldNotify {
 	# Define marker file path
 	$markerFilePath = "$PSScriptRoot\update-notification.marker"
 
+	$currentVersion = $UpdateStatus.CurrentVersion
+
 	# Check if marker file exists
 	if (Test-Path $markerFilePath) {
+		$versionChanged = $false
+		$markerVersion = Get-Content -Path $markerFilePath -Raw -ErrorAction SilentlyContinue
+		if ($null -ne $markerVersion) {
+			# Trim version and compare with current version
+			$markerVersion = $markerVersion.Trim()
+			$versionChanged = $markerVersion -ne $currentVersion
+		}
+
 		$markerFile = Get-Item $markerFilePath
 		$timeSinceLastNotification = (Get-Date) - $markerFile.LastWriteTime
 
-		# If less than 24 hours have passed since last notification, don't notify
+		# If version has changed, always notify regardless of time
+		if ($versionChanged) {
+			$result.Message = "Version changed from $markerVersion to $currentVersion since last notification. Proceeding to notify."
+			# Update the marker file with current version
+			$currentVersion | Out-File -FilePath $markerFilePath -Force -NoNewline
+			return $result
+		}
+
+		# If less than 24 hours have passed since last notification for the same version, don't notify
 		if ($timeSinceLastNotification.TotalHours -lt 24) {
 			$result.ShouldNotify = $false
 			$result.Message      = "Update notification suppressed. Last notification was $($timeSinceLastNotification.TotalHours.ToString('0.00')) hours ago."
-
 			return $result
 		}
-	}
-
-	# Create or touch the marker file to indicate notification was sent
-	if (Test-Path $markerFilePath) {
-		(Get-Item $markerFilePath).LastWriteTime = Get-Date
+		# If more than 24 hours have passed, proceed to notify and update the marker file contents
+		else {
+			$result.Message = "Update notification marker file found. Last notification was $($timeSinceLastNotification.TotalHours.ToString('0.00')) hours ago. Proceeding to notify."
+			# Update the marker file with current version - Also updates the file's modtime as a side effect.
+			$currentVersion | Out-File -FilePath $markerFilePath -Force -NoNewline
+		}
 	}
 	else {
-		New-Item -Path $markerFilePath -ItemType File -Force | Out-Null
-		$result.Message = "Created update notification marker file at $markerFilePath"
+		# Create the marker file to indicate notification was sent and store current version
+		$currentVersion | Out-File -FilePath $markerFilePath -Force -NoNewline
+		$result.Message = "Created update notification marker file at $markerFilePath with version $currentVersion"
 	}
 
 	return $result
