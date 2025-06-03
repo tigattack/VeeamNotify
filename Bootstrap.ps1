@@ -126,7 +126,8 @@ else {
 	$job = Get-VBRTapeJob -WarningAction SilentlyContinue | Where-Object {$_.Id.ToString() -eq $JobId}
 	if ($job) {
 		$JobType = $job.Type
-	} else {
+	}
+	else {
 		Write-LogMessage -Tag 'ERROR' -Message "Job with ID $JobId not found in tape jobs. Exiting."
 		FinishBootstrap -Failed
 	}
