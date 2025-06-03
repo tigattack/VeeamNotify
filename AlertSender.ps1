@@ -1,4 +1,5 @@
 param(
+	[String]$JobId,
 	[String]$SessionId,
 	[String]$JobType,
 	$Config,
@@ -72,7 +73,7 @@ try {
 	# Job info preparation
 
 	## Get the backup session.
-	$session = (Get-VBRSessionInfo -SessionId $SessionId -JobType $JobType).Session
+	$session = (Get-VBRSessionInfo -SessionId $SessionId -JobId $JobId -JobType $JobType).Session
 
 	## Initiate logger variable
 	$vbrSessionLogger = $session.Logger
@@ -84,7 +85,7 @@ try {
 		do {
 			Write-LogMessage -Tag 'INFO' -Message 'Session not completed. Sleeping...'
 			Start-Sleep -Seconds 10
-			$session = (Get-VBRSessionInfo -SessionId $SessionId -JobType $JobType).Session
+			$session = (Get-VBRSessionInfo -SessionId $SessionId -JobId $JobId -JobType $JobType).Session
 		}
 		while ($false -eq $session.Info.IsCompleted -and $stopwatch.Elapsed -lt $timeout)
 		$stopwatch.Stop()

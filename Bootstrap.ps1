@@ -103,7 +103,13 @@ else {
 
 # Get the session information and name.
 Write-LogMessage -Tag 'INFO' -Message 'Getting VBR session information'
-$sessionInfo = Get-VBRSessionInfo -SessionId $SessionId -JobType $JobType
+try {
+	$sessionInfo = Get-VBRSessionInfo -SessionId $SessionId -JobId $JobId -JobType $JobType
+}
+catch {
+	Write-LogMessage -Tag 'ERROR' -Message "Failed to retrieve session information: $_"
+	exit 1
+}
 $jobName = $sessionInfo.JobName
 $vbrSessionLogger = $sessionInfo.Session.Logger
 

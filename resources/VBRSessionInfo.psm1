@@ -9,7 +9,9 @@ function Get-VBRSessionInfo {
 		[Parameter(Mandatory)][ValidateNotNullOrEmpty()]
 		[string]$SessionId,
 		[Parameter(Mandatory)][ValidateNotNullOrEmpty()]
-		[string]$JobType
+		[string]$JobType,
+		[Parameter(Mandatory)][ValidateNotNullOrEmpty()]
+		[string]$JobId
 	)
 
 	# Import VBR module
@@ -33,16 +35,16 @@ function Get-VBRSessionInfo {
 			# to load in whatever's required to utilise the GetByOriginalSessionId method.
 			# See https://forums.veeam.com/powershell-f26/want-to-capture-running-jobs-by-session-type-i-e-sobr-tiering-t75583.html#p486295
 			Get-VBRSession -Id $SessionId | Out-Null
-			# Get the session details.
-			$session = [Veeam.Backup.Core.CBackupSession]::GetByOriginalSessionId($SessionId)
 
-			# Copy the job's name to it's own variable.
-			if ($JobType -eq 'EpAgentBackup') {
-				$jobName = $job.Info.Name
+			# Get the session details.
+			$session = [Veeam.Backup.Core.CBackupSession]::GetByJob($JobId) | Select-Object -Last 1
+
+			if ($null -eq $session) {
+				throw "$JobType job session with ID '$SessionId' could not be found."
 			}
-			elseif ($JobType -in 'BackupToTape', 'FileToTape') {
-				$jobName = $job.Name
-			}
+
+			# Extract the job name from the session
+			$jobName = $session.Name
 		}
 	}
 
