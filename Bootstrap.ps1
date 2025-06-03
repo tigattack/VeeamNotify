@@ -6,6 +6,32 @@ param (
 	[string]$SessionId = $null
 )
 
+function FinishBootstrap {
+	param(
+		[switch]$Failed
+	)
+
+	if ($config.logging.enabled) {
+		Stop-Logging
+
+		if ($newLogfile) {
+			# Rename log file to include the job name.
+			try {
+				Rename-Item -Path $logFile -NewName "$(Split-Path $newLogfile -Leaf)" -ErrorAction Stop
+			}
+			catch {
+				Write-Output "ERROR: Failed to rename log file: $_" | Out-File $logFile -Append
+			}
+		}
+	}
+	if ($Failed) {
+		exit 1
+	}
+	else {
+		exit 0
+	}
+}
+
 # Import modules
 Import-Module Veeam.Backup.PowerShell -DisableNameChecking
 Import-Module "$PSScriptRoot\resources\Logger.psm1"
@@ -19,7 +45,7 @@ if ($JobId -and -not $SessionId) {
 	$SessionId = (Get-VBRBackupSession | Where-Object {$_.JobId -eq $JobId} | Sort-Object EndTimeUTC -Descending | Select-Object -First 1).Id.ToString()
 	if ($null -eq $SessionId) {
 		Write-Output 'ERROR: Failed to retrieve the session ID for the provided job ID. Please check the job ID.'
-		exit 1
+		FinishBootstrap -Failed
 	}
 }
 elseif ($SessionId -and -not $JobId) {
@@ -27,7 +53,7 @@ elseif ($SessionId -and -not $JobId) {
 	$JobId = (Get-VBRBackupSession -Id $SessionId | Sort-Object EndTimeUTC -Descending | Select-Object -First 1).JobId.ToString()
 	if ($null -eq $JobId) {
 		Write-Output 'ERROR: Failed to retrieve the job ID for the provided session ID. Please check the session ID.'
-		exit 1
+		FinishBootstrap -Failed
 	}
 }
 if ($JobId -and $SessionId) {
@@ -91,13 +117,19 @@ else {
 # At time of writing, there is no alternative way to discover the job time.
 Write-LogMessage -Tag 'INFO' -Message 'Getting VBR job details'
 $job = Get-VBRJob -WarningAction SilentlyContinue | Where-Object {$_.Id.ToString() -eq $JobId}
-if (!$job) {
-	# Can't locate non tape job so check if it's a tape job
-	$job = Get-VBRTapeJob -WarningAction SilentlyContinue | Where-Object {$_.Id.ToString() -eq $JobId}
-	$JobType = $job.Type
+if ($job) {
+	$JobType = $job.JobType
 }
 else {
-	$JobType = $job.JobType
+	# Can't locate non-tape job so check if it's a tape job
+	Write-LogMessage -Tag 'DEBUG' -Message "Job with ID $JobId not found in VBR jobs. Checking for tape jobs."
+	$job = Get-VBRTapeJob -WarningAction SilentlyContinue | Where-Object {$_.Id.ToString() -eq $JobId}
+	if ($job) {
+		$JobType = $job.Type
+	} else {
+		Write-LogMessage -Tag 'ERROR' -Message "Job with ID $JobId not found in tape jobs. Exiting."
+		FinishBootstrap -Failed
+	}
 }
 
 
@@ -108,7 +140,7 @@ try {
 }
 catch {
 	Write-LogMessage -Tag 'ERROR' -Message "Failed to retrieve session information: $_"
-	exit 1
+	FinishBootstrap -Failed
 }
 $jobName = $sessionInfo.JobName
 $vbrSessionLogger = $sessionInfo.Session.Logger
@@ -118,7 +150,7 @@ $vbrLogEntry = $vbrSessionLogger.AddLog('[VeeamNotify] Parsing job & session inf
 # Quit if job type is not supported.
 if ($JobType -notin $supportedTypes) {
 	Write-LogMessage -Tag 'ERROR' -Message "Job type '$($JobType)' is not supported."
-	exit 1
+	FinishBootstrap -Failed
 }
 
 Write-LogMessage -Tag 'INFO' -Message "Bootstrap script for Veeam job '$jobName' (job $JobId session $SessionId) - Session & job detection complete."
@@ -135,6 +167,7 @@ $newLogfile = "$PSScriptRoot\log\$($date)-$($logJobName).log"
 
 # Build argument string for the alert sender script.
 $powershellArguments = "-NoProfile -File $PSScriptRoot\AlertSender.ps1", `
+	"-JobId `"$JobId`"", `
 	"-SessionId `"$SessionId`"", `
 	"-JobType `"$JobType`"", `
 	"-Config `"$configRaw`"", `
@@ -155,18 +188,7 @@ try {
 catch {
 	Write-LogMessage -Tag 'ERROR' -Message "Failed to launch AlertSender.ps1: $_"
 	$vbrSessionLogger.UpdateErr($vbrLogEntry, '[VeeamNotify] Failed to launch Alert Sender.', "Please check the log: $newLogfile") | Out-Null
-	exit 1
+	FinishBootstrap -Failed
 }
 
-# Stop logging.
-if ($config.logging.enabled) {
-	Stop-Logging
-
-	# Rename log file to include the job name.
-	try {
-		Rename-Item -Path $logFile -NewName "$(Split-Path $newLogfile -Leaf)" -ErrorAction Stop
-	}
-	catch {
-		Write-Output "ERROR: Failed to rename log file: $_" | Out-File $logFile -Append
-	}
-}
+FinishBootstrap
