@@ -34,7 +34,7 @@ function Send-Payload {
 		}
 
 		if ($Method -eq 'Post' -and $Payload) {
-			$postParams.Body        = $Payload | ConvertTo-Json -Depth 10
+			$postParams.Body        = $Payload | ConvertTo-Json -Depth 100 -Compress
 			$postParams.ContentType = 'application/json'
 		}
 
