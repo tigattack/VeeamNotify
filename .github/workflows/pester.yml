@@ -58,7 +58,7 @@ jobs:
           Invoke-Pester -CI -Output Detailed -Container $container
 
       - name: Upload test report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         if: success() || failure()
         with:
           name: Pester-Results
