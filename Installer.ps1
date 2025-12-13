@@ -771,7 +771,7 @@ Install-DownloadedProject -Project $project `
 	-InstallParentPath $InstallParentPath `
 	-DownloadUrl $downloadProperties.DownloadUrl `
 	-OutFile $downloadProperties.OutFile `
-	-ReleaseName $downloadProperties.ReleaseName `
+	-ReleaseName $downloadProperties.ReleaseName
 
 # Configure the installation if not running in non-interactive mode
 if (-not $NonInteractive) {
