@@ -460,14 +460,8 @@ function Install-DownloadedProject {
 	}
 
 	# Unblock downloaded ZIP
-	try {
-		Write-Host 'Unblocking ZIP...'
-		Unblock-File -Path $downloadPath
-	}
-	catch {
-		Write-Warning 'Failed to unblock downloaded files. You will need to run the following commands manually once installation is complete:'
-		Write-Host "gci $InstallParentPath -Recurse | ?{$_.Name -match '\.(ps\w*|dll)$'} | Unblock-File"
-	}
+	Write-Host 'Unblocking ZIP...'
+	Unblock-File -Path $downloadPath -ErrorAction Continue
 
 	# Extract release to destination path
 	Write-Host "Extracting files to '$InstallParentPath'..."
@@ -489,6 +483,20 @@ function Install-DownloadedProject {
 			$_.Name -match ".*-$Project-.*" -and
 			$_.PsIsContainer
 		})[0] | Rename-Item -NewName "$Project"
+	}
+
+	# Unblock PS and DLL files in installation directory
+	Write-Host 'Unblocking executable files in installation directory...'
+	$srcFiles = Get-ChildItem -Path "$InstallParentPath\$Project" -Recurse | Where-Object {
+		$_.Name -match '\.(ps\w*|dll)$'
+	}
+
+	try {
+		$srcFiles | Unblock-File
+	}
+	catch {
+		Write-Warning 'Failed to unblock downloaded files. You will need to run the following command manually once installation is complete:'
+		Write-Host "gci $InstallParentPath -Recurse | ?{$_.Name -match '\.(ps\w*|dll)$'} | Unblock-File"
 	}
 
 	# Clean up temp files
