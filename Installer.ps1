@@ -238,9 +238,9 @@ function Get-InstallationSource {
 		}
 		else {
 			$installFromBranchPrompt = @{
-				Title = 'Would you like to install from a branch?'
-				Description = "There are currently no releases or prereleases available for $Project."
-				Default = 'Yes'
+				Title        = 'Would you like to install from a branch?'
+				Description  = "There are currently no releases or prereleases available for $Project."
+				Default      = 'Yes'
 				OptionATitle = 'Install from Branch'
 				OptionBTitle = 'Exit Installer'
 			}
@@ -278,8 +278,8 @@ function Get-InstallationSource {
 				}
 				elseif ($latestPrerelease) {
 					$installPrereleasePrompt = @{
-						Title = 'Do you wish to install the latest prerelease?'
-						Description = 'You chose release, but the only available releases are prereleases.'
+						Title        = 'Do you wish to install the latest prerelease?'
+						Description  = 'You chose release, but the only available releases are prereleases.'
 						OptionATitle = 'Install Prerelease'
 						OptionBTitle = 'Exit Installer'
 					}
@@ -696,9 +696,9 @@ function Invoke-DeploymentTool {
 
 	# Query for configuration deployment script.
 	$runDeploymentToolPrompt = @{
-		Title = 'Configuration Deployment Tool'
-		Description = "Would you like to to run the VeeamNotify configuration deployment tool?`nNone of your job configurations will be modified without confirmation."
-		Default = 'Yes'
+		Title        = 'Configuration Deployment Tool'
+		Description  = "Would you like to to run the VeeamNotify configuration deployment tool?`nNone of your job configurations will be modified without confirmation."
+		Default      = 'Yes'
 		OptionATitle = 'Run Deployment Tool'
 		OptionBTitle = 'Skip Deployment Tool'
 	}
