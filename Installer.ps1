@@ -43,6 +43,7 @@
 
 [CmdletBinding(DefaultParameterSetName = 'None')]
 param(
+	[Parameter(ParameterSetName = 'None', Position = 0)]
 	[Parameter(ParameterSetName = 'Version', Position = 0)]
 	[Parameter(ParameterSetName = 'Release', Position = 0)]
 	[Parameter(ParameterSetName = 'Branch', Position = 0)]
