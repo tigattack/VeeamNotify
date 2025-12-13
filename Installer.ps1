@@ -465,7 +465,7 @@ function Install-DownloadedProject {
 	}
 	catch {
 		Write-Warning 'Failed to unblock downloaded files. You will need to run the following commands manually once installation is complete:'
-		Write-Host "Get-ChildItem -Path $InstallParentPath -Filter *.ps* -Recurse | Unblock-File"
+		Write-Host "gci $InstallParentPath -Recurse | ?{$_.Name -match '\.(ps\w*|dll)$'} | Unblock-File"
 	}
 
 	# Extract release to destination path
