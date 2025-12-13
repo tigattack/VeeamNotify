@@ -230,23 +230,25 @@ function Get-InstallationSource {
 			$downloadQuery_opts += New-Object System.Management.Automation.Host.ChoiceDescription '&Branch', '[TESTING ONLY] Download a branch.'
 			$downloadQuery_opts += New-Object System.Management.Automation.Host.ChoiceDescription '&PullRequest', '[TESTING ONLY] Download a pull request.'
 			$downloadQuery_result = $host.UI.PromptForChoice(
-				'Download type',
-				"Please select how you would like to download $Project.",
+				'Download Source',
+				"Please select a download source for $Project",
 				$downloadQuery_opts,
 				0
 			)
 		}
 		else {
-			$branchQuery_yes = New-Object System.Management.Automation.Host.ChoiceDescription '&Yes', 'Install from a branch.'
-			$branchQuery_no = New-Object System.Management.Automation.Host.ChoiceDescription '&No', 'Cancel installation.'
-			$host.UI.PromptForChoice(
-				'Would you like to install from a branch?',
-				"There are currently no releases or prereleases available for $Project.",
-				@($branchQuery_yes, $branchQuery_no),
-				0
-			) | ForEach-Object {
-				if ($_ -eq 0) { $downloadQuery_result = 2 }
-				else { exit }
+			$installFromBranchPrompt = @{
+				Title = 'Would you like to install from a branch?'
+				Description = "There are currently no releases or prereleases available for $Project."
+				Default = 'Yes'
+				OptionATitle = 'Install from Branch'
+				OptionBTitle = 'Exit Installer'
+			}
+			if (YesNoPrompt @installFromBranchPrompt) {
+				$downloadQuery_result = 2
+			}
+			else {
+				exit
 			}
 		}
 
@@ -257,41 +259,35 @@ function Get-InstallationSource {
 				if ($latestStable -and $latestPrerelease) {
 					# Query release stream
 					$releasePrompt = $true
-					# Query release stream
-					$versionQuery_stable = New-Object System.Management.Automation.Host.ChoiceDescription 'Latest &stable', "Latest stable: $latestStable."
-					$versionQuery_prerelease = New-Object System.Management.Automation.Host.ChoiceDescription 'Latest &prerelease', "Latest prelease: $latestPrerelease."
-					$versionQuery_result = $host.UI.PromptForChoice(
-						'Release Selection',
-						"Which release type would you like to install?`nEnter '?' to see versions.",
-						@(
-							$versionQuery_stable,
-							$versionQuery_prerelease),
-						0
-					)
-
-					switch ($versionQuery_result) {
-						0 {
-							$Latest = 'Release'
-						}
-						1 {
-							$Latest = 'Prerelease'
-						}
+					$releaseTypePrompt = @{
+						Title = 'Release Selection'
+						Description = "Which release type would you like to install?`nLatest stable: $latestStable`nLatest prerelease: $latestPrerelease"
+						Default = 'Yes'
+						OptionAKey = 'Stable' ; OptionATitle = 'Install Latest Stable'
+						OptionBKey = 'Prerelease' ; OptionBTitle = 'Install Latest Prerelease'
+					}
+					if (YesNoPrompt @releaseTypePrompt) {
+						$Latest = 'Release'
+					}
+					else {
+						$Latest = 'Prerelease'
 					}
 				}
 				elseif ($latestStable) {
 					$Latest = 'Release'
 				}
 				elseif ($latestPrerelease) {
-					$prereleaseQuery_yes = New-Object System.Management.Automation.Host.ChoiceDescription '&Yes', 'Install the latest prerelease.'
-					$prereleaseQuery_no = New-Object System.Management.Automation.Host.ChoiceDescription '&No', 'Cancel installation.'
-					$host.UI.PromptForChoice(
-						'Do you wish to install the latest prerelease?',
-						'You chose release, but the only available releases are prereleases.',
-						@($prereleaseQuery_yes, $prereleaseQuery_no),
-						0
-					) | ForEach-Object {
-						if ($_ -eq 0) { $Latest = 'Prerelease' }
-						else { exit }
+					$installPrereleasePrompt = @{
+						Title = 'Do you wish to install the latest prerelease?'
+						Description = 'You chose release, but the only available releases are prereleases.'
+						OptionATitle = 'Install Prerelease'
+						OptionBTitle = 'Exit Installer'
+					}
+					if (YesNoPrompt @installPrereleasePrompt) {
+						$Latest = 'Prerelease'
+					}
+					else {
+						exit
 					}
 				}
 			}
@@ -699,22 +695,51 @@ function Invoke-DeploymentTool {
 	)
 
 	# Query for configuration deployment script.
-	$configPrompt_yes = New-Object System.Management.Automation.Host.ChoiceDescription '&Yes', 'Execute configuration deployment tool.'
-	$configPrompt_no = New-Object System.Management.Automation.Host.ChoiceDescription '&No', 'Skip configuration deployment tool.'
-	$host.UI.PromptForChoice(
-		'Configuration Deployment Tool',
-		"Would you like to to run the VeeamNotify configuration deployment tool?`nNone of your job configurations will be modified without confirmation.",
-		@(
-			$configPrompt_yes,
-			$configPrompt_no
-		),
-		0
-	) | ForEach-Object {
-		if ($_ -eq 0) {
-			Write-Host "`nRunning configuration deployment script...`n"
-			& "$InstallParentPath\$Project\resources\DeployVeeamConfiguration.ps1" -InstallParentPath $InstallParentPath
-		}
+	$runDeploymentToolPrompt = @{
+		Title = 'Configuration Deployment Tool'
+		Description = "Would you like to to run the VeeamNotify configuration deployment tool?`nNone of your job configurations will be modified without confirmation."
+		Default = 'Yes'
+		OptionATitle = 'Run Deployment Tool'
+		OptionBTitle = 'Skip Deployment Tool'
 	}
+	if (YesNoPrompt @runDeploymentToolPrompt) {
+		Write-Host "`nRunning configuration deployment script...`n"
+		& "$InstallParentPath\$Project\resources\DeployVeeamConfiguration.ps1" -InstallParentPath $InstallParentPath
+	}
+}
+
+function YesNoPrompt {
+	[CmdletBinding()]
+	[OutputType([bool])]
+	param (
+		[Parameter(Mandatory)]
+		[string]$Title,
+		[Parameter(Mandatory)]
+		[string]$Description,
+		[Parameter()]
+		[string]$Default = 'No',
+		[Parameter()]
+		[string]$OptionAKey = 'Yes',
+		[Parameter()]
+		[string]$OptionATitle = 'Yes',
+		[Parameter()]
+		[string]$OptionBKey = 'No',
+		[Parameter()]
+		[string]$OptionBTitle = 'No'
+	)
+
+	$defaultChoice = if ($Default -eq 'Yes') { 0 } else { 1 }
+
+	$yesChoice = New-Object System.Management.Automation.Host.ChoiceDescription "&$OptionAKey", $OptionATitle
+	$noChoice = New-Object System.Management.Automation.Host.ChoiceDescription "&$OptionBKey", $OptionBTitle
+	$result = $host.UI.PromptForChoice(
+		$Title,
+		$Description,
+		@($yesChoice, $noChoice),
+		$defaultChoice
+	)
+
+	return $result -eq 0
 }
 
 #endregion Functions
