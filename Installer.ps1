@@ -775,7 +775,12 @@ Install-DownloadedProject -Project $project `
 
 # Configure the installation if not running in non-interactive mode
 if (-not $NonInteractive) {
-	$configPath = Set-ProjectConfiguration -Project $project -InstallParentPath $InstallParentPath
+	if (-not (YesNoPrompt -Title "$Project Configuration" -Description 'Would you like to configure the installation now?')) {
+		Write-Host "`nYou can configure VeeamNotify later by editing the config file located at:`n$InstallParentPath\$project\config\conf.json"
+	}
+	else {
+		Set-ProjectConfiguration -Project $project -InstallParentPath $InstallParentPath | Out-Null
+	}
 }
 else {
 	$configPath = Join-Path -Path $InstallParentPath -ChildPath $project | Join-Path -ChildPath 'config\conf.json'
