@@ -225,7 +225,7 @@ catch {
 }
 
 # Wait until the alert sender has finished running, or quit this if it's still running after 60s. It should never take that long.
-while (Get-CimInstance win32_process -Filter "name='powershell.exe' and commandline like '%AlertSender.ps1%'") {
+while (Get-CimInstance win32_process -Filter "name='pwsh.exe' and commandline like '%AlertSender.ps1%'") {
 	$timer++
 	Start-Sleep -Seconds 1
 	if ($timer -eq '90') {
