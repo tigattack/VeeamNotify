@@ -260,9 +260,9 @@ function Get-InstallationSource {
 					# Query release stream
 					$releasePrompt = $true
 					$releaseTypePrompt = @{
-						Title 		= 'Release Selection'
+						Title       = 'Release Selection'
 						Description = "Which release type would you like to install?`nLatest stable: $latestStable`nLatest prerelease: $latestPrerelease"
-						Default 	= 'Yes'
+						Default     = 'Yes'
 						OptionAKey 	= 'Stable' ; OptionATitle = 'Install Latest Stable'
 						OptionBKey 	= 'Prerelease' ; OptionBTitle = 'Install Latest Prerelease'
 					}
