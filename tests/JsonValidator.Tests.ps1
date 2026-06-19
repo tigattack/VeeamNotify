@@ -1,8 +1,3 @@
-[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute(
-	'PSUseCompatibleCommands',
-	'',
-	Justification = 'Pester tests are run in modern PowerShell'
-)]
 param ()
 
 BeforeAll {

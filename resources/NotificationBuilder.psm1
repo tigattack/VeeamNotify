@@ -1,6 +1,6 @@
 function New-Payload {
 	[CmdletBinding()]
-	[OutputType([PSCustomObject])]
+	[OutputType([Hashtable])]
 	param (
 		[Parameter(Mandatory)]
 		[ValidateSet('Discord', 'Slack', 'Teams', 'Telegram', 'HTTP')]
@@ -34,7 +34,7 @@ function New-Payload {
 
 function New-DiscordPayload {
 	[CmdletBinding()]
-	[OutputType([PSCustomObject])]
+	[OutputType([Hashtable])]
 	param (
 		[string]$JobName,
 		[string]$JobType,
@@ -216,7 +216,7 @@ function New-DiscordPayload {
 
 function New-TeamsPayload {
 	[CmdletBinding()]
-	[OutputType([PSCustomObject])]
+	[OutputType([Hashtable])]
 	param (
 		[string]$JobName,
 		[string]$JobType,
@@ -493,7 +493,7 @@ function New-TeamsPayload {
 
 function New-SlackPayload {
 	[CmdletBinding()]
-	[OutputType([PSCustomObject])]
+	[OutputType([Hashtable])]
 	param (
 		[string]$JobName,
 		[string]$JobType,
@@ -688,7 +688,7 @@ function New-SlackPayload {
 
 function New-TelegramPayload {
 	[CmdletBinding()]
-	[OutputType([PSCustomObject])]
+	[OutputType([Hashtable])]
 	[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute(
 		'PSReviewUnusedParameter',
 		'ThumbnailUrl',

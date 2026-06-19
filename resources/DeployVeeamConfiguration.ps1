@@ -89,8 +89,8 @@ function Update-JobWithFullPowershellPath {
 
 	try {
 		$jobOptions = $Job.GetOptions()
-		# Replace Powershell.exe with full path in a new variable for update.
-		$PostScriptFullPSPath = $PostScriptCmd -replace 'Powershell.exe', "$PowershellPath"
+		# Replace powershell.exe/pwsh.exe with full path in a new variable for update.
+		$PostScriptFullPSPath = $PostScriptCmd -replace 'powershell.exe', "$PowershellPath" -replace 'pwsh.exe', "$PowershellPath"
 		# Set job to use modified post script path
 		$jobOptions.JobScriptCommand.PostScriptCommandLine = $PostScriptFullPSPath
 		$null = Set-VeeamJobOptions -Job $Job -Options $jobOptions
@@ -217,8 +217,8 @@ function Set-BackupJobPostScript {
 
 	# Check if job is already configured for VeeamNotify
 	if ($postScriptCmd -eq $NewPostScriptCmd) {
-		# Check if job has full PowerShell.exe path
-		if ($postScriptCmd.StartsWith('powershell.exe', 'CurrentCultureIgnoreCase')) {
+		# Check if job has full powershell.exe/pwsh.exe path
+		if ($postScriptCmd.StartsWith('powershell.exe', 'CurrentCultureIgnoreCase') -or $postScriptCmd.StartsWith('pwsh.exe', 'CurrentCultureIgnoreCase')) {
 			return Update-JobWithFullPowershellPath -Job $Job -PowershellPath $PowershellPath -PostScriptCmd $postScriptCmd
 		}
 
@@ -308,7 +308,7 @@ function Start-JobConfiguration {
 
 # Get PowerShell path
 try {
-	$powershellExePath = (Get-Command -Name 'powershell.exe' -ErrorAction Stop).Path
+	$powershellExePath = (Get-Command -Name 'pwsh.exe' -ErrorAction Stop).Path
 }
 catch {
 	DeploymentError

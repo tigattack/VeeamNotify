@@ -29,7 +29,7 @@ function Send-Payload {
 		$postParams = @{
 			Uri         = $Uri
 			Method      = $Method
-			UserAgent   = "VeeamNotify; PowerShell/$psVersion"
+			UserAgent   = "VeeamNotify (PowerShell/$psVersion)"
 			ErrorAction = 'Stop'
 		}
 
